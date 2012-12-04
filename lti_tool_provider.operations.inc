@@ -83,7 +83,7 @@ function lti_tool_provider_launch() {
         return;
       }
     }
-    else if (isset($launch_info['lis_person_contact_email_primary']) && $account = user_load_by_mail($launch_info['lis_person_contact_email_primary'])) {
+    elseif (isset($launch_info['lis_person_contact_email_primary']) && $account = user_load_by_mail($launch_info['lis_person_contact_email_primary'])) {
       // User exists by mail.
       if ($account->uid == 1) {
         // User 1 must use drupal authentication.
