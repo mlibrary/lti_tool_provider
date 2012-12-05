@@ -47,7 +47,7 @@ function lti_tool_provider_og_search_roles($lti_roles_str) {
       $found_roles[$lti_role] = $group_role_array[$lti_role];
     }
     else {
-      drupal_set_message(t('Role @lti_role, not found.', array('@lti_role' => check_plain($lti_role))), 'warning');
+      drupal_set_message(t('Role @lti_role, not found.', array('@lti_role' => $lti_role)), 'warning');
     }
   }
   return $found_roles;
@@ -64,7 +64,7 @@ function lti_tool_provider_og_get_group_bundles() {
   // in the bundle array.
   $bundles = og_get_all_group_bundle();
   $new_bundles = array();
-  $new_bundles['none']['none:None'] = 'None';
+  $new_bundles['none']['none:None'] = t('None');
   foreach ($bundles as $entity => $bundle) {
     foreach ($bundle as $key => $value) {
       $new_bundles[$entity][$entity . ':' . $key] = $value;
@@ -88,9 +88,9 @@ function lti_tool_provider_og_get_group_bundles() {
 function lti_tool_provider_og_retrieve_entity_field_types($group_bundle) {
   list($entity, $bundle) = explode(':', $group_bundle);
   $fields = field_info_instances($entity, $bundle);
-  $result = array('none' => 'None');
+  $result = array('none' => t('None'));
   if ($entity == 'node') {
-    $result['title'] = 'Title';
+    $result['title'] = t('Title');
   }
   foreach ($fields as $field) {
     $result[$field['field_name']] = $field['label'] . ' (' . $field['field_name'] . ')';
@@ -182,7 +182,7 @@ function lti_tool_provider_og_lti_tool_provider_launch_alter(&$launch_info, $acc
       $launch_info['destination'] = $launch_info['course_entity_type'] . '/' . $launch_info['course_entity_eid'];
     }
     else {
-      drupal_set_message(check_plain('No course corresponding to ' . $launch_info['context_label'] . ' exists.'));
+      drupal_set_message(t('No course corresponding to @label exists.', array('@label' => $launch_info['context_label'])));
     }
   }
 }

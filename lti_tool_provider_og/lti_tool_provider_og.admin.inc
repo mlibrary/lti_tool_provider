@@ -25,7 +25,7 @@ function lti_tool_provider_og_group_mapping($form, &$form_state) {
   $form['bundle'] = array(
     '#type' => 'select',
     '#title' => t('LTI Context to Drupal group mapping'),
-    '#description' => 'Please select the Drupal group bundle corresponding to an LTI course.',
+    '#description' => t('Please select the Drupal group bundle corresponding to an LTI course.'),
     '#options' => $new_bundles,
     '#weight' => -7,
     '#ajax' => array(
@@ -64,7 +64,7 @@ function lti_tool_provider_og_group_mapping($form, &$form_state) {
       '#suffix' => '</div>',
       '#type' => 'item',
       '#title' => t('LTI group attribute mapping'),
-      '#description' => 'Choose the group attributes to be mapped from the LTI context variables. Note: Title and context_id must be mapped but not necessarily to each other.',
+      '#description' => t('Choose the group attributes to be mapped from the LTI context variables. Note: Title and context_id must be mapped but not necessarily to each other.'),
       '#weight' => -4,
     );
     if ($is_node_type && $form['group_detail']['create_course']['#default_value'] == 0) {
@@ -114,7 +114,7 @@ function lti_tool_provider_og_group_mapping($form, &$form_state) {
       $form['group_detail']['roles_description'] = array(
         '#type' => 'item',
         '#title' => t('LTI group role mapping'),
-        '#description' => 'Choose the group roles to be mapped from the LTI roles.',
+        '#description' => t('Choose the group roles to be mapped from the LTI roles.'),
         '#weight' => -2,
       );
       list($entity, $bundle) = explode(':', $form['bundle']['#default_value']);
@@ -165,7 +165,7 @@ function lti_tool_provider_og_group_mapping($form, &$form_state) {
   }
   $form['submit'] = array(
     '#type' => 'submit',
-    '#value' => 'Save Group Mapping',
+    '#value' => t('Save Group Mapping'),
     '#submit' => array('lti_tool_provider_og_group_mapping_submit'),
     '#weight' => 10,
   );

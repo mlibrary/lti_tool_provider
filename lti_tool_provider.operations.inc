@@ -27,13 +27,13 @@ function lti_tool_provider_launch() {
   // If not an LTI launch request, then ignore.
   if (!lti_tool_provider_is_basic_lti_request()) {
     drupal_set_message(t('Not a LTI request.'), 'info');
-    return 'Error: Not a LTI request.';
+    return t('Error: Not a LTI request.');
   }
   // Insure we have a valid context.
   if (empty($_REQUEST['oauth_consumer_key'])) {
     unset($_SESSION['lti_tool_provider_context_info']);
     drupal_set_message(t('Not a valid LTI context.'), 'info');
-    return 'Error: Invalid context. Missing oauth_consumer_key in request.';
+    return t('Error: Invalid context. Missing oauth_consumer_key in request.');
   }
   // Begin a new session based on this LTI launch request.
   drupal_session_start();
@@ -120,8 +120,6 @@ function lti_tool_provider_launch() {
     $_SESSION['language'] = drupal_strtolower($launch_info['launch_presentation_locale']);
   }
   lti_tool_provider_goto($launch_info['destination']);
-  // Not reached.
-  return t('Launched');
 }
 
 /**
