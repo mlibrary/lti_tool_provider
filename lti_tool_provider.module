@@ -688,22 +688,19 @@ function lti_tool_provider_consumer_uri($consumer) {
 
 /**
  * Perform a drupal goto but avoid interfering with cron.php.
- *
- * @param string $path
- *   The path to goto.
  */
 function lti_tool_provider_goto($path) {
   if (php_sapi_name() == 'cli') {
     // This may mean cron via Drush.
-    return;
+    drupal_exit();
   }
   if (preg_match('/\/cron.php$/', $_SERVER['SCRIPT_NAME'])) {
     // Check for cron.php in the url.
     // preg_match accommodates sites in sub-directories.
-    return;
+    drupal_exit();
   }
   if (arg(0) == 'admin' && arg(1) == 'reports' && arg(2) == 'status' && arg(3) == 'run-cron') {
-    return;
+    drupal_exit();
   }
   drupal_goto($path);
 }
