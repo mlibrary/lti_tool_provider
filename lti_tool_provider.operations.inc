@@ -24,6 +24,9 @@
  */
 function lti_tool_provider_launch() {
   global $user;
+  if (!isset($_SERVER['HTTP_COOKIE'])) {
+    return(t('Please enable cookies and try again.'));
+  }
   // If not an LTI launch request, then ignore.
   if (!lti_tool_provider_is_basic_lti_request()) {
     drupal_set_message(t('Not a LTI request.'), 'info');
