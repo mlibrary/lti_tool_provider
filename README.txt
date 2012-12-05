@@ -16,6 +16,19 @@ and place it in sites/all/libraries/oauth/
 Enable the LTI Tool Provider module and optionally the LTI Tool Provider OG,
 LTI Tool Provider Outcomes and LTI Tool Provider Memberships submodules.
 
+Note on cookies
+Many tool consumers embed LTI tools within an iframe. For users of IE this
+will in some cases prevent the tool provider from creating cookies and prevent a
+session being established. The easiest way to prevent this from occuring is for
+the provider site to include a p3p header which causes IE to allow the cookies.
+On the drupal tool provider site add the following three lines to the end of the
+settings.php file.
+
+if (!headers_sent()) {
+  header('P3P: CP="We do not have a P3P policy."');
+}
+ 
+
 Administrative settings admin/lti_tool_provider
 
 Configure Tool Consumers
