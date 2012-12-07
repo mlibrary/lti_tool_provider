@@ -4,7 +4,6 @@
  *
  * Contains functions for minor operations like retreiving
  * name of consumer etc.
- *
  */
 
 /**
@@ -25,7 +24,7 @@ function lti_tool_provider_outcomes_validate_score($datatype, $score, $base_no) 
     return FALSE;
   }
   if (strcasecmp($datatype, 'decimal') == 0) {
-    if ($value >= 0 && $value <= 1.0 ) {
+    if ($value >= 0 && $value <= 1.0) {
       return TRUE;
     }
   }
@@ -46,7 +45,7 @@ function lti_tool_provider_outcomes_validate_score($datatype, $score, $base_no) 
     }
   }
   elseif (strcasecmp($datatype, 'letteraf') == 0) {
-      return TRUE;
+    return TRUE;
   }
   elseif (strcasecmp($datatype, 'letterafplus') == 0) {
     return TRUE;
@@ -55,7 +54,7 @@ function lti_tool_provider_outcomes_validate_score($datatype, $score, $base_no) 
     return TRUE;
   }
   elseif (strcasecmp($datatype, 'freetext') == 0) {
-    if (drupal_strlen($score) <= 1024 ) {
+    if (drupal_strlen($score) <= 1024) {
       return TRUE;
     }
   }
@@ -75,10 +74,10 @@ function lti_tool_provider_outcomes_validate_score($datatype, $score, $base_no) 
  */
 function lti_tool_provider_outcomes_validate_consumer_name($name) {
   $results_arr = array();
-  $query =new EntityFieldQuery();
+  $query = new EntityFieldQuery();
   $query
-  ->entityCondition('entity_type',  'lti_tool_provider_consumer')
-  ->propertyCondition('lti_tool_provider_consumer_consumer',  $name);
+  ->entityCondition('entity_type', 'lti_tool_provider_consumer')
+  ->propertyCondition('lti_tool_provider_consumer_consumer', $name);
   $result = $query->execute();
   $entity_type = 'lti_tool_provider_consumer';
   if (empty($result[$entity_type])) {
@@ -100,9 +99,9 @@ function lti_tool_provider_outcomes_validate_consumer_name($name) {
  */
 function lti_tool_provider_outcomes_resource_is_empty() {
   $results_arr = array();
-  $query =new EntityFieldQuery();
+  $query = new EntityFieldQuery();
   $query
-  ->entityCondition('entity_type',  'lti_tool_provider_outcomes_resource');
+  ->entityCondition('entity_type', 'lti_tool_provider_outcomes_resource');
   $result = $query->execute();
   $entity_type = 'lti_tool_provider_outcomes_resource';
   if (!empty($result[$entity_type])) {
@@ -124,14 +123,14 @@ function lti_tool_provider_outcomes_resource_is_empty() {
  */
 function lti_tool_provider_outcomes_get_consumer_by_name($name) {
   $results_arr = array();
-  $query =new EntityFieldQuery();
+  $query = new EntityFieldQuery();
   $query
-  ->entityCondition('entity_type',  'lti_tool_provider_consumer')
-  ->propertyCondition('lti_tool_provider_consumer_consumer',  $name);
+  ->entityCondition('entity_type', 'lti_tool_provider_consumer')
+  ->propertyCondition('lti_tool_provider_consumer_consumer', $name);
   $result = $query->execute();
   $entity_type = 'lti_tool_provider_consumer';
   if (!empty($result[$entity_type])) {
-    $entities = entity_load($entity_type,  array_keys($result[$entity_type]));
+    $entities = entity_load($entity_type, array_keys($result[$entity_type]));
     foreach ($entities as $entity) {
       return $entity;
     }
@@ -149,14 +148,14 @@ function lti_tool_provider_outcomes_get_consumer_by_name($name) {
  */
 function lti_tool_provider_outcomes_get_consumer_key($consumer_id) {
   $results_arr = array();
-  $query =new EntityFieldQuery();
+  $query = new EntityFieldQuery();
   $query
-  ->entityCondition('entity_type',  'lti_tool_provider_consumer')
-  ->propertyCondition('lti_tool_provider_consumer_id',  $consumer_id);
+  ->entityCondition('entity_type', 'lti_tool_provider_consumer')
+  ->propertyCondition('lti_tool_provider_consumer_id', $consumer_id);
   $result = $query->execute();
   $entity_type = 'lti_tool_provider_consumer';
   if (!empty($result[$entity_type])) {
-    $outcomes = entity_load($entity_type,  array_keys($result[$entity_type]));
+    $outcomes = entity_load($entity_type, array_keys($result[$entity_type]));
     $key = NULL;
     foreach ($outcomes as $outcome) {
       $key = $outcome->lti_tool_provider_consumer_key;
@@ -180,14 +179,14 @@ function lti_tool_provider_outcomes_get_consumer_by_id($consumer_id) {
     foreach ($entities as $entity) {
       $entity_final = $entity;
     }
-    if ( isset($entity_final) ) {
+    if (isset($entity_final)) {
       return $entity_final;
     }
     else {
       return NULL;
     }
   }
-  else{
+  else {
     return NULL;
   }
 }
@@ -203,14 +202,14 @@ function lti_tool_provider_outcomes_get_consumer_by_id($consumer_id) {
  */
 function lti_tool_provider_outcomes_get_outcomes_url($consumer_id) {
   $results_arr = array();
-  $query =new EntityFieldQuery();
+  $query = new EntityFieldQuery();
   $query
-  ->entityCondition('entity_type',  'lti_tool_provider_consumer')
-  ->propertyCondition('lti_tool_provider_consumer_id',  $consumer_id);
+  ->entityCondition('entity_type', 'lti_tool_provider_consumer')
+  ->propertyCondition('lti_tool_provider_consumer_id', $consumer_id);
   $result = $query->execute();
   $entity_type = 'lti_tool_provider_consumer';
   if (!empty($result[$entity_type])) {
-    $outcomes = entity_load($entity_type,  array_keys($result[$entity_type]));
+    $outcomes = entity_load($entity_type, array_keys($result[$entity_type]));
     $url = NULL;
     foreach ($outcomes as $outcome) {
       $url = $outcome->lti_tool_provider_consumer_outcomes_url;
@@ -220,42 +219,42 @@ function lti_tool_provider_outcomes_get_outcomes_url($consumer_id) {
 }
 
 /**
- * Retreives the current outcome record
+ * Retreives the current outcome record.
  *
  * @param string $result_sourcedid
- *   Current result source did
+ *   Current result source did.
  * @param string $context_id
- *   Current session context id
+ *   Current session context id.
  * @param string $resource_link_id
- *   Resource link id of the current session
+ *   Resource link id of the current session.
  * @param string $consumer_id
- *   Consumer entity id
+ *   Consumer entity id.
  * @param int $uid
- *   Current user id
+ *   Current user id.
  *
  * @return object
- *   Outcome entity
+ *   Outcome entity.
  */
 function lti_tool_provider_outcomes_get_current_outcome($result_sourcedid, $context_id, $resource_link_id, $consumer_id, $uid) {
   $resource = lti_tool_provider_outcomes_get_resource($consumer_id, $context_id, $resource_link_id);
   if (isset($resource)) {
-    $query =new EntityFieldQuery();
+    $query = new EntityFieldQuery();
     $query
-    ->entityCondition('entity_type',  'lti_tool_provider_outcomes')
+    ->entityCondition('entity_type', 'lti_tool_provider_outcomes')
     ->propertyCondition('lti_tool_provider_outcomes_user_id',  $uid)
-    ->propertyCondition('lti_tool_provider_outcomes_resource_entity_id_fk',  $resource -> lti_tool_provider_outcomes_resource_id)
-    ->propertyCondition('lti_tool_provider_outcomes_result_sourcedid',  $result_sourcedid);
+    ->propertyCondition('lti_tool_provider_outcomes_resource_entity_id_fk', $resource -> lti_tool_provider_outcomes_resource_id)
+    ->propertyCondition('lti_tool_provider_outcomes_result_sourcedid', $result_sourcedid);
     $result = $query->execute();
     $entity_type = 'lti_tool_provider_outcomes';
     if (!empty($result[$entity_type])) {
-      $outcomes = entity_load($entity_type,  array_keys($result[$entity_type]));
+      $outcomes = entity_load($entity_type, array_keys($result[$entity_type]));
       return $outcomes;
     }
-    else{
+    else {
       drupal_set_message(t('No records found'));
     }
   }
-  else{
+  else {
     drupal_set_message(t('No records found'));
   }
 }
@@ -271,25 +270,25 @@ function lti_tool_provider_outcomes_get_current_outcome($result_sourcedid, $cont
  */
 function lti_tool_provider_outcomes_retrieves_resource_records($consumer_id) {
   $results_arr = array();
-  $query =new EntityFieldQuery();
+  $query = new EntityFieldQuery();
   if (isset($consumer_id)) {
     $query
-    ->entityCondition('entity_type',  'lti_tool_provider_outcomes_resource')
+    ->entityCondition('entity_type', 'lti_tool_provider_outcomes_resource')
     ->propertyCondition('lti_tool_provider_outcomes_resource_consumer_id',  $consumer_id);
   }
   else {
     $query
-    ->entityCondition('entity_type',  'lti_tool_provider_outcomes_resource');
+    ->entityCondition('entity_type', 'lti_tool_provider_outcomes_resource');
   }
   $result = $query->execute();
   $entity_type = 'lti_tool_provider_outcomes_resource';
   if (!empty($result[$entity_type])) {
-    $resources = entity_load($entity_type,  array_keys($result[$entity_type]));
+    $resources = entity_load($entity_type, array_keys($result[$entity_type]));
     $loopcounter = 0;
     $arr = array();
     foreach ($resources as $resource) {
       $arr[$loopcounter] = $resource;
-      $loopcounter ++;
+      $loopcounter++;
     }
     return $arr;
   }
@@ -309,15 +308,15 @@ function lti_tool_provider_outcomes_retrieves_resource_records($consumer_id) {
  */
 function lti_tool_provider_outcomes_retrieves_resource_records_by_context($consumer_id, $context_id) {
   $results_arr = array();
-  $query =new EntityFieldQuery();
+  $query = new EntityFieldQuery();
   $query
-  ->entityCondition('entity_type',  'lti_tool_provider_outcomes_resource')
-  ->propertyCondition('lti_tool_provider_outcomes_resource_consumer_id',  $consumer_id)
-  ->propertyCondition('lti_tool_provider_outcomes_resource_context_id',  $context_id);
+  ->entityCondition('entity_type', 'lti_tool_provider_outcomes_resource')
+  ->propertyCondition('lti_tool_provider_outcomes_resource_consumer_id', $consumer_id)
+  ->propertyCondition('lti_tool_provider_outcomes_resource_context_id', $context_id);
   $result = $query->execute();
   $entity_type = 'lti_tool_provider_outcomes_resource';
   if (!empty($result[$entity_type])) {
-    $resources = entity_load($entity_type,  array_keys($result[$entity_type]));
+    $resources = entity_load($entity_type, array_keys($result[$entity_type]));
     return $resources;
   }
   else {
@@ -336,16 +335,16 @@ function lti_tool_provider_outcomes_retrieves_resource_records_by_context($consu
  */
 function lti_tool_provider_outcomes_retrieves_resource_title($resource_id) {
   $results_arr = array();
-  $query =new EntityFieldQuery();
+  $query = new EntityFieldQuery();
   $query
-  ->entityCondition('entity_type',  'lti_tool_provider_outcomes_resource')
-  ->propertyCondition('lti_tool_provider_outcomes_resource_id',  $resource_id);
+  ->entityCondition('entity_type', 'lti_tool_provider_outcomes_resource')
+  ->propertyCondition('lti_tool_provider_outcomes_resource_id', $resource_id);
   $result = $query->execute();
   $entity_type = 'lti_tool_provider_outcomes_resource';
   if (!empty($result[$entity_type])) {
-    $resources = entity_load($entity_type,  array_keys($result[$entity_type]));
+    $resources = entity_load($entity_type, array_keys($result[$entity_type]));
     foreach ($resources as $resource) {
-      return $resource -> lti_tool_provider_outcomes_resource_resource_link_title;
+      return $resource->lti_tool_provider_outcomes_resource_resource_link_title;
     }
   }
   else {
@@ -364,14 +363,14 @@ function lti_tool_provider_outcomes_retrieves_resource_title($resource_id) {
  */
 function lti_tool_provider_outcomes_retrieves_outcomes_by_resource($resource_id) {
   $results_arr = array();
-  $query =new EntityFieldQuery();
+  $query = new EntityFieldQuery();
   $query
-  ->entityCondition('entity_type',  'lti_tool_provider_outcomes')
-  ->propertyCondition('lti_tool_provider_outcomes_resource_entity_id_fk',  $resource_id);
+  ->entityCondition('entity_type', 'lti_tool_provider_outcomes')
+  ->propertyCondition('lti_tool_provider_outcomes_resource_entity_id_fk', $resource_id);
   $result = $query->execute();
   $entity_type = 'lti_tool_provider_outcomes';
   if (!empty($result[$entity_type])) {
-    $outcomes = entity_load($entity_type,  array_keys($result[$entity_type]));
+    $outcomes = entity_load($entity_type, array_keys($result[$entity_type]));
     return $outcomes;
   }
   else {
@@ -389,15 +388,15 @@ function lti_tool_provider_outcomes_retrieves_outcomes_by_resource($resource_id)
  *   Datatype associated to that resource.
  */
 function lti_tool_provider_outcomes_get_datatype_by_resource($resource_id) {
-  // return the selected datatype
+  // Return the selected datatype.
   $results_arr = array();
   $query = new EntityFieldQuery();
   $query
-  ->entityCondition('entity_type',  'lti_tool_provider_outcomes_resource')
-  ->propertyCondition('lti_tool_provider_outcomes_resource_id',  $resource_id);
+  ->entityCondition('entity_type', 'lti_tool_provider_outcomes_resource')
+  ->propertyCondition('lti_tool_provider_outcomes_resource_id', $resource_id);
   $result = $query->execute();
   if (isset($result['lti_tool_provider_outcomes_resource'])) {
-    $outcome = reset(entity_load('lti_tool_provider_outcomes_resource',  array_keys($result['lti_tool_provider_outcomes_resource'])));
+    $outcome = reset(entity_load('lti_tool_provider_outcomes_resource', array_keys($result['lti_tool_provider_outcomes_resource'])));
     return $outcome->lti_tool_provider_outcomes_resource_score_datatype;
   }
   drupal_set_message(t('Resource not found.'), 'error');
@@ -420,7 +419,7 @@ function lti_tool_provider_outcomes_trans_last_updated($timestamp) {
   if (isset($timestamp)) {
     return format_date($timestamp);
   }
-  else{
+  else {
     return 'Yet to be updated';
   }
 }
@@ -440,7 +439,7 @@ function lti_tool_provider_outcomes_trans_last_sent($timestamp) {
   if (isset($timestamp)) {
     return format_date($timestamp);
   }
-  else{
+  else {
     return 'Score yet to be sent.';
   }
 }
@@ -448,8 +447,8 @@ function lti_tool_provider_outcomes_trans_last_sent($timestamp) {
 /**
  * Updates the Outcome Service Url of the Consumer Record.
  *
- * @param string $key
- *   Consumer key.
+ * @param string $consumer_id
+ *   Consumer id.
  * @param string $url
  *   Consumer outcomes url.
  * @param boolean $ext_bool
@@ -457,11 +456,11 @@ function lti_tool_provider_outcomes_trans_last_sent($timestamp) {
  */
 function lti_tool_provider_outcomes_update_outcome_service_url($consumer_id, $url, $ext_bool) {
   $consumer = lti_tool_provider_outcomes_get_consumer_by_id($consumer_id);
-  if ($consumer -> lti_tool_provider_consumer_outcomes_url!= $url ) {
-    $consumer -> lti_tool_provider_consumer_outcomes_url = $url;
+  if ($consumer->lti_tool_provider_consumer_outcomes_url != $url ) {
+    $consumer->lti_tool_provider_consumer_outcomes_url = $url;
   }
-  if ($consumer -> lti_tool_provider_consumer_ext != $ext_bool) {
-    $consumer -> lti_tool_provider_consumer_ext = $ext_bool;
+  if ($consumer->lti_tool_provider_consumer_ext != $ext_bool) {
+    $consumer->lti_tool_provider_consumer_ext = $ext_bool;
   }
   entity_get_controller('lti_tool_provider_consumer')->save($consumer);
 }
@@ -476,10 +475,10 @@ function lti_tool_provider_outcomes_update_outcome_service_url($consumer_id, $ur
  *   Success or failure.
  */
 function lti_tool_provider_outcomes_check_if_result_record_exist($cid) {
-  $query =new EntityFieldQuery();
+  $query = new EntityFieldQuery();
   $query
-  ->entityCondition('entity_type',  'lti_tool_provider_outcomes_resource')
-  ->propertyCondition('lti_tool_provider_outcomes_resource_consumer_id',  $cid);
+  ->entityCondition('entity_type', 'lti_tool_provider_outcomes_resource')
+  ->propertyCondition('lti_tool_provider_outcomes_resource_consumer_id', $cid);
   $result = $query->execute();
   if (!empty($result)) {
     return TRUE;
@@ -497,19 +496,19 @@ function lti_tool_provider_outcomes_check_if_result_record_exist($cid) {
  *   Consumer entities.
  */
 function lti_tool_provider_outcomes_get_all_consumer() {
-  $query =new EntityFieldQuery();
+  $query = new EntityFieldQuery();
   $query
-  ->entityCondition('entity_type',  'lti_tool_provider_consumer');
+  ->entityCondition('entity_type', 'lti_tool_provider_consumer');
   $rs = $query->execute();
   $entity_type = 'lti_tool_provider_consumer';
   $result = array();
   if (!empty($rs[$entity_type])) {
-    $consumers = entity_load($entity_type,  array_keys($rs[$entity_type]));
+    $consumers = entity_load($entity_type, array_keys($rs[$entity_type]));
     foreach ($consumers as $consumer) {
       if (lti_tool_provider_outcomes_check_if_result_record_exist($consumer->lti_tool_provider_consumer_id)) {
         $result[] = $consumer;
-      };
-    };
+      }
+    }
   }
   return $result;
 }
@@ -527,9 +526,9 @@ function lti_tool_provider_outcomes_get_all_consumer() {
  * @return string
  *   The modified string.
  */
-function lti_tool_provider_outcomes_shorten_string($str , $cap = 30) {
-  if ( drupal_strlen($str) >= $cap ) {
-    $new_str = drupal_drupal_substr($str, 0 , $cap );
+function lti_tool_provider_outcomes_shorten_string($str ,$cap = 30) {
+  if (drupal_strlen($str) >= $cap) {
+    $new_str = drupal_drupal_substr($str, 0 , $cap);
     $new_str .= '...';
     return $new_str;
   }
@@ -547,7 +546,7 @@ function lti_tool_provider_outcomes_shorten_string($str , $cap = 30) {
  * @param string $score
  *   Score.
  */
-function lti_tool_provider_outcomes_updated_pulled_score($outcome , $score) {
+function lti_tool_provider_outcomes_updated_pulled_score($outcome, $score) {
   $outcome -> lti_tool_provider_outcomes_score = $score;
   $outcome -> lti_tool_provider_outcomes_last_updated = REQUEST_TIME;
   entity_get_controller('lti_tool_provider_outcomes')->save($outcome);
@@ -563,23 +562,23 @@ function lti_tool_provider_outcomes_updated_pulled_score($outcome , $score) {
  *   All the affected outcomes record.
  */
 function lti_tool_provider_outcomes_get_affected_outcomes($entity) {
-  $query =new EntityFieldQuery();
+  $query = new EntityFieldQuery();
   $query
   ->entityCondition('entity_type',  'lti_tool_provider_outcomes')
-  ->propertyCondition('lti_tool_provider_outcomes_resource_entity_id_fk',  $entity -> lti_tool_provider_outcomes_resource_id);
+  ->propertyCondition('lti_tool_provider_outcomes_resource_entity_id_fk', $entity->lti_tool_provider_outcomes_resource_id);
   $result = $query->execute();
   if (!empty($result)) {
-    $outcomes = entity_load('lti_tool_provider_outcomes',  array_keys($result['lti_tool_provider_outcomes']));
+    $outcomes = entity_load('lti_tool_provider_outcomes', array_keys($result['lti_tool_provider_outcomes']));
     return $outcomes;
   }
   return NULL;
 }
 
 /**
- * Returns the selection array for passfail
+ * Returns the selection array for passfail.
  *
  * @return array
- *   passfail array
+ *   passfail array.
  */
 function lti_tool_provider_outcomes_passfail_datatype_arr() {
   return array(
@@ -589,10 +588,10 @@ function lti_tool_provider_outcomes_passfail_datatype_arr() {
 }
 
 /**
- * Returns the selection array for letteraf
+ * Returns the selection array for letteraf.
  *
  * @return array
- *   letteraf array
+ *   letteraf array.
  */
 function lti_tool_provider_outcomes_letteraf_datatype_arr() {
   return array(
@@ -606,10 +605,10 @@ function lti_tool_provider_outcomes_letteraf_datatype_arr() {
 }
 
 /**
- * Returns the selection array for letterafplus
+ * Returns the selection array for letterafplus.
  *
  * @return array
- *   letterafplus array
+ *   letterafplus array.
  */
 function lti_tool_provider_outcomes_letterafplus_datatype_arr() {
   return array(
@@ -635,66 +634,68 @@ function lti_tool_provider_outcomes_letterafplus_datatype_arr() {
 }
 
 /**
- * Returns the default value of datatype
+ * Returns the default value of datatype.
  *
  * @param string $datatype
- *   The datatype
+ *   The datatype.
+ *
  * @return string
- *   The default value of the datatype
+ *   The default value of the datatype.
  */
 function lti_tool_provider_outcomes_get_datatype_default_value($datatype) {
-    if (strcasecmp($datatype, 'decimal') == 0) {
-      return '0.0';
-    }
-    elseif (strcasecmp($datatype, 'percentage') == 0) {
-      return '0.00';
-    }
-    elseif (strcasecmp($datatype, 'ratio') == 0) {
-      return (0 / 1) ;
-    }
-    elseif (strcasecmp($datatype, 'passfail') == 0) {
-      return (0 / 1);
-    }
-    elseif (strcasecmp($datatype, 'letteraf') == 0) {
-      return (0 / 5);
-    }
-    elseif (strcasecmp($datatype, 'letterafplus') == 0) {
-      return (0 / 17);
-    }
-    elseif (strcasecmp($datatype, 'freetext') == 0) {
-      return 'None';
-    }
-    else {
-      return '0.0';
-    }
-    return NULL;
+  if (strcasecmp($datatype, 'decimal') == 0) {
+    return '0.0';
+  }
+  elseif (strcasecmp($datatype, 'percentage') == 0) {
+    return '0.00';
+  }
+  elseif (strcasecmp($datatype, 'ratio') == 0) {
+    return (0 / 1) ;
+  }
+  elseif (strcasecmp($datatype, 'passfail') == 0) {
+    return (0 / 1);
+  }
+  elseif (strcasecmp($datatype, 'letteraf') == 0) {
+    return (0 / 5);
+  }
+  elseif (strcasecmp($datatype, 'letterafplus') == 0) {
+    return (0 / 17);
+  }
+  elseif (strcasecmp($datatype, 'freetext') == 0) {
+    return 'None';
+  }
+  else {
+    return '0.0';
+  }
+  return NULL;
 }
 
 /**
- * Create the score form parameters
+ * Create the score form parameters.
  *
  * @param string $datatype
- *   The datatype
+ *   The datatype.
  * @param object $outcome
- *   Outcome object
+ *   Outcome object.
+ *
  * @return array
- *   The form data
+ *   The form data.
  */
-function lti_tool_provider_outcomes_create_score_form_params($datatype, $base_no , $outcome ) {
+function lti_tool_provider_outcomes_create_score_form_params($datatype, $base_no, $outcome) {
   $result = array();
   if (strcasecmp($datatype, 'decimal') == 0) {
     $result[] = array(
       '#prefix' => '<div align="center">',
       '#suffix' => '</div>',
       '#type' => 'textfield',
-      '#default_value' => $outcome -> lti_tool_provider_outcomes_score,
+      '#default_value' => $outcome->lti_tool_provider_outcomes_score,
       '#size' => 9,
       '#maxlength' => 9,
       '#required' => TRUE ,
     );
   }
   elseif (strcasecmp($datatype, 'percentage') == 0) {
-    $value =  $outcome -> lti_tool_provider_outcomes_score * $base_no;
+    $value =  $outcome->lti_tool_provider_outcomes_score * $base_no;
     $result[] = array(
       '#prefix' => '<div class="container-inline" align="center">',
       '#type' => 'textfield',
@@ -706,8 +707,8 @@ function lti_tool_provider_outcomes_create_score_form_params($datatype, $base_no
     );
   }
   elseif (strcasecmp($datatype, 'ratio') == 0) {
-    $value =  $outcome -> lti_tool_provider_outcomes_score * $base_no;
-    $result[] =  array(
+    $value = $outcome->lti_tool_provider_outcomes_score * $base_no;
+    $result[] = array(
       '#prefix' => '<div class="container-inline" align="center">',
       '#type' => 'textfield',
       '#default_value' => round($value),
@@ -716,7 +717,7 @@ function lti_tool_provider_outcomes_create_score_form_params($datatype, $base_no
       '#required' => TRUE,
       '#suffix' => '/'
     );
-    $result[] =  array(
+    $result[] = array(
       '#type' => 'textfield',
       '#default_value' => $base_no,
       '#size' => 1,
@@ -727,8 +728,8 @@ function lti_tool_provider_outcomes_create_score_form_params($datatype, $base_no
     );
   }
   elseif (strcasecmp($datatype, 'passfail') == 0) {
-    $index = lti_tool_provider_outcomes_format_score_array($outcome -> lti_tool_provider_outcomes_score, $datatype);
-    $result[] =  array(
+    $index = lti_tool_provider_outcomes_format_score_array($outcome->lti_tool_provider_outcomes_score, $datatype);
+    $result[] = array(
       '#prefix' => '<div align="center">',
       '#suffix' => '</div>',
       '#type' => 'select',
@@ -737,7 +738,7 @@ function lti_tool_provider_outcomes_create_score_form_params($datatype, $base_no
     );
   }
   elseif (strcasecmp($datatype, 'letteraf') == 0) {
-    $index = lti_tool_provider_outcomes_format_score_array($outcome -> lti_tool_provider_outcomes_score, $datatype);
+    $index = lti_tool_provider_outcomes_format_score_array($outcome->lti_tool_provider_outcomes_score, $datatype);
     $result[] = array(
       '#prefix' => '<div align="center">',
       '#suffix' => '</div>',
@@ -747,8 +748,8 @@ function lti_tool_provider_outcomes_create_score_form_params($datatype, $base_no
     );
   }
   elseif (strcasecmp($datatype, 'letterafplus') == 0) {
-    $index = lti_tool_provider_outcomes_format_score_array($outcome -> lti_tool_provider_outcomes_score, $datatype);
-    $result[] =  array(
+    $index = lti_tool_provider_outcomes_format_score_array($outcome->lti_tool_provider_outcomes_score, $datatype);
+    $result[] = array(
       '#prefix' => '<div align="center">',
       '#suffix' => '</div>',
       '#type' => 'select',
@@ -757,11 +758,11 @@ function lti_tool_provider_outcomes_create_score_form_params($datatype, $base_no
     );
   }
   elseif (strcasecmp($datatype, 'freetext') == 0) {
-    $result[] =  array(
+    $result[] = array(
       '#prefix' => '<div align="center">',
       '#suffix' => '</div>',
       '#type' => 'textfield',
-      '#default_value' => $outcome -> lti_tool_provider_outcomes_score,
+      '#default_value' => $outcome->lti_tool_provider_outcomes_score,
       '#size' => 9,
       '#maxlength' => 1024,
       '#required' => TRUE,
@@ -772,7 +773,7 @@ function lti_tool_provider_outcomes_create_score_form_params($datatype, $base_no
       '#prefix' => '<div align="center">',
       '#suffix' => '</div>',
       '#type' => 'textfield',
-      '#default_value' => $outcome -> lti_tool_provider_outcomes_score,
+      '#default_value' => $outcome->lti_tool_provider_outcomes_score,
       '#size' => 9,
       '#maxlength' => 9,
       '#required' => TRUE,
@@ -782,19 +783,19 @@ function lti_tool_provider_outcomes_create_score_form_params($datatype, $base_no
 }
 
 /**
- * Retrieves the score from the form
+ * Retrieves the score from the form.
  *
  * @param int $row_no
- *   The row identifier
+ *   The row identifier.
  * @param array $form_state
- *   The form state array
+ *   The form state array.
  * @param object $outcome
- *   The outcome object
+ *   The outcome object.
  * @param string $datatype
- *   The corresponding datatype
+ *   The corresponding datatype.
  *
  * @return string
- *   The formatted score
+ *   The formatted score.
  */
 function lti_tool_provider_outcomes_format_score($row_no, $form_state , $outcome , $datatype, $base_no) {
   if (strcasecmp($datatype, 'decimal') == 0) {
@@ -811,7 +812,7 @@ function lti_tool_provider_outcomes_format_score($row_no, $form_state , $outcome
   }
   elseif (strcasecmp($datatype, 'passfail') == 0) {
     $passfail_arr = lti_tool_provider_outcomes_passfail_datatype_arr();
-  switch (reset($form_state['values']['table'][$row_no]['score'])) {
+    switch (reset($form_state['values']['table'][$row_no]['score'])) {
       case 0 : {
         $value = 1 / 1;
         break;
@@ -820,7 +821,7 @@ function lti_tool_provider_outcomes_format_score($row_no, $form_state , $outcome
         $value = 0 / 1;
         break;
       }
-  }
+    }
     return $value;
   }
   elseif (strcasecmp($datatype, 'letteraf') == 0) {
@@ -850,7 +851,7 @@ function lti_tool_provider_outcomes_format_score($row_no, $form_state , $outcome
         $value = 0 / 5;
         break;
       }
-    } 
+    }
     return $value;
   }
   elseif (strcasecmp($datatype, 'letterafplus') == 0) {
@@ -947,7 +948,7 @@ function lti_tool_provider_outcomes_format_score($row_no, $form_state , $outcome
  *   The denominator or base of the ratio.
  *
  * @return string
- *    The base number
+ *   The base number.
  */
 function lti_tool_provider_outcomes_set_base($datatype , $base_no = NULL) {
   if (strcasecmp($datatype, 'decimal') == 0) {
@@ -976,17 +977,17 @@ function lti_tool_provider_outcomes_set_base($datatype , $base_no = NULL) {
   }
 }
 /**
- * Formats raw score input
+ * Formats raw score input.
  *
  * @param string $raw_score
- *   The raw score from form
+ *   The raw score from form.
  * @param string $base_no
- *   The base number
+ *   The base number.
  * @param string $datatype
- *   The datatype
+ *   The datatype.
  *
  * @return string
- *   The formatted score
+ *   The formatted score.
  */
 function lti_tool_provider_outcomes_format_raw_score($raw_score, $base_no, $datatype) {
   if (strcasecmp($datatype, 'decimal') == 0) {
@@ -997,7 +998,7 @@ function lti_tool_provider_outcomes_format_raw_score($raw_score, $base_no, $data
   }
   elseif (strcasecmp($datatype, 'ratio') == 0) {
     $new_score = $raw_score * $base_no;
-    //     return floor($new_score) . '/' . $base_no;
+    // return floor($new_score) . '/' . $base_no;
     return $raw_score;
   }
   elseif (strcasecmp($datatype, 'passfail') == 0) {
@@ -1020,16 +1021,17 @@ function lti_tool_provider_outcomes_format_raw_score($raw_score, $base_no, $data
     return $raw_score;
   }
 }
+
 /**
- * Formats the score and return the appropriate value
+ * Formats the score and return the appropriate value.
  *
  * @param string $score
- *   The raw score
+ *   The raw score.
  * @param string $datatype
- *   The datatype
+ *   The datatype.
  *
  * @return int
- *   The index of the array
+ *   The index of the array.
  */
 function lti_tool_provider_outcomes_format_score_array($score , $datatype) {
   if (strcasecmp($datatype, 'passfail') == 0) {
@@ -1050,13 +1052,13 @@ function lti_tool_provider_outcomes_format_score_array($score , $datatype) {
       $value = 1;
     }
     elseif ($score >= 0.6) {
-      $value = 2 ;
+      $value = 2;
     }
     elseif ($score >= 0.4) {
-      $value = 3 ;
+      $value = 3;
     }
     elseif ($score >= 0.2 ) {
-      $value = 4 ;
+      $value = 4;
     }
     elseif ($score >= 0) {
       $value = 5;

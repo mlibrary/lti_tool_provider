@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @file
  * Contains functions to call Certified LTI LMS Site.
@@ -6,24 +7,25 @@
  */
 
 /**
- * Send single grade via http post
+ * Send single grade via http post.
  *
- * @param $params
- *   An array containing the POST data, eg, lti_message_type etc
- * @param $key
- *   The consumer key
- * @param $url
- *   URL of the LTI service
- * @return
- *   HTTP response
+ * @param string $params
+ *   An array containing the POST data, eg, lti_message_type etc.
+ * @param string $key
+ *   The consumer key.
+ * @param string $url
+ *   URL of the LTI service.
+ *
+ * @return string
+ *   HTTP response.
  */
-function lti_tool_provider_outcomes_lti_service_post($params , $key , $url) {
+function lti_tool_provider_outcomes_lti_service_post($params, $key, $url) {
   $ext_response = NULL;
   if (!empty($url)) {
-    // Check for query parameters which need to be included in the signature
+    // Check for query parameters which need to be included in the signature.
     $query_params = array();
     $query_string = parse_url($url, PHP_URL_QUERY);
-    if (!is_NULL($query_string)) {
+    if (!is_null($query_string)) {
       $query_items = explode('&', $query_string);
       foreach ($query_items as $item) {
         if (strpos($item, '=') !== FALSE) {
@@ -36,7 +38,7 @@ function lti_tool_provider_outcomes_lti_service_post($params , $key , $url) {
       }
     }
     $params = $params + $query_params;
-    // Add standard parameters
+    // Add standard parameters.
     $params['oauth_consumer_key'] = $key;
     $params['lti_version'] = 'LTI-1p0';
     $oauth_consumer_key = $key;
@@ -48,17 +50,17 @@ function lti_tool_provider_outcomes_lti_service_post($params , $key , $url) {
     $request->sign_request($hmac_method, $consumer, $token);
     $params = $request->get_parameters();
 
-    // Remove parameters being passed on the query string
+    // Remove parameters being passed on the query string.
     foreach (array_keys($query_params) as $name) {
       unset($params[$name]);
     }
-    // Connect to tool consumer
-    // http_build_query($params)
+    // Connect to tool consumer.
+    // http_build_query($params).
     $options = array(
       'data' => http_build_query($params),
       'method' => 'POST',
       'max_redirects' => 5,
-      'headers' =>  array('Content-Type' => 'application/x-www-form-urlencoded'),
+      'headers' => array('Content-Type' => 'application/x-www-form-urlencoded'),
     );
     $ext_response = drupal_http_request($url, $options);
   }
@@ -69,13 +71,14 @@ function lti_tool_provider_outcomes_lti_service_post($params , $key , $url) {
  * Constructs an array of parameters(READ) for the http post.
  *
  * @param string $sourcedid
- *   Sourece did of the incoming request
+ *   Sourece did of the incoming request.
+ *
  * @return array
- *   Array of parameters
+ *   Array of parameters.
  */
 function lti_tool_provider_outcomes_construct_params_array_read($sourcedid) {
   $params = array();
-  $params['lti_message_type'] ='basic-lis-readresult';
+  $params['lti_message_type'] = 'basic-lis-readresult';
   $params['sourcedid'] = $sourcedid;
   return $params;
 }
@@ -94,9 +97,9 @@ function lti_tool_provider_outcomes_construct_params_array_read($sourcedid) {
  */
 function lti_tool_provider_outcomes_construct_params_array_update($source_did , $grade , $base_no , $datatype) {
   $params = array();
-  $params['lti_message_type'] ='basic-lis-updateresult';
+  $params['lti_message_type'] = 'basic-lis-updateresult';
   $params['sourcedid'] = $source_did;
-//   $params['result_resultscore_textstring'] = lti_tool_provider_outcomes_format_raw_score($grade, $base_no, $datatype);
+  // $params['result_resultscore_textstring'] = lti_tool_provider_outcomes_format_raw_score($grade, $base_no, $datatype);
   $params['result_resultscore_textstring'] = $grade;
   $params['result_resultvaluesourcedid'] = 'decimal';
   return $params;
@@ -112,7 +115,7 @@ function lti_tool_provider_outcomes_construct_params_array_update($source_did , 
  */
 function lti_tool_provider_outcomes_construct_params_array_delete($sourcedid) {
   $params = array();
-  $params['lti_message_type'] ='basic-lis-deleteresult';
+  $params['lti_message_type'] = 'basic-lis-deleteresult';
   $params['sourcedid'] = $sourcedid;
   return $params;
 }
@@ -121,40 +124,40 @@ function lti_tool_provider_outcomes_construct_params_array_delete($sourcedid) {
  * Implements lti_tool_provider_outcomes_lti_service_xml().
  *
  * @param string $consumer
- *   Consumer entity
+ *   Consumer entity.
  * @param string $url
- *   Endpoint URL
+ *   Endpoint URL.
  * @param string $message_type
  *   1 : UPDATE / replaceRESULT
  *   2 : READ / readRESULT
- *   3 : DELETE / deleteRESULT
+ *   3 : DELETE / deleteRESULT.
  * @param string $source_did
- *   lis_result_sourcedid
+ *   lis_result_sourcedid.
  * @param string $grade
- *   OPTIONAL. Grade value to be updated
+ *   OPTIONAL. Grade value to be updated.
  *
  * @return
- *   HTTP response
+ *   HTTP response.
  */
 function lti_tool_provider_outcomes_lti_service_xml($consumer, $url, $message_type, $source_did, $grade = NULL) {
-  switch ( $message_type ) {
-    // create grades UPDATE xml service body
+  switch ($message_type) {
+    // create grades UPDATE xml service body.
     case 1 : {
-      $body = lti_tool_provider_outcomes_create_grades_update_service_body($source_did , $grade);
+      $body = lti_tool_provider_outcomes_create_grades_update_service_body($source_did, $grade);
       break;
     };
-    // create grades READ xml service body
+    // create grades READ xml service body.
     case 2 : {
       $body = lti_tool_provider_outcomes_create_grades_read_service_body($source_did);
       break;
     };
-    // create grades DELETE xml service body
+    // create grades DELETE xml service body.
     case 3 : {
       $body = lti_tool_provider_outcomes_create_grades_delete_service_body($source_did);
       break;
     };
   }
-  $response  = lti_tool_provider_outcomes_send_oauth_xml_body_post('POST', $url, $consumer -> lti_tool_provider_consumer_key , $consumer -> lti_tool_provider_consumer_secret, 'application/xml', $body);
+  $response  = lti_tool_provider_outcomes_send_oauth_xml_body_post('POST', $url, $consumer->lti_tool_provider_consumer_key, $consumer->lti_tool_provider_consumer_secret, 'application/xml', $body);
   return $response;
 }
 
@@ -162,11 +165,12 @@ function lti_tool_provider_outcomes_lti_service_xml($consumer, $url, $message_ty
  * Create a IMS POX body request for sync grades.
  *
  * @param string $source
- *   Source did required for the request
+ *   Source did required for the request.
  * @param float $grade
- *   User grade
+ *   User grade.
+ *
  * @return string
- *   XML body
+ *   XML body.
  */
 function lti_tool_provider_outcomes_create_grades_update_service_body($source, $grade) {
   return '<?xml version = "1.0" encoding = "UTF-8"?>
@@ -199,9 +203,9 @@ function lti_tool_provider_outcomes_create_grades_update_service_body($source, $
  * Create a IMS POX body request for reading grades.
  *
  * @param string $source
- *   Sourceid required for the request
+ *   Sourceid required for the request.
  * @return string
- *   XML body
+ *   XML body.
  */
 function lti_tool_provider_outcomes_create_grades_read_service_body($source) {
   return '<?xml version = "1.0" encoding = "UTF-8"?>
@@ -228,9 +232,10 @@ function lti_tool_provider_outcomes_create_grades_read_service_body($source) {
  * Create a IMS POX body request for deleting grades.
  *
  * @param string $source
- *   Source did required for the request
+ *   Source did required for the request.
+ *
  * @return string
- *   XML body
+ *   XML body.
  */
 function lti_tool_provider_outcomes_create_grades_delete_service_body($source) {
   return '<?xml version = "1.0" encoding = "UTF-8"?>
@@ -254,22 +259,23 @@ function lti_tool_provider_outcomes_create_grades_delete_service_body($source) {
 }
 
 /**
- * Use Oauth to sign the XML body
+ * Use Oauth to sign the XML body.
  *
  * @param string $method
- *   HTTP method
+ *   HTTP method.
  * @param string $endpoint
- *   Endpoint Service URL
+ *   Endpoint Service URL.
  * @param string $oauth_consumer_key
- *   Consumer Key
+ *   Consumer Key.
  * @param string $content_type
- *   HTTP request content type
+ *   HTTP request content type.
  * @param string $body
- *   XML body
+ *   XML body.
+ *
  * @return string
- *   HTTP Response
+ *   HTTP Response.
  */
-function lti_tool_provider_outcomes_send_oauth_xml_body_post($method, $endpoint, $oauth_consumer_key , $oauth_consumer_secret , $content_type, $body) {
+function lti_tool_provider_outcomes_send_oauth_xml_body_post($method, $endpoint, $oauth_consumer_key, $oauth_consumer_secret, $content_type, $body) {
   $hash = base64_encode(sha1($body, TRUE));
   $parms = array('oauth_body_hash' => $hash);
   $test_token = '';
@@ -304,15 +310,15 @@ function lti_tool_provider_outcomes_decode_ext_xml_reply($data) {
     $reader = new XMLReader();
     $reader ->XML($data->data);
     $result = array();
-    // default XML elements
+    // Default XML elements.
     $codemajor = 'codemajor';
     $severity = 'severity';
     $codeminor = 'codeminor';
     while ($reader->read()) {
-      // codemajor    Success / Failure / Unsupported
-      // severity     Status / Warning / Error
-      // codeminor    fullsuccess / reason for failure
-      // value        Value of the setting
+      // codemajor    Success / Failure / Unsupported.
+      // severity     Status / Warning / Error.
+      // codeminor    fullsuccess / reason for failure.
+      // value        Value of the setting.
       if ($reader->nodeType == XMLReader::ELEMENT && ($reader->name == $codemajor || $reader->name == $severity || $reader->name == $codeminor)) {
         $str = $reader->readInnerXml();
         $codemajor_check = strcasecmp($str, 'success');
@@ -327,11 +333,11 @@ function lti_tool_provider_outcomes_decode_ext_xml_reply($data) {
     if (count($result) == 3) {
       return TRUE;
     }
-    else{
+    else {
       return FALSE;
     }
   }
-  else{
+  else {
     return FALSE;
   }
 }
@@ -343,22 +349,22 @@ function lti_tool_provider_outcomes_decode_ext_xml_reply($data) {
  *   HTTP Response.
  *
  * @return boolean
- *   TRUE if success / FALSE if not successful
+ *   TRUE if success / FALSE if not successful.
  */
 function lti_tool_provider_outcomes_decode_xml_reply($data) {
   if (isset($data)) {
     $reader = new XMLReader();
-    $reader ->XML($data);
+    $reader->XML($data);
     $result = array();
-    // default XML elements
+    // Default XML elements.
     $imsx_codeMajor = 'imsx_codeMajor';
     $imsx_severity = 'imsx_severity';
     $imsx_description = 'imsx_description';
     while ($reader->read()) {
-      // codemajor    Success / Failure / Unsupported
-      // severity     Status / Warning / Error
-      // codeminor    fullsuccess / reason for failure
-      // value        Value of the setting
+      // codemajor    Success / Failure / Unsupported.
+      // severity     Status / Warning / Error.
+      // codeminor    fullsuccess / reason for failure.
+      // value        Value of the setting.
       if ($reader->nodeType == XMLReader::ELEMENT && ($reader->name == $imsx_codeMajor || $reader->name == $imsx_severity)) {
         $str = $reader->readInnerXml();
         $codemajor_check = strcasecmp($str, 'success');
@@ -372,11 +378,11 @@ function lti_tool_provider_outcomes_decode_xml_reply($data) {
     if (count($result) == 2) {
       return TRUE;
     }
-    else{
+    else {
       return FALSE;
     }
   }
-  else{
+  else {
     return FALSE;
   }
 }
@@ -395,15 +401,15 @@ function lti_tool_provider_outcomes_extract_ext_xml_score_reply($data) {
     $reader = new XMLReader();
     $reader ->XML($data->data);
     $result = array();
-    // default XML elements
+    // Default XML elements.
     $codemajor = 'codemajor';
     $severity = 'severity';
     $codeminor = 'codeminor';
     while ($reader->read()) {
-      // codemajor    Success / Failure / Unsupported
-      // severity     Status / Warning / Error
-      // codeminor    fullsuccess / reason for failure
-      // value        Value of the setting
+      // codemajor    Success / Failure / Unsupported.
+      // severity     Status / Warning / Error.
+      // codeminor    fullsuccess / reason for failure.
+      // value        Value of the setting.
       if ($reader->nodeType == XMLReader::ELEMENT && ($reader->name == $codemajor || $reader->name == $severity || $reader->name == $codeminor)) {
         $str = $reader->readInnerXml();
         $codemajor_check = strcasecmp($str, 'success');
@@ -415,7 +421,7 @@ function lti_tool_provider_outcomes_extract_ext_xml_score_reply($data) {
       }
       if (count($result) == 3) {
         if ($reader->nodeType == XMLReader::ELEMENT && $reader->name == 'textstring') {
-          $score =  $reader->readInnerXml();
+          $score = $reader->readInnerXml();
           break;
         }
 
@@ -442,15 +448,15 @@ function lti_tool_provider_outcomes_extract_xml_score_reply($data) {
     $reader = new XMLReader();
     $reader ->XML($data);
     $result = array();
-    // default XML elements
+    // default XML elements.
     $imsx_codeMajor = 'imsx_codeMajor';
     $imsx_severity = 'imsx_severity';
     $imsx_description = 'imsx_description';
     while ($reader->read()) {
-      // codemajor    Success / Failure / Unsupported
-      // severity     Status / Warning / Error
-      // codeminor    fullsuccess / reason for failure
-      // value        Value of the setting
+      // codemajor    Success / Failure / Unsupported.
+      // severity     Status / Warning / Error.
+      // codeminor    fullsuccess / reason for failure.
+      // value        Value of the setting.
       if ($reader->nodeType == XMLReader::ELEMENT && ($reader->name == $imsx_codeMajor || $reader->name == $imsx_severity)) {
         $str = $reader->readInnerXml();
         $codemajor_check = strcasecmp($str, 'success');
@@ -461,7 +467,7 @@ function lti_tool_provider_outcomes_extract_xml_score_reply($data) {
       }
       if (count($result) == 2) {
         if ($reader->nodeType == XMLReader::ELEMENT && $reader->name == 'textString') {
-          $score =  $reader->readInnerXml();
+          $score = $reader->readInnerXml();
           break;
         }
       }

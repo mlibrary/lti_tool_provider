@@ -8,14 +8,37 @@
 
 interface LTIToolProviderOutcomesResourceEntityControllerInterface
 extends DrupalEntityControllerInterface {
+
+  /**
+   * Create.
+   */
   public function create();
+
+  /**
+   * Save.
+   *
+   * @param object $entity
+   *   The Resource to save.
+   */
   public function save($entity);
+
+  /**
+   * Delete a Resource.
+   *
+   * @param object $entity
+   *   The Resource to delete.
+   */
   public function delete($entity);
 }
 
 class LTIToolProviderOutcomesResourceEntityController
 extends DrupalDefaultEntityController
 implements LTIToolProviderOutcomesResourceEntityControllerInterface {
+
+  /**
+   * (non-PHPdoc)
+   * @see LTIToolProviderOutcomesResourceEntityControllerInterface::create()
+   */
   public function create() {
     $entity = new stdClass();
     $entity->lti_tool_provider_outcomes_resource_id = 0;
@@ -27,8 +50,13 @@ implements LTIToolProviderOutcomesResourceEntityControllerInterface {
     $entity->lti_tool_provider_outcomes_resource_score_datatype = '';
     return $entity;
   }
+
+  /**
+   * (non-PHPdoc)
+   * @see LTIToolProviderOutcomesResourceEntityControllerInterface::save()
+   */
   public function save($entity) {
-    $transaction=db_transaction();
+    $transaction = db_transaction();
     try{
       $entity->is_new=empty($enity->lti_tool_provider_outcomes_resource_id);
       if (empty($entity->lti_tool_provider_outcomes_resource_timestamp_created)) {
@@ -39,11 +67,11 @@ implements LTIToolProviderOutcomesResourceEntityControllerInterface {
       if (empty($primary_key)) {
         drupal_write_record('lti_tool_provider_outcomes_resource', $entity);
         field_attach_insert('lti_tool_provider_outcomes_resource', $entity);
-        $op='insert';
+        $op = 'insert';
       }
       else {
         drupal_write_record('lti_tool_provider_outcomes_resource', $entity, $primary_key);
-        $op='update';
+        $op = 'update';
       }
       $function='field_attach_' . $op;
       $function('lti_tool_provider_outcomes_resource', $entity);
@@ -60,10 +88,23 @@ implements LTIToolProviderOutcomesResourceEntityControllerInterface {
     }
   }
 
+  /**
+   * (non-PHPdoc)
+   * @see LTIToolProviderOutcomesResourceEntityControllerInterface::delete()
+   */
   public function delete($entity) {
-    $this->delete_multiple(array($entity));
+    $this->deleteMultiple(array($entity));
   }
-  public function delete_multiple($entities) {
+
+  /**
+   * Delete Resources.
+   *
+   * @param array $entities
+   *   An array of Resources to delete.
+   *
+   * @throws Exception
+   */
+  public function deleteMultiple($entities) {
     $ids = array();
     if (!empty($entities)) {
       $transaction = db_transaction();

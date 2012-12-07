@@ -72,7 +72,7 @@ function lti_tool_provider_outcomes_schema() {
       'resource_mapping' => array(
         'table' => 'lti_tool_provider_outcomes_resource',
         'columns' => array('lti_tool_provider_outcomes_resource_entity_id_fk' => 'lti_tool_provider_outcomes_resource_id'),
-      )
+      ),
     ),
   );
   $schema['lti_tool_provider_outcomes_resource'] = array(
@@ -146,8 +146,9 @@ function lti_tool_provider_outcomes_schema() {
  * Implements hook_schema_alter().
  */
 function lti_tool_provider_outcomes_schema_alter(&$schema) {
+  $t = get_t();
   $schema['lti_tool_provider_consumer']['fields']['lti_tool_provider_consumer_outcomes_url'] = array(
-    'description' => st('Outcomes URL'),
+    'description' => $t('Outcomes URL'),
     'type' => 'varchar',
     'length' => 512,
   );
@@ -165,16 +166,16 @@ function lti_tool_provider_outcomes_schema_alter(&$schema) {
  */
 function lti_tool_provider_outcomes_install() {
   db_add_field('lti_tool_provider_consumer', 'lti_tool_provider_consumer_outcomes_url', array(
-    'description' => st('Outcomes URL'),
-    'type' => 'varchar',
-    'length' => 512,
+  'description' => st('Outcomes URL'),
+  'type' => 'varchar',
+  'length' => 512,
   ));
   db_add_field('lti_tool_provider_consumer', 'lti_tool_provider_consumer_ext', array(
-    'description' => 'Integer representive of which whether the consumer is an extension service of LTI',
-    'type' => 'int',
-    'size' => 'tiny',
-    'not null' => TRUE,
-    'default' => 0,
+  'description' => 'Integer representive of which whether the consumer is an extension service of LTI',
+  'type' => 'int',
+  'size' => 'tiny',
+  'not null' => TRUE,
+  'default' => 0,
   ));
 }
 
@@ -185,4 +186,3 @@ function lti_tool_provider_outcomes_uninstall() {
   db_drop_field('lti_tool_provider_consumer', 'lti_tool_provider_consumer_outcomes_url');
   db_drop_field('lti_tool_provider_consumer', 'lti_tool_provider_consumer_ext');
 }
-

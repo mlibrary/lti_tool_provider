@@ -21,7 +21,7 @@ function lti_tool_provider_outcomes_resource_manage_form($form, &$form_state, $c
   if (isset($_SESSION['lti_tool_provider_context_info'])) {
     $consumer = lti_tool_provider_get_consumer_by_key($_SESSION['lti_tool_provider_context_info']['oauth_consumer_key']);
     if ($current) {
-      $value = lti_tool_provider_outcomes_get_resource($consumer -> lti_tool_provider_consumer_id, $_SESSION['lti_tool_provider_context_info']['context_id'] , $_SESSION['lti_tool_provider_context_info']['resource_link_id']);
+      $value = lti_tool_provider_outcomes_get_resource($consumer->lti_tool_provider_consumer_id, $_SESSION['lti_tool_provider_context_info']['context_id'], $_SESSION['lti_tool_provider_context_info']['resource_link_id']);
       if (isset($value)) {
         $records = array();
         $records[] = $value;
@@ -31,15 +31,15 @@ function lti_tool_provider_outcomes_resource_manage_form($form, &$form_state, $c
       }
     }
     else {
-      $records = lti_tool_provider_outcomes_retrieves_resource_records_by_context($consumer -> lti_tool_provider_consumer_id, $_SESSION['lti_tool_provider_context_info']['context_id']);
+      $records = lti_tool_provider_outcomes_retrieves_resource_records_by_context($consumer->lti_tool_provider_consumer_id, $_SESSION['lti_tool_provider_context_info']['context_id']);
     }
     $form['title'] = array(
       '#type' => 'item',
-      '#markup' => t('Consumer : <b>' . $consumer-> lti_tool_provider_consumer_consumer . '</b>'),
+      '#markup' => t('Consumer: <b>@consumer</b>', array('@consumer' => $consumer->lti_tool_provider_consumer_consumer)),
     );
     $form['context'] = array(
       '#type' => 'item',
-      '#markup' => t('Context : <b>' . $_SESSION['lti_tool_provider_context_info']['context_id'] . '</b>'),
+      '#markup' => t('Context: <b>@context</b>', array('@context' => $_SESSION['lti_tool_provider_context_info']['context_id'])),
     );
     if (isset($records)) {
       $form['records'] = array(
@@ -67,19 +67,19 @@ function lti_tool_provider_outcomes_resource_manage_form($form, &$form_state, $c
           '#type' => 'value',
           '#value' => $record,
         );
-        $no =  array(
+        $no = array(
           '#type' => 'item',
           '#markup' => $rows + 1,
         );
         $title = array(
           '#type' => 'item',
-          '#markup' => t($record -> lti_tool_provider_outcomes_resource_resource_link_title),
+          '#markup' => check_plain($record->lti_tool_provider_outcomes_resource_resource_link_title),
         );
         $datatype_arr = lti_tool_provider_outcomes_datatype_array($record->lti_tool_provider_outcomes_resource_resultvalue_sourcedids);
         $def_value = isset($form_state['input']['table'][$rows]['container'][1]) ? $form_state['input']['table'][$rows]['container'][1] : array_search($record->lti_tool_provider_outcomes_resource_score_datatype, $datatype_arr);
         $datatype_container = array();
         $datatype_container_start = array(
-          '#prefix' => '<div id=' . $record -> lti_tool_provider_outcomes_resource_id . '"_datatype_container" class="container-inline">',
+          '#prefix' => '<div id=' . $record->lti_tool_provider_outcomes_resource_id . '"_datatype_container" class="container-inline">',
         );
         $datatype = array(
           '#type' => 'select',
@@ -93,12 +93,12 @@ function lti_tool_provider_outcomes_resource_manage_form($form, &$form_state, $c
           ),
         );
         if (strcasecmp($datatype_arr[$def_value], 'ratio') == 0) {
-          $prefix = '<div id="' . $record -> lti_tool_provider_outcomes_resource_id . '_base_no_value" style="visibility:visible;">';
+          $prefix = '<div id="' . $record->lti_tool_provider_outcomes_resource_id . '_base_no_value" style="visibility:visible;">';
           $is_visible = TRUE;
-          $base_no = $record -> lti_tool_provider_outcomes_resource_score_datatype_base_value;
+          $base_no = $record->lti_tool_provider_outcomes_resource_score_datatype_base_value;
         }
         else {
-          $prefix = '<div id="' . $record -> lti_tool_provider_outcomes_resource_id . '_base_no_value" style="visibility:hidden;">';
+          $prefix = '<div id="' . $record->lti_tool_provider_outcomes_resource_id . '_base_no_value" style="visibility:hidden;">';
           $is_visible = FALSE;
           $base_no = '0';
         }
@@ -121,13 +121,13 @@ function lti_tool_provider_outcomes_resource_manage_form($form, &$form_state, $c
         $datatype_container[] = $datatype_container_end;
         $date_created = array(
           '#type' => 'item',
-          '#markup' =>  '<div style=" white-space:normal;">' . t(format_date($record -> lti_tool_provider_outcomes_resource_timestamp_created)) . "</div>",
+          '#markup' =>  '<div style=" white-space:normal;">' . t(format_date($record->lti_tool_provider_outcomes_resource_timestamp_created)) . "</div>",
         );
         $operations = array(
           '#type' => 'item',
-          '#markup' => l(t('Outcomes') , 'lti-tool-provider-outcomes/outcomes/by-resource/' . $record -> lti_tool_provider_outcomes_resource_id) . '&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp' . l(t('Delete') , 'lti-tool-provider-outcomes/resource/' . $record -> lti_tool_provider_outcomes_resource_id . '/confirm_delete') . '&nbsp&nbsp' ,
+          '#markup' => l(t('Outcomes') , 'lti-tool-provider-outcomes/outcomes/by-resource/' . $record->lti_tool_provider_outcomes_resource_id) . '&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp' . l(t('Delete') , 'lti-tool-provider-outcomes/resource/' . $record->lti_tool_provider_outcomes_resource_id . '/confirm_delete') . '&nbsp&nbsp' ,
         );
-        $rows ++;
+        $rows++;
         $form['table'][] = array(
           'entity' => &$entity,
           'no' => $no,
@@ -200,7 +200,7 @@ function lti_tool_provider_outcomes_resource_manage_form_validate($form, &$form_
   foreach ($form_state['input']['table'] as $row) {
     if ($row['container'][1] == 2) {
       if ($row['container'][2] == 0) {
-        form_set_error('', 'The base value should not be set as zero for ratio datatype' );
+        form_set_error('', 'The base value should not be set as zero for ratio datatype');
       }
     }
   }
@@ -216,15 +216,13 @@ function lti_tool_provider_outcomes_resource_manage_form_validate($form, &$form_
  */
 function lti_tool_provider_outcomes_resource_manage_form_submit($form, &$form_state) {
   $records = $form_state['values']['records'];
-  // A string of resource id separated by ','
+  // A string of resource id separated by ','.
   $changed_ids = '';
-  // A string of index selected on the datatype
+  // A string of index selected on the datatype.
   $selected_datatype ='';
-  // A string of base numbers id:value
+  // A string of base numbers id:value.
   $base_numbers = '';
-  //   dpm($form_state);
   $counter = 0;
-//   dpm($form_state);
   foreach ($form_state['input']['table'] as $row) {
     $chosen_value = $row['container'][1];
     $entity = $form_state['values']['table'][$counter]['entity'];
@@ -233,19 +231,19 @@ function lti_tool_provider_outcomes_resource_manage_form_submit($form, &$form_st
       if ($row['container'][2] != $entity -> lti_tool_provider_outcomes_resource_score_datatype_base_value) {
         $changed_ids .= $entity -> lti_tool_provider_outcomes_resource_id . ',';
         $selected_datatype .= $chosen_value . ',';
-        $row['container'][2] = lti_tool_provider_outcomes_set_base($datatype_arr[$chosen_value] , isset($row['container'][2]) ? $row['container'][2] : NULL);
+        $row['container'][2] = lti_tool_provider_outcomes_set_base($datatype_arr[$chosen_value], isset($row['container'][2]) ? $row['container'][2] : NULL);
         $base_numbers .= $row['container'][2] . ',';
       }
     }
     else {
-      if ( $entity -> lti_tool_provider_outcomes_resource_score_datatype != $datatype_arr[$chosen_value]) {
-        $changed_ids .= $entity -> lti_tool_provider_outcomes_resource_id . ',';
+      if ( $entity->lti_tool_provider_outcomes_resource_score_datatype != $datatype_arr[$chosen_value]) {
+        $changed_ids .= $entity->lti_tool_provider_outcomes_resource_id . ',';
         $selected_datatype .= $chosen_value . ',';
         $row['container'][2] = lti_tool_provider_outcomes_set_base($datatype_arr[$chosen_value] , isset($row['container'][2]) ? $row['container'][2] : NULL);
         $base_numbers .= $row['container'][2] . ',';
       }
     }
-    $counter ++;
+    $counter++;
   }
   if (drupal_strlen($changed_ids) > 0 && drupal_strlen($selected_datatype) > 0) {
     $new_changed_ids = drupal_substr($changed_ids, 0, -1);
@@ -268,6 +266,18 @@ function lti_tool_provider_outcomes_resource_manage_form_submit($form, &$form_st
   }
 }
 
+/**
+ * 
+ * @param array $form
+ *   The form.
+ * @param array $form_state
+ *   The form state.
+ * @param string $resource
+ *   A Resource.
+ *
+ * @return array
+ *   The outcomes manage form array.
+ */
 function lti_tool_provider_outcomes_outcomes_manage_form($form, &$form_state, $resource = NULL) {
   $form = array();
   if (isset($_SESSION['lti_tool_provider_context_info'])) {
@@ -288,7 +298,7 @@ function lti_tool_provider_outcomes_outcomes_manage_form($form, &$form_state, $r
     );
     $form['resource_title'] = array(
       '#type' => 'item',
-      '#markup' => t('Outcomes record for resource : <b>' . $_SESSION['lti_tool_provider_context_info']['resource_link_title'] . '</b>'),
+      '#markup' => t('Outcomes record for resource : <b>@resource</b>', array('@resource' => $_SESSION['lti_tool_provider_context_info']['resource_link_title'])),
     );
     $outcomes = array();
     $form['resource'] = array(
@@ -309,7 +319,7 @@ function lti_tool_provider_outcomes_outcomes_manage_form($form, &$form_state, $r
       ),
       '#empty' => t('There are no records found.'),
     );
-    $page = isset($_GET['page']) ? $_GET['page'] * 15: 0;
+    $page = isset($_GET['page']) ? $_GET['page'] * 15 : 0;
     $rows = 1;
     $table_row_counter = 0;
     $rows_arr = array();
@@ -320,20 +330,20 @@ function lti_tool_provider_outcomes_outcomes_manage_form($form, &$form_state, $r
       );
       $username =  array(
         '#type' => 'item',
-        '#markup' => l(lti_tool_provider_outcomes_get_username($outcome->lti_tool_provider_outcomes_user_id), 'user/' . $outcome->lti_tool_provider_outcomes_user_id) ,
+        '#markup' => l(lti_tool_provider_outcomes_get_username($outcome->lti_tool_provider_outcomes_user_id), 'user/' . $outcome->lti_tool_provider_outcomes_user_id),
       );
-      $score_arr = lti_tool_provider_outcomes_create_score_form_params($resource-> lti_tool_provider_outcomes_resource_score_datatype , $resource-> lti_tool_provider_outcomes_resource_score_datatype_base_value , $outcome);
+      $score_arr = lti_tool_provider_outcomes_create_score_form_params($resource->lti_tool_provider_outcomes_resource_score_datatype, $resource->lti_tool_provider_outcomes_resource_score_datatype_base_value, $outcome);
       $date_joined =  array(
         '#type' => 'item',
-        '#markup' => '<div style=" white-space:normal;">' . format_date($outcome -> lti_tool_provider_outcomes_date_joined) . "</div>",
+        '#markup' => '<div style=" white-space:normal;">' . format_date($outcome->lti_tool_provider_outcomes_date_joined) . "</div>",
       );
       $last_sent =  array(
         '#type' => 'item',
-        '#markup' => '<div style=" white-space:normal;">' . (isset($outcome -> lti_tool_provider_outcomes_timestamp) ? format_date($outcome -> lti_tool_provider_outcomes_timestamp) : 'Score yet to be sent') . "</div>",
+        '#markup' => '<div style=" white-space:normal;">' . (isset($outcome->lti_tool_provider_outcomes_timestamp) ? format_date($outcome->lti_tool_provider_outcomes_timestamp) : 'Score yet to be sent') . "</div>",
       );
       $last_updated =  array(
         '#type' => 'item',
-        '#markup' => '<div style=" white-space:normal;">' . (isset($outcome -> lti_tool_provider_outcomes_last_updated) ? format_date($outcome -> lti_tool_provider_outcomes_last_updated) : 'Yet to be updated') . "</div>",
+        '#markup' => '<div style=" white-space:normal;">' . (isset($outcome->lti_tool_provider_outcomes_last_updated) ? format_date($outcome->lti_tool_provider_outcomes_last_updated) : 'Yet to be updated') . "</div>",
       );
       $form['table'][] = array(
         'no' => &$no,
@@ -357,7 +367,7 @@ function lti_tool_provider_outcomes_outcomes_manage_form($form, &$form_state, $r
       unset($date_joined);
       unset($last_sent);
       unset($last_updated);
-      $rows ++;
+      $rows++;
       $outcomes[] = $outcome;
     }
     $form['outcomes'] = array(
@@ -402,16 +412,16 @@ function lti_tool_provider_outcomes_outcomes_manage_form_validate(&$form, &$form
   $row_no = 0;
   $datatype =  $resource -> lti_tool_provider_outcomes_resource_score_datatype;
   foreach ($outcomes as $outcome) {
-  $input_score = reset($form_state['values']['table'][$row_no]['score']);
-    if (lti_tool_provider_outcomes_validate_score($datatype, $input_score, $resource -> lti_tool_provider_outcomes_resource_score_datatype_base_value)) {
-      $score = lti_tool_provider_outcomes_format_score($row_no, $form_state, $outcome, $resource -> lti_tool_provider_outcomes_resource_score_datatype, $base_no);
-      $form_state['values'][$outcome -> lti_tool_provider_outcomes_id . '_formatted_score'] = $score;
+    $input_score = reset($form_state['values']['table'][$row_no]['score']);
+    if (lti_tool_provider_outcomes_validate_score($datatype, $input_score, $resource->lti_tool_provider_outcomes_resource_score_datatype_base_value)) {
+      $score = lti_tool_provider_outcomes_format_score($row_no, $form_state, $outcome, $resource->lti_tool_provider_outcomes_resource_score_datatype, $base_no);
+      $form_state['values'][$outcome->lti_tool_provider_outcomes_id . '_formatted_score'] = $score;
     }
     else {
-      form_set_error('' , check_plain(t('Row Number : ' . $counter . ' has an error. The score must be of appropriate format of DATATYPE:' . $datatype)));
+      form_set_error('', t('Row Number: @counter has an error. The score must be of appropriate format of DATATYPE: @datatype', array('@counter' => $counter, '@datatype' => $datatype)));
     }
-    $row_no ++;
-    $counter ++;
+    $row_no++;
+    $counter++;
   }
 }
 
@@ -427,7 +437,7 @@ function lti_tool_provider_outcomes_outcomes_manage_form_validate(&$form, &$form
 function lti_tool_provider_outcomes_outcomes_manage_form_submit($form , &$form_state) {
   $outcomes = $form_state['values']['outcomes'];
   foreach ($outcomes as $outcome) {
-    $outcome -> lti_tool_provider_outcomes_score = $form_state['values'][$outcome -> lti_tool_provider_outcomes_id . '_formatted_score'];
+    $outcome -> lti_tool_provider_outcomes_score = $form_state['values'][$outcome->lti_tool_provider_outcomes_id . '_formatted_score'];
     $outcome -> lti_tool_provider_outcomes_last_updated = REQUEST_TIME;
     lti_tool_provider_outcomes_save($outcome);
   }
@@ -477,9 +487,9 @@ function lti_tool_provider_outcomes_confirm_delete_form($form, &$form_state, $re
  * Submit handler for the Resource form delete.
  *
  * @param array $form
- *   Form array
+ *   Form array.
  * @param array $form_state
- *   Form state array
+ *   Form state array.
  */
 function lti_tool_provider_outcomes_confirm_delete_form_submit($form, &$form_state) {
   $entity = $form_state['values']['resource_delete'];
@@ -491,20 +501,20 @@ function lti_tool_provider_outcomes_confirm_delete_form_submit($form, &$form_sta
   }
   lti_tool_provider_outcomes_resource_delete($entity);
   drupal_set_message(t('The entity :(ID %lti_tool_provider_outcomes_resource_id) has been deleted. <b>%NO</b> outcomes record(s) has been removed as well', array(
-  '%lti_tool_provider_outcomes_resource_id' => $entity->lti_tool_provider_outcomes_resource_id,
-  '%NO' => isset($affected_outcomes) ? count($affected_outcomes) : 0,
+    '%lti_tool_provider_outcomes_resource_id' => $entity->lti_tool_provider_outcomes_resource_id,
+    '%NO' => isset($affected_outcomes) ? count($affected_outcomes) : 0,
   )));
   $form_state['redirect'] = '';
-//   $form_state['redirect'] = 'lti-tool-provider-outcomes/resource';
+  // $form_state['redirect'] = 'lti-tool-provider-outcomes/resource';
 }
 
 /**
- * Form for confirming changes to resource datatypes
+ * Form for confirming changes to resource datatypes.
  *
  * @param array $form
- *   Form array
+ *   Form array.
  * @param array $form_state
- *   Form state array
+ *   Form state array.
  */
 function lti_tool_provider_outcomes_resource_confirm_change_form($form, &$form_state) {
 
@@ -524,17 +534,17 @@ function lti_tool_provider_outcomes_resource_confirm_change_form($form, &$form_s
     $selected_datatype = $datatype_arr[$datatype_selected_array[$counter]];
     $base_no = $base_numbers_array[$counter];
     $counter++;
-    $str = 'Changing resource <b>' . $resource -> lti_tool_provider_outcomes_resource_resource_link_title . '</b> datatype to <b>' . $selected_datatype . '</b> will affect <b>' . (isset($affected_outcomes) ? count($affected_outcomes) : 0) . '</b> of outcomes record(s)! </br><br/>';
+    $str = 'Changing resource <b>' . $resource->lti_tool_provider_outcomes_resource_resource_link_title . '</b> datatype to <b>' . $selected_datatype . '</b> will affect <b>' . (isset($affected_outcomes) ? count($affected_outcomes) : 0) . '</b> of outcomes record(s)! </br><br/>';
     $message .= $str;
-    $form['row_' . $counter][$resource -> lti_tool_provider_outcomes_resource_id . '_selected_datatype'] = array(
+    $form['row_' . $counter][$resource->lti_tool_provider_outcomes_resource_id . '_selected_datatype'] = array(
       '#type' => 'value',
       '#value' => $selected_datatype,
     );
-    $form['row_' . $counter][$resource -> lti_tool_provider_outcomes_resource_id . '_affected_outcomes'] = array(
+    $form['row_' . $counter][$resource->lti_tool_provider_outcomes_resource_id . '_affected_outcomes'] = array(
       '#type' => 'value',
       '#value' => $affected_outcomes,
     );
-    $form['row_' . $counter][$resource -> lti_tool_provider_outcomes_resource_id . '_base_value'] = array(
+    $form['row_' . $counter][$resource->lti_tool_provider_outcomes_resource_id . '_base_value'] = array(
       '#type' => 'value',
       '#value' => (strcasecmp($base_no, 'EMPTY') == 0) ? NULL : $base_no,
     );
@@ -567,17 +577,17 @@ function lti_tool_provider_outcomes_resource_confirm_change_form($form, &$form_s
 function lti_tool_provider_outcomes_resource_confirm_change_form_submit($form, &$form_state) {
   $affected_resource = $form_state['values']['affected_resource'];
   foreach ($affected_resource as $resource) {
-    $datatype = $form_state['values'][$resource -> lti_tool_provider_outcomes_resource_id . '_selected_datatype'];
-    $base_no = $form_state['values'][$resource -> lti_tool_provider_outcomes_resource_id . '_base_value'];
-    $affected_outcomes = $form_state['values'][$resource -> lti_tool_provider_outcomes_resource_id . '_affected_outcomes'];
+    $datatype = $form_state['values'][$resource->lti_tool_provider_outcomes_resource_id . '_selected_datatype'];
+    $base_no = $form_state['values'][$resource->lti_tool_provider_outcomes_resource_id . '_base_value'];
+    $affected_outcomes = $form_state['values'][$resource->lti_tool_provider_outcomes_resource_id . '_affected_outcomes'];
     foreach ($affected_outcomes as $outcome) {
-      $outcome -> lti_tool_provider_outcomes_score = lti_tool_provider_outcomes_get_datatype_default_value($datatype);
-      $outcome -> lti_tool_provider_outcomes_last_updated = NULL;
+      $outcome->lti_tool_provider_outcomes_score = lti_tool_provider_outcomes_get_datatype_default_value($datatype);
+      $outcome->lti_tool_provider_outcomes_last_updated = NULL;
       lti_tool_provider_outcomes_save($outcome);
     }
-    $resource -> lti_tool_provider_outcomes_resource_score_datatype = $datatype;
-    $resource -> lti_tool_provider_outcomes_resource_score_datatype_base_value = $base_no;
-    $resource -> lti_tool_provider_outcomes_resource_timestamp_last_updated = REQUEST_TIME;
+    $resource->lti_tool_provider_outcomes_resource_score_datatype = $datatype;
+    $resource->lti_tool_provider_outcomes_resource_score_datatype_base_value = $base_no;
+    $resource->lti_tool_provider_outcomes_resource_timestamp_last_updated = REQUEST_TIME;
     lti_tool_provider_outcomes_resource_save($resource);
   }
   drupal_set_message(t('Configurations saved'));
