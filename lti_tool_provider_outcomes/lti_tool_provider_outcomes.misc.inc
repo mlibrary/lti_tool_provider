@@ -835,11 +835,11 @@ function lti_tool_provider_outcomes_format_score($row_no, $form_state, $outcome,
         break;
       }
       case 2: {
-        $value = 3 / 5 ;
+        $value = 3 / 5;
         break;
       }
       case 3: {
-        $value = 2 / 5 ;
+        $value = 2 / 5;
         break;
       }
       case 4: {
@@ -1067,7 +1067,7 @@ function lti_tool_provider_outcomes_format_score_array($score, $datatype) {
     }
     return $value;
   }
-  // 5 decmial places
+  // 5 decmial places.
   elseif (strcasecmp($datatype, 'letterafplus') == 0) {
     if ($score == 1) {
       $value = 0;

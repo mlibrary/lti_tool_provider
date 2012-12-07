@@ -35,7 +35,7 @@ extends DrupalDefaultEntityController
 implements LTIToolProvideroutcomesEntityControllerInterface {
 
   /**
-   * @see LTIToolProviderOutcomesEntityControllerInterface::create().
+   * @see LTIToolProviderOutcomesEntityControllerInterface::create
    */
   public function create() {
     $entity = new stdClass();
@@ -49,7 +49,7 @@ implements LTIToolProvideroutcomesEntityControllerInterface {
   }
 
   /**
-   * @see LTIToolProviderOutcomesEntityControllerInterface::save().
+   * @see LTIToolProviderOutcomesEntityControllerInterface::save
    */
   public function save($entity) {
     $transaction = db_transaction();
@@ -85,7 +85,7 @@ implements LTIToolProvideroutcomesEntityControllerInterface {
   }
 
   /**
-   * @see LTIToolProviderOutcomesEntityControllerInterface::delete().
+   * @see LTIToolProviderOutcomesEntityControllerInterface::delete
    */
   public function delete($entity) {
     $this->deleteMultiple(array($entity));

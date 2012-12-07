@@ -16,7 +16,7 @@ module_load_include('inc', 'lti_tool_provider_outcomes', 'lti_tool_provider_outc
  *   To customise return page when URL is accessed.
  * @param int $mode
  *   The scope of results to retrieve.
-*/
+ */
 function lti_tool_provider_outcomes_send_results($return_url = '', $mode) {
   global $user;
   // Consumer_id based on the context.
@@ -120,7 +120,7 @@ function lti_tool_provider_outcomes_pull_results($return_url = '', $mode) {
   switch ($mode) {
     case 0: {
       // For this particular resource score.
-      $outcomes_entities = lti_tool_provider_outcomes_get_current_outcome( $resource_sourcedid, $context_id, $resource_link_id, $consumer->lti_tool_provider_consumer_id, $uid);
+      $outcomes_entities = lti_tool_provider_outcomes_get_current_outcome($resource_sourcedid, $context_id, $resource_link_id, $consumer->lti_tool_provider_consumer_id, $uid);
       break;
     }
     case 1: {

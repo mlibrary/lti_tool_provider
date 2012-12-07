@@ -125,7 +125,7 @@ function lti_tool_provider_outcomes_resource_manage_form($form, &$form_state, $c
         );
         $operations = array(
           '#type' => 'item',
-          '#markup' => l(t('Outcomes'), 'lti-tool-provider-outcomes/outcomes/by-resource/' . $record->lti_tool_provider_outcomes_resource_id) . '&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp' . l(t('Delete') , 'lti-tool-provider-outcomes/resource/' . $record->lti_tool_provider_outcomes_resource_id . '/confirm_delete') . '&nbsp&nbsp' ,
+          '#markup' => l(t('Outcomes'), 'lti-tool-provider-outcomes/outcomes/by-resource/' . $record->lti_tool_provider_outcomes_resource_id) . '&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp' . l(t('Delete'), 'lti-tool-provider-outcomes/resource/' . $record->lti_tool_provider_outcomes_resource_id . '/confirm_delete') . '&nbsp&nbsp' ,
         );
         $rows++;
         $form['table'][] = array(

@@ -160,7 +160,7 @@ function lti_tool_provider_outcomes_lti_service_xml($consumer, $url, $message_ty
       break;
     };
   }
-  $response  = lti_tool_provider_outcomes_send_oauth_xml_body_post('POST', $url, $consumer->lti_tool_provider_consumer_key, $consumer->lti_tool_provider_consumer_secret, 'application/xml', $body);
+  $response = lti_tool_provider_outcomes_send_oauth_xml_body_post('POST', $url, $consumer->lti_tool_provider_consumer_key, $consumer->lti_tool_provider_consumer_secret, 'application/xml', $body);
   return $response;
 }
 
@@ -452,9 +452,9 @@ function lti_tool_provider_outcomes_extract_ext_xml_score_reply($data) {
 function lti_tool_provider_outcomes_extract_xml_score_reply($data) {
   if (isset($data)) {
     $reader = new XMLReader();
-    $reader ->XML($data);
+    $reader->XML($data);
     $result = array();
-    // default XML elements.
+    // Default XML elements.
     $imsx_codemajor = 'imsx_codeMajor';
     $imsx_severity = 'imsx_severity';
     $imsx_description = 'imsx_description';
