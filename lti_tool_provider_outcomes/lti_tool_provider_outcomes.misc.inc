@@ -1,7 +1,6 @@
 <?php
 /**
  * @file
- *
  * Contains functions for minor operations like retreiving
  * name of consumer etc.
  */
@@ -118,8 +117,8 @@ function lti_tool_provider_outcomes_resource_is_empty() {
  * @param string $name
  *   Consumer entity name.
  *
- * @return object $entity
- *   Consumer_Entity.
+ * @return object
+ *   Consumer entity.
  */
 function lti_tool_provider_outcomes_get_consumer_by_name($name) {
   $results_arr = array();
@@ -143,7 +142,7 @@ function lti_tool_provider_outcomes_get_consumer_by_name($name) {
  * @param int $consumer_id
  *   Consumer entity id.
  *
- * @return string $key
+ * @return string
  *   Consumer key.
  */
 function lti_tool_provider_outcomes_get_consumer_key($consumer_id) {
@@ -241,8 +240,8 @@ function lti_tool_provider_outcomes_get_current_outcome($result_sourcedid, $cont
     $query = new EntityFieldQuery();
     $query
     ->entityCondition('entity_type', 'lti_tool_provider_outcomes')
-    ->propertyCondition('lti_tool_provider_outcomes_user_id',  $uid)
-    ->propertyCondition('lti_tool_provider_outcomes_resource_entity_id_fk', $resource -> lti_tool_provider_outcomes_resource_id)
+    ->propertyCondition('lti_tool_provider_outcomes_user_id', $uid)
+    ->propertyCondition('lti_tool_provider_outcomes_resource_entity_id_fk', $resource->lti_tool_provider_outcomes_resource_id)
     ->propertyCondition('lti_tool_provider_outcomes_result_sourcedid', $result_sourcedid);
     $result = $query->execute();
     $entity_type = 'lti_tool_provider_outcomes';
@@ -274,7 +273,7 @@ function lti_tool_provider_outcomes_retrieves_resource_records($consumer_id) {
   if (isset($consumer_id)) {
     $query
     ->entityCondition('entity_type', 'lti_tool_provider_outcomes_resource')
-    ->propertyCondition('lti_tool_provider_outcomes_resource_consumer_id',  $consumer_id);
+    ->propertyCondition('lti_tool_provider_outcomes_resource_consumer_id', $consumer_id);
   }
   else {
     $query
@@ -353,13 +352,13 @@ function lti_tool_provider_outcomes_retrieves_resource_title($resource_id) {
 }
 
 /**
- * Retrieve all corresponding outcomes
+ * Retrieve all corresponding outcomes.
  *
  * @param int $resource_id
  *   Resource id of the resource record.
  *
  * @return array
- *   Outcomes entities
+ *   Outcomes entities.
  */
 function lti_tool_provider_outcomes_retrieves_outcomes_by_resource($resource_id) {
   $results_arr = array();
@@ -456,7 +455,7 @@ function lti_tool_provider_outcomes_trans_last_sent($timestamp) {
  */
 function lti_tool_provider_outcomes_update_outcome_service_url($consumer_id, $url, $ext_bool) {
   $consumer = lti_tool_provider_outcomes_get_consumer_by_id($consumer_id);
-  if ($consumer->lti_tool_provider_consumer_outcomes_url != $url ) {
+  if ($consumer->lti_tool_provider_consumer_outcomes_url != $url) {
     $consumer->lti_tool_provider_consumer_outcomes_url = $url;
   }
   if ($consumer->lti_tool_provider_consumer_ext != $ext_bool) {
@@ -526,9 +525,9 @@ function lti_tool_provider_outcomes_get_all_consumer() {
  * @return string
  *   The modified string.
  */
-function lti_tool_provider_outcomes_shorten_string($str ,$cap = 30) {
+function lti_tool_provider_outcomes_shorten_string($str, $cap = 30) {
   if (drupal_strlen($str) >= $cap) {
-    $new_str = drupal_drupal_substr($str, 0 , $cap);
+    $new_str = drupal_drupal_substr($str, 0, $cap);
     $new_str .= '...';
     return $new_str;
   }
@@ -547,8 +546,8 @@ function lti_tool_provider_outcomes_shorten_string($str ,$cap = 30) {
  *   Score.
  */
 function lti_tool_provider_outcomes_updated_pulled_score($outcome, $score) {
-  $outcome -> lti_tool_provider_outcomes_score = $score;
-  $outcome -> lti_tool_provider_outcomes_last_updated = REQUEST_TIME;
+  $outcome->lti_tool_provider_outcomes_score = $score;
+  $outcome->lti_tool_provider_outcomes_last_updated = REQUEST_TIME;
   entity_get_controller('lti_tool_provider_outcomes')->save($outcome);
 }
 
@@ -564,7 +563,7 @@ function lti_tool_provider_outcomes_updated_pulled_score($outcome, $score) {
 function lti_tool_provider_outcomes_get_affected_outcomes($entity) {
   $query = new EntityFieldQuery();
   $query
-  ->entityCondition('entity_type',  'lti_tool_provider_outcomes')
+  ->entityCondition('entity_type', 'lti_tool_provider_outcomes')
   ->propertyCondition('lti_tool_provider_outcomes_resource_entity_id_fk', $entity->lti_tool_provider_outcomes_resource_id);
   $result = $query->execute();
   if (!empty($result)) {
@@ -650,7 +649,7 @@ function lti_tool_provider_outcomes_get_datatype_default_value($datatype) {
     return '0.00';
   }
   elseif (strcasecmp($datatype, 'ratio') == 0) {
-    return (0 / 1) ;
+    return (0 / 1);
   }
   elseif (strcasecmp($datatype, 'passfail') == 0) {
     return (0 / 1);
@@ -695,7 +694,7 @@ function lti_tool_provider_outcomes_create_score_form_params($datatype, $base_no
     );
   }
   elseif (strcasecmp($datatype, 'percentage') == 0) {
-    $value =  $outcome->lti_tool_provider_outcomes_score * $base_no;
+    $value = $outcome->lti_tool_provider_outcomes_score * $base_no;
     $result[] = array(
       '#prefix' => '<div class="container-inline" align="center">',
       '#type' => 'textfield',
@@ -715,7 +714,7 @@ function lti_tool_provider_outcomes_create_score_form_params($datatype, $base_no
       '#size' => 1,
       '#maxlength' => 3,
       '#required' => TRUE,
-      '#suffix' => '/'
+      '#suffix' => '/',
     );
     $result[] = array(
       '#type' => 'textfield',
@@ -724,7 +723,7 @@ function lti_tool_provider_outcomes_create_score_form_params($datatype, $base_no
       '#maxlength' => 3,
       '#attributes' => array('readonly' => 'readonly'),
       '#required' => TRUE,
-      '#suffix' => '</div>'
+      '#suffix' => '</div>',
     );
   }
   elseif (strcasecmp($datatype, 'passfail') == 0) {
@@ -797,7 +796,7 @@ function lti_tool_provider_outcomes_create_score_form_params($datatype, $base_no
  * @return string
  *   The formatted score.
  */
-function lti_tool_provider_outcomes_format_score($row_no, $form_state , $outcome , $datatype, $base_no) {
+function lti_tool_provider_outcomes_format_score($row_no, $form_state, $outcome, $datatype, $base_no) {
   if (strcasecmp($datatype, 'decimal') == 0) {
     return reset($form_state['values']['table'][$row_no]['score']);
   }
@@ -813,11 +812,11 @@ function lti_tool_provider_outcomes_format_score($row_no, $form_state , $outcome
   elseif (strcasecmp($datatype, 'passfail') == 0) {
     $passfail_arr = lti_tool_provider_outcomes_passfail_datatype_arr();
     switch (reset($form_state['values']['table'][$row_no]['score'])) {
-      case 0 : {
+      case 0: {
         $value = 1 / 1;
         break;
       }
-      case 1 : {
+      case 1: {
         $value = 0 / 1;
         break;
       }
@@ -827,27 +826,27 @@ function lti_tool_provider_outcomes_format_score($row_no, $form_state , $outcome
   elseif (strcasecmp($datatype, 'letteraf') == 0) {
     $letteraf_arr = lti_tool_provider_outcomes_letteraf_datatype_arr();
     switch (reset($form_state['values']['table'][$row_no]['score'])) {
-      case 0 : {
+      case 0: {
         $value = 5 / 5;
         break;
       }
-      case 1 : {
+      case 1: {
         $value = 4 / 5;
         break;
       }
-      case 2 : {
+      case 2: {
         $value = 3 / 5 ;
         break;
       }
-      case 3 : {
+      case 3: {
         $value = 2 / 5 ;
         break;
       }
-      case 4 : {
+      case 4: {
         $value = 1 / 5;
         break;
       }
-      case 5 : {
+      case 5: {
         $value = 0 / 5;
         break;
       }
@@ -856,75 +855,75 @@ function lti_tool_provider_outcomes_format_score($row_no, $form_state , $outcome
   }
   elseif (strcasecmp($datatype, 'letterafplus') == 0) {
     switch (reset($form_state['values']['table'][$row_no]['score'])) {
-      case 0 : {
+      case 0: {
         $value = 17 / 17;
         break;
       }
-      case 1 : {
+      case 1: {
         $value = 16 / 17;
         break;
       }
-      case 2 : {
+      case 2: {
         $value = 15 / 17;
         break;
       }
-      case 3 : {
+      case 3: {
         $value = 14 / 17;
         break;
       }
-      case 4 : {
+      case 4: {
         $value = 13 / 17;
         break;
       }
-      case 5 : {
+      case 5: {
         $value = 12 / 17;
         break;
       }
-      case 6 : {
+      case 6: {
         $value = 11 / 17;
         break;
       }
-      case 7 : {
+      case 7: {
         $value = 10 / 17;
         break;
       }
-      case 8 : {
+      case 8: {
         $value = 9 / 17;
         break;
       }
-      case 9 : {
+      case 9: {
         $value = 8 / 17;
         break;
       }
-      case 10 : {
+      case 10: {
         $value = 7 / 17;
         break;
       }
-      case 11 : {
+      case 11: {
         $value = 6 / 17;
         break;
       }
-      case 12 : {
+      case 12: {
         $value = 5 / 17;
         break;
       }
-      case 13 : {
+      case 13: {
         $value = 4 / 17;
         break;
       }
-      case 14 : {
+      case 14: {
         $value = 3 / 17;
         break;
       }
-      case 15 : {
+      case 15: {
         $value = 2 / 17;
         break;
       }
-      case 16 : {
+      case 16: {
         $value = 1 / 17;
         break;
       }
-      case 17 : {
+      case 17: {
         $value = 0 / 17;
         break;
       }
@@ -950,7 +949,7 @@ function lti_tool_provider_outcomes_format_score($row_no, $form_state , $outcome
  * @return string
  *   The base number.
  */
-function lti_tool_provider_outcomes_set_base($datatype , $base_no = NULL) {
+function lti_tool_provider_outcomes_set_base($datatype, $base_no = NULL) {
   if (strcasecmp($datatype, 'decimal') == 0) {
     return 'EMPTY';
   }
@@ -998,7 +997,7 @@ function lti_tool_provider_outcomes_format_raw_score($raw_score, $base_no, $data
   }
   elseif (strcasecmp($datatype, 'ratio') == 0) {
     $new_score = $raw_score * $base_no;
-    // return floor($new_score) . '/' . $base_no;
+    // Return floor($new_score) . '/' . $base_no;
     return $raw_score;
   }
   elseif (strcasecmp($datatype, 'passfail') == 0) {
@@ -1033,12 +1032,12 @@ function lti_tool_provider_outcomes_format_raw_score($raw_score, $base_no, $data
  * @return int
  *   The index of the array.
  */
-function lti_tool_provider_outcomes_format_score_array($score , $datatype) {
+function lti_tool_provider_outcomes_format_score_array($score, $datatype) {
   if (strcasecmp($datatype, 'passfail') == 0) {
     if ($score == 1) {
       $value = 0;
     }
-    elseif ($score >= 0 ) {
+    elseif ($score >= 0) {
       $value = 1;
     }
     return $value;
@@ -1057,7 +1056,7 @@ function lti_tool_provider_outcomes_format_score_array($score , $datatype) {
     elseif ($score >= 0.4) {
       $value = 3;
     }
-    elseif ($score >= 0.2 ) {
+    elseif ($score >= 0.2) {
       $value = 4;
     }
     elseif ($score >= 0) {
@@ -1073,55 +1072,55 @@ function lti_tool_provider_outcomes_format_score_array($score , $datatype) {
     if ($score == 1) {
       $value = 0;
     }
-    elseif ($score >=  0.94118 ) {
+    elseif ($score >= 0.94118) {
       $value = 1;
     }
-    elseif ($score >= 0.88235 ) {
+    elseif ($score >= 0.88235) {
       $value = 2;
     }
-    elseif ($score >= 0.82353 ) {
+    elseif ($score >= 0.82353) {
       $value = 3;
     }
-    elseif ($score >= 0.76471 ) {
+    elseif ($score >= 0.76471) {
       $value = 4;
     }
-    elseif ($score >= 0.70588 ) {
+    elseif ($score >= 0.70588) {
       $value = 5;
     }
-    elseif ($score >= 0.64706 ) {
+    elseif ($score >= 0.64706) {
       $value = 6;
     }
-    elseif ($score >= 0.58824 ) {
+    elseif ($score >= 0.58824) {
       $value = 7;
     }
-    elseif ($score >= 0.52941 ) {
+    elseif ($score >= 0.52941) {
       $value = 8;
     }
-    elseif ($score >= 0.47059 ) {
+    elseif ($score >= 0.47059) {
       $value = 9;
     }
-    elseif ($score >= 0.41176 ) {
+    elseif ($score >= 0.41176) {
       $value = 10;
     }
-    elseif ($score >= 0.35294 ) {
+    elseif ($score >= 0.35294) {
       $value = 11;
     }
-    elseif ($score >= 0.29412 ) {
+    elseif ($score >= 0.29412) {
       $value = 12;
     }
-    elseif ($score >= 0.23529 ) {
+    elseif ($score >= 0.23529) {
       $value = 13;
     }
-    elseif ($score >= 0.17647 ) {
+    elseif ($score >= 0.17647) {
       $value = 14;
     }
-    elseif ($score >= 0.11765 ) {
+    elseif ($score >= 0.11765) {
       $value = 15;
     }
-    elseif ($score >= 0.05882 ) {
+    elseif ($score >= 0.05882) {
       $value = 16;
     }
-    elseif ($score >=  0 ) {
+    elseif ($score >= 0) {
       $value = 17;
     }
     return $value;

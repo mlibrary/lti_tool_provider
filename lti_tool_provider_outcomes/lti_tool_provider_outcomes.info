@@ -5,4 +5,3 @@ project = lti_tool_provider
 files[] = LTIToolProviderOutcomesEntityController.class.php
 files[] = LTIToolProviderOutcomesResourceEntityController.class.php
 dependencies[] = lti_tool_provider
-

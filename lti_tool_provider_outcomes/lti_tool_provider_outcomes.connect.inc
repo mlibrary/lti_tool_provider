@@ -87,19 +87,21 @@ function lti_tool_provider_outcomes_construct_params_array_read($sourcedid) {
  * Constructs an array of parameters(UPDATE) for the http post.
  *
  * @param string $source_did
- *   Result Source DID
+ *   Result Source DID.
  * @param string $grade
- *   Grade of the outcome record
+ *   Grade of the outcome record.
  * @param string $datatype
- *   Datatype of the resource
+ *   Datatype of the resource.
+ *
  * @return array
- *   Array of parameters
+ *   Array of parameters.
  */
-function lti_tool_provider_outcomes_construct_params_array_update($source_did , $grade , $base_no , $datatype) {
+function lti_tool_provider_outcomes_construct_params_array_update($source_did, $grade, $base_no, $datatype) {
   $params = array();
   $params['lti_message_type'] = 'basic-lis-updateresult';
   $params['sourcedid'] = $source_did;
-  // $params['result_resultscore_textstring'] = lti_tool_provider_outcomes_format_raw_score($grade, $base_no, $datatype);
+  // $params['result_resultscore_textstring'] =
+  // lti_tool_provider_outcomes_format_raw_score($grade, $base_no, $datatype);
   $params['result_resultscore_textstring'] = $grade;
   $params['result_resultvaluesourcedid'] = 'decimal';
   return $params;
@@ -109,9 +111,10 @@ function lti_tool_provider_outcomes_construct_params_array_update($source_did , 
  * Constructs an array of parameters(DELETE) for the http post.
  *
  * @param string $sourcedid
- *   Result Source DID
+ *   Result Source DID.
+ *
  * @return array
- *   Array of parameters
+ *   Array of parameters.
  */
 function lti_tool_provider_outcomes_construct_params_array_delete($sourcedid) {
   $params = array();
@@ -136,23 +139,23 @@ function lti_tool_provider_outcomes_construct_params_array_delete($sourcedid) {
  * @param string $grade
  *   OPTIONAL. Grade value to be updated.
  *
- * @return
+ * @return string
  *   HTTP response.
  */
 function lti_tool_provider_outcomes_lti_service_xml($consumer, $url, $message_type, $source_did, $grade = NULL) {
   switch ($message_type) {
-    // create grades UPDATE xml service body.
-    case 1 : {
+    // Create grades UPDATE xml service body.
+    case 1: {
       $body = lti_tool_provider_outcomes_create_grades_update_service_body($source_did, $grade);
       break;
     };
-    // create grades READ xml service body.
-    case 2 : {
+    // Create grades READ xml service body.
+    case 2: {
       $body = lti_tool_provider_outcomes_create_grades_read_service_body($source_did);
       break;
     };
-    // create grades DELETE xml service body.
-    case 3 : {
+    // Create grades DELETE xml service body.
+    case 3: {
       $body = lti_tool_provider_outcomes_create_grades_delete_service_body($source_did);
       break;
     };
@@ -204,6 +207,7 @@ function lti_tool_provider_outcomes_create_grades_update_service_body($source, $
  *
  * @param string $source
  *   Sourceid required for the request.
+ *
  * @return string
  *   XML body.
  */
@@ -285,11 +289,13 @@ function lti_tool_provider_outcomes_send_oauth_xml_body_post($method, $endpoint,
   $acc_req->sign_request($hmac_method, $test_consumer, $test_token);
   $header = $acc_req->to_header();
   $header = $header . "\r\nContent-type: " . $content_type . "\r\n";
-  $params = array('http' => array(
-    'method' => 'POST',
-    'content' => $body,
-    'header' => $header
-  ));
+  $params = array(
+    'http' => array(
+      'method' => 'POST',
+      'content' => $body,
+      'header' => $header,
+    ),
+  );
   $ctx = stream_context_create($params);
   $fp = @fopen($endpoint, 'rb', FALSE, $ctx);
   $response = @stream_get_contents($fp);
@@ -308,17 +314,17 @@ function lti_tool_provider_outcomes_send_oauth_xml_body_post($method, $endpoint,
 function lti_tool_provider_outcomes_decode_ext_xml_reply($data) {
   if (isset($data)) {
     $reader = new XMLReader();
-    $reader ->XML($data->data);
+    $reader->XML($data->data);
     $result = array();
     // Default XML elements.
     $codemajor = 'codemajor';
     $severity = 'severity';
     $codeminor = 'codeminor';
     while ($reader->read()) {
-      // codemajor    Success / Failure / Unsupported.
-      // severity     Status / Warning / Error.
-      // codeminor    fullsuccess / reason for failure.
-      // value        Value of the setting.
+      // Codemajor    Success / Failure / Unsupported.
+      // Severity     Status / Warning / Error.
+      // Codeminor    fullsuccess / reason for failure.
+      // Value        Value of the setting.
       if ($reader->nodeType == XMLReader::ELEMENT && ($reader->name == $codemajor || $reader->name == $severity || $reader->name == $codeminor)) {
         $str = $reader->readInnerXml();
         $codemajor_check = strcasecmp($str, 'success');
@@ -357,15 +363,15 @@ function lti_tool_provider_outcomes_decode_xml_reply($data) {
     $reader->XML($data);
     $result = array();
     // Default XML elements.
-    $imsx_codeMajor = 'imsx_codeMajor';
+    $imsx_codemajor = 'imsx_codeMajor';
     $imsx_severity = 'imsx_severity';
     $imsx_description = 'imsx_description';
     while ($reader->read()) {
-      // codemajor    Success / Failure / Unsupported.
-      // severity     Status / Warning / Error.
-      // codeminor    fullsuccess / reason for failure.
-      // value        Value of the setting.
-      if ($reader->nodeType == XMLReader::ELEMENT && ($reader->name == $imsx_codeMajor || $reader->name == $imsx_severity)) {
+      // Codemajor    Success / Failure / Unsupported.
+      // Severity     Status / Warning / Error.
+      // Codeminor    fullsuccess / reason for failure.
+      // Value        Value of the setting.
+      if ($reader->nodeType == XMLReader::ELEMENT && ($reader->name == $imsx_codemajor || $reader->name == $imsx_severity)) {
         $str = $reader->readInnerXml();
         $codemajor_check = strcasecmp($str, 'success');
         $severity_check = strcasecmp($str, 'status');
@@ -399,17 +405,17 @@ function lti_tool_provider_outcomes_decode_xml_reply($data) {
 function lti_tool_provider_outcomes_extract_ext_xml_score_reply($data) {
   if (isset($data)) {
     $reader = new XMLReader();
-    $reader ->XML($data->data);
+    $reader->XML($data->data);
     $result = array();
     // Default XML elements.
     $codemajor = 'codemajor';
     $severity = 'severity';
     $codeminor = 'codeminor';
     while ($reader->read()) {
-      // codemajor    Success / Failure / Unsupported.
-      // severity     Status / Warning / Error.
-      // codeminor    fullsuccess / reason for failure.
-      // value        Value of the setting.
+      // Codemajor    Success / Failure / Unsupported.
+      // Severity     Status / Warning / Error.
+      // Codeminor    fullsuccess / reason for failure.
+      // Value        Value of the setting.
       if ($reader->nodeType == XMLReader::ELEMENT && ($reader->name == $codemajor || $reader->name == $severity || $reader->name == $codeminor)) {
         $str = $reader->readInnerXml();
         $codemajor_check = strcasecmp($str, 'success');
@@ -449,15 +455,15 @@ function lti_tool_provider_outcomes_extract_xml_score_reply($data) {
     $reader ->XML($data);
     $result = array();
     // default XML elements.
-    $imsx_codeMajor = 'imsx_codeMajor';
+    $imsx_codemajor = 'imsx_codeMajor';
     $imsx_severity = 'imsx_severity';
     $imsx_description = 'imsx_description';
     while ($reader->read()) {
-      // codemajor    Success / Failure / Unsupported.
-      // severity     Status / Warning / Error.
-      // codeminor    fullsuccess / reason for failure.
-      // value        Value of the setting.
-      if ($reader->nodeType == XMLReader::ELEMENT && ($reader->name == $imsx_codeMajor || $reader->name == $imsx_severity)) {
+      // Codemajor    Success / Failure / Unsupported.
+      // Severity     Status / Warning / Error.
+      // Codeminor    fullsuccess / reason for failure.
+      // Value        Value of the setting.
+      if ($reader->nodeType == XMLReader::ELEMENT && ($reader->name == $imsx_codemajor || $reader->name == $imsx_severity)) {
         $str = $reader->readInnerXml();
         $codemajor_check = strcasecmp($str, 'success');
         $severity_check = strcasecmp($str, 'status');

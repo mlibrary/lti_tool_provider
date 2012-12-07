@@ -165,8 +165,9 @@ function lti_tool_provider_outcomes_schema_alter(&$schema) {
  * Implements hook_install().
  */
 function lti_tool_provider_outcomes_install() {
+  $t - get_t();
   db_add_field('lti_tool_provider_consumer', 'lti_tool_provider_consumer_outcomes_url', array(
-  'description' => st('Outcomes URL'),
+  'description' => $t('Outcomes URL'),
   'type' => 'varchar',
   'length' => 512,
   ));

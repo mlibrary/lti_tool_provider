@@ -36,8 +36,7 @@ extends DrupalDefaultEntityController
 implements LTIToolProviderOutcomesResourceEntityControllerInterface {
 
   /**
-   * (non-PHPdoc)
-   * @see LTIToolProviderOutcomesResourceEntityControllerInterface::create()
+   * @see LTIToolProviderOutcomesResourceEntityControllerInterface::create().
    */
   public function create() {
     $entity = new stdClass();
@@ -52,15 +51,14 @@ implements LTIToolProviderOutcomesResourceEntityControllerInterface {
   }
 
   /**
-   * (non-PHPdoc)
-   * @see LTIToolProviderOutcomesResourceEntityControllerInterface::save()
+   * @see LTIToolProviderOutcomesResourceEntityControllerInterface::save().
    */
   public function save($entity) {
     $transaction = db_transaction();
     try{
-      $entity->is_new=empty($enity->lti_tool_provider_outcomes_resource_id);
+      $entity->is_new = empty($enity->lti_tool_provider_outcomes_resource_id);
       if (empty($entity->lti_tool_provider_outcomes_resource_timestamp_created)) {
-        $entity->lti_tool_provider_outcomes_resource_timestamp_created=REQUEST_TIME;
+        $entity->lti_tool_provider_outcomes_resource_timestamp_created = REQUEST_TIME;
       }
       field_attach_presave('lti_tool_provider_outcomes_resource', $entity);
       $primary_key = $entity->lti_tool_provider_outcomes_resource_id ? 'lti_tool_provider_outcomes_resource_id' : array();
@@ -73,7 +71,7 @@ implements LTIToolProviderOutcomesResourceEntityControllerInterface {
         drupal_write_record('lti_tool_provider_outcomes_resource', $entity, $primary_key);
         $op = 'update';
       }
-      $function='field_attach_' . $op;
+      $function = 'field_attach_' . $op;
       $function('lti_tool_provider_outcomes_resource', $entity);
       module_invoke_all('entity_' . $op, $entity, 'lti_tool_provider_outcomes_resource');
       unset($entity->is_new);
@@ -89,8 +87,7 @@ implements LTIToolProviderOutcomesResourceEntityControllerInterface {
   }
 
   /**
-   * (non-PHPdoc)
-   * @see LTIToolProviderOutcomesResourceEntityControllerInterface::delete()
+   * @see LTIToolProviderOutcomesResourceEntityControllerInterface::delete().
    */
   public function delete($entity) {
     $this->deleteMultiple(array($entity));

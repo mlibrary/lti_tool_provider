@@ -35,8 +35,7 @@ extends DrupalDefaultEntityController
 implements LTIToolProvideroutcomesEntityControllerInterface {
 
   /**
-   * (non-PHPdoc)
-   * @see LTIToolProviderOutcomesEntityControllerInterface::create()
+   * @see LTIToolProviderOutcomesEntityControllerInterface::create().
    */
   public function create() {
     $entity = new stdClass();
@@ -50,17 +49,16 @@ implements LTIToolProvideroutcomesEntityControllerInterface {
   }
 
   /**
-   * (non-PHPdoc)
-   * @see LTIToolProviderOutcomesEntityControllerInterface::save()
+   * @see LTIToolProviderOutcomesEntityControllerInterface::save().
    */
   public function save($entity) {
     $transaction = db_transaction();
     try{
-      $entity->is_new=empty($enity->lti_tool_provider_outcomes_id);
+      $entity->is_new = empty($enity->lti_tool_provider_outcomes_id);
       if (empty($entity->lti_tool_provider_outcomes_date_joined)) {
-        $entity->lti_tool_provider_outcomes_date_joined=REQUEST_TIME;
+        $entity->lti_tool_provider_outcomes_date_joined = REQUEST_TIME;
       }
-      field_attach_presave('lti_tool_provider_outcomes' , $entity);
+      field_attach_presave('lti_tool_provider_outcomes', $entity);
       $primary_key = $entity->lti_tool_provider_outcomes_id ? 'lti_tool_provider_outcomes_id' : array();
       if (empty($primary_key)) {
         drupal_write_record('lti_tool_provider_outcomes', $entity);
@@ -68,10 +66,10 @@ implements LTIToolProvideroutcomesEntityControllerInterface {
         $op = 'insert';
       }
       else {
-        drupal_write_record('lti_tool_provider_outcomes', $entity , $primary_key);
+        drupal_write_record('lti_tool_provider_outcomes', $entity, $primary_key);
         $op = 'update';
       }
-      $function='field_attach_' . $op;
+      $function = 'field_attach_' . $op;
       $function('lti_tool_provider_outcomes', $entity);
       module_invoke_all('entity_' . $op, $entity, 'lti_tool_provider_outcomes');
       unset($entity->is_new);
@@ -87,17 +85,18 @@ implements LTIToolProvideroutcomesEntityControllerInterface {
   }
 
   /**
-   * (non-PHPdoc)
-   * @see LTIToolProviderOutcomesEntityControllerInterface::delete()
+   * @see LTIToolProviderOutcomesEntityControllerInterface::delete().
    */
   public function delete($entity) {
     $this->deleteMultiple(array($entity));
   }
 
   /**
-   * 
+   * Delete Outcomes.
+   *
    * @param array $entities
    *   An array of Outcomes entities to delete.
+   *
    * @throws Exception
    */
   public function deleteMultiple($entities) {
@@ -124,4 +123,3 @@ implements LTIToolProvideroutcomesEntityControllerInterface {
     }
   }
 }
-
