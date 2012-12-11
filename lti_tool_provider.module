@@ -228,7 +228,7 @@ function lti_tool_provider_assign_global_roles_to_user($lti_roles, $uid) {
   foreach ($roles as $key => $raw_role) {
     $lti_role = end(explode('/', end(explode(':', $raw_role))));
     // Check if the mapped global role exists.
-    if (isset($select_roles[$global_role_array[$lti_role]])) {
+    if (isset($global_role_array[$lti_role]) && isset($select_roles[$global_role_array[$lti_role]])) {
       user_multiple_role_edit(array($uid), 'add_role', $global_role_array[$lti_role]);
     }
   }
