@@ -39,6 +39,29 @@ function lti_tool_provider_requirements($phase) {
       $requirements['oauth']['value'] = $t('Installed');
     }
   }
+  if (empty($_SERVER['SERVER_NAME'])) {
+    $requirements['lti_tool_provider'] = array(
+      'title' => $t('LTI OAuth Server Configuration'),
+      'severity' => REQUIREMENT_ERROR,
+      'description' => $t('Your web server configuration is not providing a valid $_SERVER[\'SERVER_NAME\']. Without this value, OAuth signatures will not match.'),
+    );
+  }
+  elseif (empty($_SERVER['SERVER_PORT'])) {
+    $requirements['lti_tool_provider'] = array(
+      'title' => $t('LTI OAuth Server Configuration'),
+      'severity' => REQUIREMENT_ERROR,
+      'description' => $t('Your web server configuration is not providing a valid $_SERVER[\'SERVER_PORT\']. Without this value, OAuth signatures will not match.'),
+    );
+  }
+  else {
+    $requirements['lti_tool_provider'] = array(
+      'title' => $t('LTI OAuth Server Configuration'),
+      'severity' => REQUIREMENT_OK,
+    );
+    if ($phase != 'install') {
+      $requirements['lti_tool_provider']['value'] = $t('Server name is') . ' ' . $_SERVER['SERVER_NAME'] . '. ' . $t('Port is') . ' ' . $_SERVER['SERVER_PORT'] . '.';
+    }
+  }
   return $requirements;
 }
 
