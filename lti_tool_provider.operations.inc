@@ -75,24 +75,29 @@ function lti_tool_provider_launch() {
   }
   if ($user->uid == 0) {
     // Unauthenticated so create user if necessary.
-    if ($account = user_load_by_name($lti_user)) {
-      // User exists.
+    if (($account = user_load_by_name($lti_user)) || (isset($launch_info['lis_person_contact_email_primary']) && $account = user_load_by_mail($launch_info['lis_person_contact_email_primary']))) {
+      // User exists by name or mail.
       if ($account->uid == 1) {
         // User 1 must use drupal authentication.
-        drupal_set_message(t('Admin account must use Drupal authentication.'), 'error');
-        return;
-      }
-    }
-    elseif (isset($launch_info['lis_person_contact_email_primary']) && $account = user_load_by_mail($launch_info['lis_person_contact_email_primary'])) {
-      // User exists by mail.
-      if ($account->uid == 1) {
-        // User 1 must use drupal authentication.
-        drupal_set_message(t('Admin account must use Drupal authentication.'), 'error');
-        return;
+        if (isset($launch_info['launch_presentation_return_url'])) {
+          lti_tool_provider_goto(url($launch_info['launch_presentation_return_url'], array('query' => array('lti_errormsg' => t('Admin account must use Drupal authentication.')))));
+        }
+        else {
+          drupal_set_message(t('Admin account must use Drupal authentication.'), 'error');
+          return t('Admin account must use Drupal authentication.');
+        }
       }
     }
     else {
-      $account = lti_tool_provider_create_account($lti_user, $launch_info);
+      if (!($account = lti_tool_provider_create_account($lti_user, $launch_info))) {
+        if (isset($launch_info['launch_presentation_return_url'])) {
+          lti_tool_provider_goto(url($launch_info['launch_presentation_return_url'], array('query' => array('lti_errormsg' => t('Account creation failed.')))));
+        }
+        else {
+          drupal_set_message(t('Account creation failed.'), 'error');
+          return t('Account creation failed.');
+        }
+      }
     }
     // Log the user in.
     $form_state = array('uid' => $account->uid);

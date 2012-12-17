@@ -714,7 +714,7 @@ function lti_tool_provider_goto($path) {
  *   The lti context info.
  *
  * @return object
- *   The user account object.
+ *   The user account object or FALSE if the account creation failed.
  */
 function lti_tool_provider_create_account($lti_user, $launch_info) {
   // Provision a user account for $lti_user.
@@ -763,11 +763,5 @@ function lti_tool_provider_create_account($lti_user, $launch_info) {
       $userinfo[$field] = array(LANGUAGE_NONE => array('0' => array('value' => $launch_info[$variable])));
     }
   }
-  if (!$account = user_save(drupal_anonymous_user(), $userinfo)) {
-    drupal_set_message(t('User account creation failed because of system problems.'), 'error');
-  }
-  else {
-    drupal_set_message(t('User account created.'), 'info');
-  }
-  return $account;
+  return user_save(drupal_anonymous_user(), $userinfo);
 }
