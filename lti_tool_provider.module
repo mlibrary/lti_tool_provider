@@ -717,19 +717,6 @@ function lti_tool_provider_goto($path) {
  *   The user account object or FALSE if the account creation failed.
  */
 function lti_tool_provider_create_account($lti_user, $launch_info) {
-  // Provision a user account for $lti_user.
-  // If no mail address given, Form a dummy mail address.
-  if (!isset($launch_info['lis_person_contact_email_primary'])) {
-    if ($launch_info['consumer_domain'] == '') {
-      $mail = $lti_user . '@invalid';
-    }
-    else {
-      $mail = $lti_user . '.invalid';
-    }
-  }
-  else {
-    $mail = $launch_info['lis_person_contact_email_primary'];
-  }
   // If a user image is supplied create a managed file,
   // and attach it to the user account.
   if (isset($context_info['user_image'])) {
@@ -752,8 +739,8 @@ function lti_tool_provider_create_account($lti_user, $launch_info) {
   $userinfo = array(
     'name' => $lti_user,
     'pass' => user_password(20),
-    'init' => $mail,
-    'mail' => $mail,
+    'init' => $launch_info['lis_person_contact_email_primary'],
+    'mail' => $launch_info['lis_person_contact_email_primary'],
     'picture' => $picture,
     'status' => 1,
     'access' => REQUEST_TIME,
