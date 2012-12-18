@@ -65,10 +65,6 @@ function lti_tool_provider_outcomes_schema() {
         'table' => 'users',
         'columns' => array('lti_tool_provider_outcomes_user_id' => 'uid'),
       ),
-      'consumer_account' => array(
-        'table' => 'lti_tool_provider_consumer',
-        'columns' => array('lti_tool_provider_outcomes_consumer_id' => 'lti_tool_provider_consumer_entity_id'),
-      ),
       'resource_mapping' => array(
         'table' => 'lti_tool_provider_outcomes_resource',
         'columns' => array('lti_tool_provider_outcomes_resource_entity_id_fk' => 'lti_tool_provider_outcomes_resource_id'),
@@ -138,6 +134,12 @@ function lti_tool_provider_outcomes_schema() {
       ),
     ),
     'primary key' => array('lti_tool_provider_outcomes_resource_id'),
+    'foreign keys' => array(
+      'consumer_account' => array(
+        'table' => 'lti_tool_provider_consumer',
+        'columns' => array('lti_tool_provider_outcomes_resource_consumer_id' => 'lti_tool_provider_consumer_entity_id'),
+      ),
+    ),
   );
   return $schema;
 }

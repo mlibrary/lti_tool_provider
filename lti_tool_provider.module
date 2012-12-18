@@ -650,6 +650,7 @@ function lti_tool_provider_entity_info() {
       'fieldable' => TRUE,
       'entity keys' => array(
         'id' => 'lti_tool_provider_consumer_id',
+        'label' => 'lti_tool_provider_consumer_consumer',
       ),
       'static cache' => TRUE,
       'view modes' => array(
@@ -658,7 +659,6 @@ function lti_tool_provider_entity_info() {
           'custom settings' => FALSE,
         ),
       ),
-      'label callback' => 'lti_tool_provider_consumer_label',
       'uri callback' => 'lti_tool_provider_consumer_uri',
       'module' => 'lti_tool_provider_consumer',
       'bundles' => array(
