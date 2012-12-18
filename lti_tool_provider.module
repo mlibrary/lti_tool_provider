@@ -664,7 +664,7 @@ function lti_tool_provider_entity_info() {
       'bundles' => array(
         'lti_tool_provider_consumer' => array(
           'path' => 'admin/config/lti_tool_provider/lti_tool_provider_consumers',
-          'access arguments' => array('administer lti_tool_provider_consumer entities'),
+          'access arguments' => array('administer lti_tool_provider module'),
         )),
     ),
   );
