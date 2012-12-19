@@ -54,9 +54,16 @@ function lti_tool_provider_launch() {
   // Collect the launch information for later storage in the session.
   $launch_info = $request->get_parameters();
   if (empty($launch_info['context_id'])) {
-    return t('Error: Invalid context, No context Id.');
+    if (isset($launch_info['launch_presentation_return_url'])) {
+      lti_tool_provider_goto(url($launch_info['launch_presentation_return_url'], array('query' => array('lti_errormsg' => t('Error: Invalid context, No context Id.')))));
+    }
+    else {
+      return t('Error: Invalid context, No context Id.');
+    }
   }
-  $launch_info['consumer_domain'] = lti_tool_provider_retrieve_consumer_domain($oauth_consumer_key);
+  $consumer = lti_tool_provider_get_consumer_by_key($oauth_consumer_key);
+  $launch_info['consumer_id'] = $consumer->lti_tool_provider_consumer_id;
+  $launch_info['consumer_domain'] = $consumer->lti_tool_provider_consumer_domain;
   if (!empty($launch_info['user_id'])) {
     $lti_user = $launch_info['user_id'] . $launch_info['consumer_domain'];
   }

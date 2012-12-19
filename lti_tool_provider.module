@@ -353,21 +353,17 @@ function lti_tool_provider_consumer_delete($entity) {
  *   Consumer entity, null if record is unable to be retrieved.
  */
 function lti_tool_provider_get_consumer_by_key($key) {
-  $results_arr = array();
+  $entity_type = 'lti_tool_provider_consumer';
   $query = new EntityFieldQuery();
   $query
-  ->entityCondition('entity_type', 'lti_tool_provider_consumer')
+  ->entityCondition('entity_type', $entity_type)
   ->propertyCondition('lti_tool_provider_consumer_key', $key);
   $result = $query->execute();
-  $entity_type = 'lti_tool_provider_consumer';
   if (!empty($result[$entity_type])) {
-    $outcomes = entity_load($entity_type, array_keys($result[$entity_type]));
-    $consumer = NULL;
-    foreach ($outcomes as $outcome) {
-      $consumer = $outcome;
-    }
-    return $consumer;
+    $consumers = entity_load($entity_type, array_keys($result[$entity_type]));
+    return reset($consumers);
   }
+  return NULL;
 }
 
 /**
@@ -402,146 +398,6 @@ function lti_tool_provider_consumer_load($id = NULL, $reset = FALSE) {
  */
 function lti_tool_provider_consumer_load_multiple($ids = FALSE, $conditions = array(), $reset = FALSE) {
   return entity_load('lti_tool_provider_consumer', $ids, $conditions, $reset);
-}
-
-/**
- * Validate the key and secret of the consumer.
- *
- * @param object $consumer
- *   The consumer string which represents the consumer.
- * @param string $key
- *   The key string.
- * @param string $secret
- *   The secret string.
- *
- * @return boolean
- *   A boolean which determines the result of validation.
- */
-function lti_tool_provider_validate_consumer($consumer, $key, $secret) {
-  $content = array();
-  $entities = lti_tool_provider_consumer_load_multiple();
-  if (!empty($entities)) {
-    foreach ($entities as $entity) {
-      if ($key == $entity->lti_tool_provider_consumer_key && $secret == $entity->lti_tool_provider_consumer_secret && $consumer == $entity->lti_tool_provider_consumer_consumer) {
-        return TRUE;
-      }
-    }
-  }
-  return FALSE;
-}
-
-/**
- * Retrieve all consumer secrets from the database.
- *
- * @return array
- *   An array of consumer secrets.
- */
-function lti_tool_provider_retrieve_consumer_secrets() {
-  $entites = lti_tool_provider_consumer_load_multiple();
-  $list = array();
-  foreach ($entites as $entity) {
-    $list[] = $entity->lti_tool_provider_consumer_secret;
-  }
-  return $list;
-}
-
-/**
- * Retrieve the domain of a consumer given the consumer key.
- *
- * @param string $key
- *   A consumer key.
- *
- * @return string
- *   The domain.
- */
-function lti_tool_provider_retrieve_consumer_domain($key) {
-  $query = new EntityFieldQuery();
-  $query
-  ->entityCondition('entity_type', 'lti_tool_provider_consumer')
-  ->propertyCondition('lti_tool_provider_consumer_key', $key);
-  $result = $query->execute();
-  $domain = '';
-  if (!empty($result['lti_tool_provider_consumer'])) {
-    $entities = entity_load('lti_tool_provider_consumer', array_keys($result['lti_tool_provider_consumer']));
-    foreach ($entities as $entity) {
-      if ($entity->lti_tool_provider_consumer_domain != '') {
-        $domain = '@' . $entity->lti_tool_provider_consumer_domain;
-      }
-    }
-  }
-  return $domain;
-}
-
-/**
- * Retrieve the id of a consumer given the consumer key.
- *
- * @param string $key
- *   A consumer key.
- *
- * @return string
- *   The consumer id.
- */
-function lti_tool_provider_retrieve_consumer_id($key) {
-  $query = new EntityFieldQuery();
-  $query
-  ->entityCondition('entity_type', 'lti_tool_provider_consumer')
-  ->propertyCondition('lti_tool_provider_consumer_key', $key);
-  $result = $query->execute();
-  $id = 1;
-  if (!empty($result['lti_tool_provider_consumer'])) {
-    $entities = entity_load('lti_tool_provider_consumer', array_keys($result['lti_tool_provider_consumer']));
-    foreach ($entities as $entity) {
-      $id = $entity->lti_tool_provider_consumer_id;
-    }
-  }
-  return $id;
-}
-
-/**
- * Create the dummy accounts required for unidentified users.
- *
- * @return array
- *   The uids of the created accounts.
- */
-function lti_tool_provider_create_all_dummy_accounts() {
-  $entities = lti_tool_provider_consumer_load_multiple();
-  $results_arr = array();
-  if (!empty($entities)) {
-    foreach ($entities as $entity) {
-      $dummyname = 'lti_user@' . $entity->lti_tool_provider_consumer_domain;
-      $mail = $dummyname . 'invalid';
-      // Check if the dummy account exist.
-      $query = new EntityFieldQuery();
-      $query
-      ->entityCondition('entity_type', 'user')
-      ->propertyCondition('name', $dummyname);
-      $result = $query->execute();
-      $entity_type = 'user';
-      $uid = NULL;
-      if (!empty($result[$entity_type])) {
-        $users = entity_load($entity_type, array_keys($result[$entity_type]));
-        foreach ($users as $user) {
-          $uid = $user->uid;
-          $results_arr[] = $uid;
-        }
-      }
-      if ($uid == NULL) {
-        // Create user with the authenticated roles.
-        $userinfo = array(
-          'name' => $dummyname,
-          'pass' => user_password(20),
-          'init' => $mail,
-          'mail' => $mail,
-          'status' => 1,
-          'access' => REQUEST_TIME,
-        );
-        $account = user_save(drupal_anonymous_user(), $userinfo);
-        user_multiple_role_edit(array($account->uid), 'add_role', 2);
-        $results_arr[] = $uid;
-      }
-    }
-    return $results_arr[] = $uid;
-  }
 }
 
 /**
