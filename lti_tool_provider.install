@@ -39,14 +39,14 @@ function lti_tool_provider_requirements($phase) {
       $requirements['oauth']['value'] = $t('Installed');
     }
   }
-  if (empty($_SERVER['SERVER_NAME'])) {
+  if (!drupal_is_cli() && empty($_SERVER['SERVER_NAME'])) {
     $requirements['lti_tool_provider'] = array(
       'title' => $t('LTI OAuth Server Configuration'),
       'severity' => REQUIREMENT_ERROR,
       'description' => $t('Your web server configuration is not providing a valid $_SERVER[\'SERVER_NAME\']. Without this value, OAuth signatures will not match.'),
     );
   }
-  elseif (empty($_SERVER['SERVER_PORT'])) {
+  elseif (!drupal_is_cli() && empty($_SERVER['SERVER_PORT'])) {
     $requirements['lti_tool_provider'] = array(
       'title' => $t('LTI OAuth Server Configuration'),
       'severity' => REQUIREMENT_ERROR,
