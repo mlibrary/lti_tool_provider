@@ -199,7 +199,7 @@ function lti_tool_provider_consumers_admin() {
   );
   $content[] = array(
     '#type' => 'item',
-    '#markup' => l(t('Add a new LTI Tool Consumer'), 'admin/config/lti-tool-provider/lti-tool-consumer/add'),
+    '#markup' => l(t('Add a new LTI Tool Consumer'), 'lti_tool_provider_consumer/add'),
   );
   $content['table'] = array();
   // Load all of our entities.
@@ -227,7 +227,7 @@ function lti_tool_provider_consumers_admin() {
     $consumer_name = array(
       '#type' => 'link',
       '#title' => t('@consumer', array('@consumer' => $consumer->lti_tool_provider_consumer_consumer)),
-      '#href' => 'admin/config/lti-tool-provider/lti-tool-consumer/' . $consumer->lti_tool_provider_consumer_id . '/view',
+      '#href' => 'lti_tool_provider_consumer/' . $consumer->lti_tool_provider_consumer_id . '/view',
       '#options' => array('query' => $destination),
     );
     $key = $consumer->lti_tool_provider_consumer_key;
@@ -240,14 +240,14 @@ function lti_tool_provider_consumers_admin() {
       'edit' => array(
         '#type' => 'link',
         '#title' => t('edit'),
-        '#href' => 'admin/config/lti-tool-provider/lti-tool-consumer/' . $consumer->lti_tool_provider_consumer_id . '/edit',
+        '#href' => 'lti_tool_provider_consumer/' . $consumer->lti_tool_provider_consumer_id . '/edit',
         '#options' => array('query' => $destination),
       ),
       'nbsp' => array('#markup' => '&nbsp;&nbsp;'),
       'delete' => array(
         '#type' => 'link',
         '#title' => t('delete'),
-        '#href' => 'admin/config/lti-tool-provider/lti-tool-consumer/' . $consumer->lti_tool_provider_consumer_id . '/delete',
+        '#href' => 'lti_tool_provider_consumer/' . $consumer->lti_tool_provider_consumer_id . '/delete',
         '#options' => array('query' => $destination),
       ),
     );
