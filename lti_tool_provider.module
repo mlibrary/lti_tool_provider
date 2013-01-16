@@ -219,6 +219,7 @@ function lti_tool_provider_context_access($access) {
     return FALSE;
   }
 }
+
 /**
  * Map a user to a drupal Global role based on his/her role in the LTI context.
  *
@@ -232,7 +233,9 @@ function lti_tool_provider_assign_global_roles_to_user($lti_roles, $uid) {
   $global_role_array = variable_get('lti_tool_provider_global_role_array');
   $roles = explode(',', $lti_roles);
   foreach ($roles as $key => $raw_role) {
-    $lti_role = end(explode('/', end(explode(':', $raw_role))));
+    $tmp = explode(':', $raw_role);
+    $tmp2 = explode('/', end($tmp));
+    $lti_role = end($tmp2);
     // Check if the mapped global role exists.
     if (isset($global_role_array[$lti_role]) && isset($select_roles[$global_role_array[$lti_role]])) {
       user_multiple_role_edit(array($uid), 'add_role', $global_role_array[$lti_role]);
