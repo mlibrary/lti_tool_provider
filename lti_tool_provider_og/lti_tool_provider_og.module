@@ -159,16 +159,18 @@ function lti_tool_provider_og_lti_tool_provider_launch_alter(&$launch_info, $acc
       node_object_prepare($node);
       $saved_settings = variable_get('lti_tool_provider_og_group_mapping', array());
       foreach ($saved_settings as $variable => $field) {
-        if ($field != 'none') {
-          if ($field != 'title') {
-            foreach (field_info_instances($group_entity, $group_bundle) as $entity_field) {
-              if (($field == $entity_field['field_name']) && (strcasecmp($entity_field['widget']['module'], 'text') == 0)) {
-                $node->{$field}[LANGUAGE_NONE][0]['value'] = $launch_info[$variable];
+        if (isset($launch_info[$variable])) {
+          if ($field != 'none') {
+            if ($field != 'title') {
+              foreach (field_info_instances($group_entity, $group_bundle) as $entity_field) {
+                if (($field == $entity_field['field_name']) && (strcasecmp($entity_field['widget']['module'], 'text') == 0)) {
+                  $node->{$field}[LANGUAGE_NONE][0]['value'] = $launch_info[$variable];
+                }
               }
             }
-          }
-          else {
-            $node->$field = isset($launch_info['custom_course_title']) ? $launch_info['custom_course_title'] : $launch_info[$variable];
+            else {
+              $node->$field = isset($launch_info['custom_course_title']) ? $launch_info['custom_course_title'] : $launch_info[$variable];
+            }
           }
         }
       }
