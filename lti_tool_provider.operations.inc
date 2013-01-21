@@ -157,6 +157,7 @@ function lti_tool_provider_return_title($title) {
     else {
       return t('Return to LMS');
     }
+  }
 }
 
 /**
