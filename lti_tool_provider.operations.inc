@@ -151,8 +151,8 @@ function lti_tool_provider_return_title($title) {
     if (key_exists('custom_return_label', $_SESSION['lti_tool_provider_context_info'])) {
       return check_plain($_SESSION['lti_tool_provider_context_info']['custom_return_label']);
     }
-    if (isset($_SESSION['tool_consumer_instance_name'])) {
-      return t('Return to @tool', array('@tool' => $_SESSION['tool_consumer_instance_name']));
+    if (isset($_SESSION['lti_tool_provider_context_info']['tool_consumer_instance_name'])) {
+      return t('Return to @tool', array('@tool' => $_SESSION['lti_tool_provider_context_info']['tool_consumer_instance_name']));
     }
     else {
       return t('Return to LMS');
