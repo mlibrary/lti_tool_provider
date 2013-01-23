@@ -144,23 +144,6 @@ function lti_tool_provider_launch() {
 }
 
 /**
- * Menu title callback for the lti return menu item.
- */
-function lti_tool_provider_return_title($title) {
-  if (isset($_SESSION['lti_tool_provider_context_info'])) {
-    if (key_exists('custom_return_label', $_SESSION['lti_tool_provider_context_info'])) {
-      return check_plain($_SESSION['lti_tool_provider_context_info']['custom_return_label']);
-    }
-    if (isset($_SESSION['lti_tool_provider_context_info']['tool_consumer_instance_name'])) {
-      return t('Return to @tool', array('@tool' => $_SESSION['lti_tool_provider_context_info']['tool_consumer_instance_name']));
-    }
-    else {
-      return t('Return to LMS');
-    }
-  }
-}
-
-/**
  * Page callback for the lti return menu item.
  */
 function lti_tool_provider_return() {
@@ -174,22 +157,6 @@ function lti_tool_provider_return() {
   // Destroy the current session, and reset $user to the anonymous user.
   session_destroy();
   lti_tool_provider_goto($url);
-}
-
-/**
- * Menu title callback for the LTI Home menu item.
- *
- * @return string
- *   The title.
- */
-function lti_tool_provider_home_title($title) {
-  if (key_exists('custom_destination_label', $_SESSION['lti_tool_provider_context_info'])) {
-    return check_plain($_SESSION['lti_tool_provider_context_info']['custom_destination_label']);
-  }
-  if (key_exists('resource_link_title', $_SESSION['lti_tool_provider_context_info'])) {
-    return check_plain($_SESSION['lti_tool_provider_context_info']['resource_link_title']);
-  }
-  return t('Home');
 }
 
 /**
