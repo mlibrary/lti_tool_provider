@@ -27,7 +27,7 @@ function lti_tool_provider_memberships_install()  {
   }
   variable_set('lti_tool_provider_memberships_subgroup_mapping_bundle', 'none:None');
   variable_set('lti_tool_provider_memberships_subgroup_mapping', '');
-  
+  variable_set('lti_tool_provider_memberships_subgroup_role_array', '');
 }
 
 /**
@@ -126,4 +126,5 @@ function lti_tool_provider_memberships_uninstall() {
   variable_del('lti_tool_provider_memberships_subgroups');
   variable_del('lti_tool_provider_memberships_subgroup_mapping_bundle');
   variable_del('lti_tool_provider_memberships_subgroup_mapping');
+  variable_del('lti_tool_provider_memberships_subgroup_role_array');
 }
