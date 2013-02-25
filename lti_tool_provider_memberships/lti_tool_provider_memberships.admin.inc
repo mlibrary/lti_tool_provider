@@ -253,7 +253,7 @@ function lti_tool_provider_memberships_subgroup_mapping_submit($form, &$form_sta
   variable_set('lti_tool_provider_memberships_subgroups', $form_state['values']['subgroups']);
   if ($form_state['values']['subgroups']) {
     variable_set('lti_tool_provider_memberships_subgroup_mapping_bundle', $form_state['values']['bundle']);
-    if ($form_state['values']['bundle'] == 'none:None') {
+    if ($form_state['values']['bundle'] != 'none:None') {
       $settings = array();
       foreach (lti_tool_provider_memberships_subgroup_mapping_details() as $key => $detail) {
         if (isset($form_state['input']['mapping'][$key]['attribute'])) {
