@@ -68,7 +68,7 @@ function lti_tool_provider_memberships_subgroup_mapping($form, &$form_state) {
         '#theme' => 'table',
         '#header' => array(t('LTI Memberships Group Variable'), t('Drupal Subgroup Attribute')),
         '#rows' => array(),
-        '#weight' => -1,
+        '#weight' => -3,
       );
       foreach (lti_tool_provider_memberships_subgroup_mapping_details() as $key => $detail) {
         if (($form['subgroups']['#default_value'] == 0) && ($detail != 'group_id')) {
@@ -109,14 +109,14 @@ function lti_tool_provider_memberships_subgroup_mapping($form, &$form_state) {
         '#description' => t('Choose the subgroup roles to be mapped from the LTI roles.'),
         '#weight' => -2,
       );
-      list($entity, $bundle) = explode(':', $form['bundle']['#default_value']);
+      list($entity, $bundle) = explode(':', $form['subgroups-detail']['bundle']['#default_value']);
       $select_roles = og_roles($entity, $bundle);
       // Remove OG_ANONYMOUS_ROLE in $select_roles.
       if (($key = array_search(OG_ANONYMOUS_ROLE, $select_roles)) !== FALSE) {
         unset($select_roles[$key]);
       }
       $old_bundle = variable_get('lti_tool_provider_memberships_subgroup_mapping_bundle');
-      if ($old_bundle == $form['bundle']['#default_value']) {
+      if ($old_bundle == $form['subgroups-detail']['bundle']['#default_value']) {
         $old_role_array = variable_get('lti_tool_provider_memberships_subgroup_role_array');
       }
       // Role Mapping.
