@@ -18,7 +18,7 @@ function lti_tool_provider_og_group_mapping($form, &$form_state) {
   $form['description'] = array(
     '#type' => 'item',
     '#title' => t('Choose a group bundle, configure LTI context variable to group attribute mapping and group role mapping.'),
-    '#weight' => -8,
+    '#weight' => -9,
   );
   $new_bundles = lti_tool_provider_og_get_group_bundles();
   $old_bundle = variable_get('lti_tool_provider_og_group_mapping_bundle');
@@ -27,7 +27,7 @@ function lti_tool_provider_og_group_mapping($form, &$form_state) {
     '#title' => t('LTI Context to Drupal group mapping'),
     '#description' => t('Please select the Drupal group bundle corresponding to an LTI course.'),
     '#options' => $new_bundles,
-    '#weight' => -7,
+    '#weight' => -8,
     '#ajax' => array(
       'callback' => 'lti_tool_provider_og_group_mapping_select_callback',
       'wrapper' => 'group-detail',
@@ -42,7 +42,7 @@ function lti_tool_provider_og_group_mapping($form, &$form_state) {
   $form['group_detail'] = array(
     '#prefix' => '<div id="group-detail">',
     '#suffix' => '</div>',
-    '#weight' => -6,
+    '#weight' => -7,
   );
   if (!empty($form['bundle']['#default_value']) && $form['bundle']['#default_value'] != 'none:None') {
     if ($is_node_type) {
@@ -50,7 +50,7 @@ function lti_tool_provider_og_group_mapping($form, &$form_state) {
         '#type' => 'checkbox',
         '#title' => t('Automatically create groups. Note: Only available for node group bundles and LTI user must have appropriate "Create content type" permission.'),
         '#default_value' => isset($form_state['values']['create_course']) ? $form_state['values']['create_course'] : variable_get('lti_tool_provider_og_provision_groups'),
-        '#weight' => -5,
+        '#weight' => -6,
         '#ajax' => array(
           'callback' => 'lti_tool_provider_og_group_mapping_select_callback',
           'wrapper' => 'group-detail',
@@ -58,6 +58,14 @@ function lti_tool_provider_og_group_mapping($form, &$form_state) {
           'effect' => 'fade',
         ),
       );
+      if ($form['group_detail']['create_course']['#default_value'] == 1) {
+        $form['group_detail']['create_course_anon'] = array(
+          '#type' => 'checkbox',
+          '#title' => t('Create groups with anon rather than LTI user. Note: LTI user does NOT need "Create content type" permission.'),
+          '#default_value' => isset($form_state['values']['create_course_anon']) ? $form_state['values']['create_course_anon'] : variable_get('lti_tool_provider_og_provision_groups_anon'),
+          '#weight' => -5,
+        );
+      }
     }
     $form['group_detail']['mapping_description'] = array(
       '#prefix' => '<div id="select-mapping-div">',
@@ -253,6 +261,7 @@ function lti_tool_provider_og_group_mapping_submit($form, &$form_state) {
   }
   else {
     variable_set('lti_tool_provider_og_provision_groups', $form_state['values']['create_course']);
+    variable_set('lti_tool_provider_og_provision_groups_anon', $form_state['values']['create_course_anon']);
     $settings = array();
     foreach (lti_tool_provider_context_mapping_details() as $key => $detail) {
       if (isset($form_state['input']['mapping'][$key]['attribute'])) {
