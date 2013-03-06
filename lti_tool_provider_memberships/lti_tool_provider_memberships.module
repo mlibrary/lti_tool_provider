@@ -207,7 +207,7 @@ function lti_tool_provider_memberships_form($form, &$form_state) {
       'person_name_full' => t('Name'),
       'Roles' => t('Roles'),
     );
-    if (variable_get('lti_tool_provider_memberships_with_groups')) {
+    if (variable_get('lti_tool_provider_memberships_subgroups')) {
       $new_members_header['Groups'] = t('Groups');
     }
     $new_members_rows = array();
@@ -221,7 +221,7 @@ function lti_tool_provider_memberships_form($form, &$form_state) {
         'person_name_family' => $new_member['person_name_family'],
         'person_name_full' => $new_member['person_name_full'],
       );
-      if (variable_get('lti_tool_provider_memberships_with_groups')) {
+      if (variable_get('lti_tool_provider_memberships_subgroups')) {
         $groups = '';
         if (isset($new_member['groups'])) {
           foreach ($new_member['groups'] as $group) {
@@ -764,7 +764,7 @@ function lti_tool_provider_memberships_request() {
       }
     }
     $params = array(
-      'lti_message_type' => (variable_get('lti_tool_provider_memberships_with_groups')) ?
+      'lti_message_type' => (variable_get('lti_tool_provider_memberships_subgroups')) ?
       'basic-lis-readmembershipsforcontextwithgroups' : 'basic-lis-readmembershipsforcontext',
       'id' => $_SESSION['lti_tool_provider_context_info']['ext_ims_lis_memberships_id'],
       'lti_version' => 'LTI-1p0',
@@ -851,7 +851,7 @@ function lti_tool_provider_memberships_get_memberships($new = FALSE) {
         $memberships[$i]['person_name_given'] = (string)$members[$i]->person_name_given;
         $memberships[$i]['person_name_family'] = (string)$members[$i]->person_name_family;
         $memberships[$i]['person_name_full'] = (string)$members[$i]->person_name_full;
-        if (variable_get('lti_tool_provider_memberships_with_groups') && isset($members[$i]->groups)) {
+        if (variable_get('lti_tool_provider_memberships_subgroups') && isset($members[$i]->groups)) {
           foreach ($members[$i]->groups->group as $group) {
             $memberships[$i]['groups'][] = array('id' => (string)$group->id, 'title' => (string)$group->title);
           }
@@ -915,7 +915,7 @@ function lti_tool_provider_memberships_get_new_memberships($member_data) {
         $new_members[$i]['person_name_given'] = $member_data[$i]['person_name_given'];
         $new_members[$i]['person_name_family'] = $member_data[$i]['person_name_family'];
         $new_members[$i]['person_name_full'] = $member_data[$i]['person_name_full'];
-        if (variable_get('lti_tool_provider_memberships_with_groups') && isset($member_data[$i]['groups'])) {
+        if (variable_get('lti_tool_provider_memberships_subgroups') && isset($member_data[$i]['groups'])) {
           $new_members[$i]['groups'] = $member_data[$i]['groups'];
         }
       }
@@ -1009,7 +1009,7 @@ function lti_tool_provider_memberships_get_altered_memberships($member_data) {
           $altered_members[$i]['new_roles'] = $member_data[$i]['roles'];
           $altered_members[$i]['existing_roles'] = $member_data[$i]['roles'];
         }
-        if (variable_get('lti_tool_provider_memberships_with_groups')) {
+        if (variable_get('lti_tool_provider_memberships_subgroups')) {
           $subgroups = lti_tool_provider_memberships_get_subgroups();
           // Find the subgroup nids that match the member data groups.
           // Get users current groups.
