@@ -277,6 +277,29 @@ function lti_tool_provider_assign_global_roles_to_user($lti_roles, $uid) {
 }
 
 /**
+ * Remove a user from drupal Global roles based on LTI roles.
+ *
+ * @param string $lti_roles
+ *   The string representing the lti_roles.
+ * @param integer $uid
+ *   The id of the user to assign the role.
+ */
+function lti_tool_provider_unassign_global_roles_from_user($lti_roles, $uid) {
+  $select_roles = user_roles(TRUE, NULL);
+  $global_role_array = variable_get('lti_tool_provider_global_role_array');
+  $roles = explode(',', $lti_roles);
+  foreach ($roles as $key => $raw_role) {
+    $tmp = explode(':', $raw_role);
+    $tmp2 = explode('/', end($tmp));
+    $lti_role = end($tmp2);
+    // Check if the mapped global role exists.
+    if (isset($global_role_array[$lti_role]) && isset($select_roles[$global_role_array[$lti_role]])) {
+      user_multiple_role_edit(array($uid), 'remove_role', $global_role_array[$lti_role]);
+    }
+  }
+}
+
+/**
  * Determine if this is a valid LTI request.
  *
  * @return boolean

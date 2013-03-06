@@ -26,8 +26,8 @@ function lti_tool_provider_memberships_install()  {
     variable_set('lti_tool_provider_memberships_subgroups', 0);
   }
   variable_set('lti_tool_provider_memberships_subgroup_mapping_bundle', 'none:None');
-  variable_set('lti_tool_provider_memberships_subgroup_mapping', '');
-  variable_set('lti_tool_provider_memberships_subgroup_role_array', '');
+  variable_set('lti_tool_provider_memberships_subgroup_mapping', array());
+  variable_set('lti_tool_provider_memberships_subgroup_role_array', array());
 }
 
 /**

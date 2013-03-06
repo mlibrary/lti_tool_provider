@@ -275,6 +275,57 @@ function lti_tool_provider_memberships_form($form, &$form_state) {
       '#value' => t('Remove selected member(s) and their content'),
     );
   }
+  $altered_members = lti_tool_provider_memberships_get_altered_memberships($member_data);
+  if (!empty($altered_members)) {
+    $form['members']['altered_members']['description'] = array(
+      '#type' => 'item',
+      '#title' => t('Altered LTI Memberships'),
+      '#markup' => t(count($altered_members) . ' member(s) altered'),
+    );
+    $altered_members_header = array(
+      'User ID' => t('User ID'),
+      'Old Roles' => t('Old Roles'),
+      'New Roles' => t('New Roles'),
+      'Dropped Groups' => t('Dropped Groups'),
+      'Added Groups' => t('Added Groups'),
+    );
+    $altered_members_rows = array();
+    foreach ($altered_members as $altered_member) {
+      $dropped_subgroups = '';
+      if (isset($altered_member['dropped_subgroups'])) {
+        foreach ($altered_member['dropped_subgroups'] as $subgroup) {
+          $dropped_subgroups .= ' ' . $subgroup['title'];
+        }
+      }
+      $added_subgroups = '';
+      if (isset($altered_member['added_subgroups'])) {
+        foreach ($altered_member['added_subgroups'] as $subgroup) {
+          $added_subgroups .= ' ' . $subgroup['title'];
+        }
+      }
+      $altered_members_rows[$altered_member['lti_tool_provider_memberships_id']] = array(
+        'User ID' => $altered_member['user_id'],
+        'Old Roles' => isset($altered_member['old_roles']) ? $altered_member['old_roles'] : '',
+        'New Roles' => isset($altered_member['new_roles']) ? $altered_member['new_roles'] : '',
+        'existing_roles' => $altered_member['existing_roles'],
+        'Dropped Groups' => $dropped_subgroups,
+        'dropped_subgroups' => isset($altered_member['dropped_subgroups']) ? $altered_member['dropped_subgroups'] : '',
+        'Added Groups' => $added_subgroups,
+        'added_subgroups' => isset($altered_member['added_subgroups']) ? $altered_member['added_subgroups'] : '',
+
+      );
+    }
+    $form['members']['altered_members']['altered_members_table'] = array
+    (
+      '#type' => 'tableselect',
+      '#header' => $altered_members_header,
+      '#options' => $altered_members_rows,
+    );
+    $form['members']['altered_members']['update_altered_members'] = array(
+      '#type' => 'submit',
+      '#value' => t('Update selected member(s) in context'),
+    );
+  }
   $query = new EntityFieldQuery();
   $result = $query
   -> entityCondition('entity_type', 'lti_tool_provider_memberships')
@@ -373,21 +424,10 @@ function lti_tool_provider_memberships_form_submit($form, &$form_state) {
   $consumer_domain = $_SESSION['lti_tool_provider_context_info']['consumer_domain'];
   $group_entity = $_SESSION['lti_tool_provider_context_info']['course_entity_type'];
   $group_eid = $_SESSION['lti_tool_provider_context_info']['course_entity_eid'];
-  if (module_exists('lti_tool_provider_og')) {
-    // If handling subgroups, get a list of subgroups for this context group.
-    if (variable_get('lti_tool_provider_memberships_subgroups') &&
-      (($selected_subgroup_bundle = variable_get('lti_tool_provider_memberships_subgroup_mapping_bundle')) != 'none:None')) {
-      //
-      list($subgroup_entity, $subgroup_bundle) = explode(':', $selected_subgroup_bundle);
-      $saved_settings = variable_get('lti_tool_provider_memberships_subgroup_mapping', array());
-      $mapping_field = $saved_settings['LTI context group reference'];
-      $query = new EntityFieldQuery();
-      $entities = $query->entityCondition('entity_type', $subgroup_entity)
-      ->entityCondition('bundle', $subgroup_bundle)
-      ->fieldCondition($mapping_field, 'og_group_ref_target_id', $_SESSION['lti_tool_provider_context_info']['course_entity_eid'], '=')
-      ->execute();
-      $all_subgroups = node_load_multiple(array_keys($entities['node']));
-    }
+  // If handling subgroups, get a list of subgroups for this context group.
+  if (module_exists('lti_tool_provider_og') && variable_get('lti_tool_provider_memberships_subgroups') &&
+    (($selected_subgroup_bundle = variable_get('lti_tool_provider_memberships_subgroup_mapping_bundle')) != 'none:None')) {
+    $all_subgroups = lti_tool_provider_memberships_get_subgroups();
   }
   if ($form_state['clicked_button']['#parents']['0'] == 'add') {
     $members = $form_state['complete form']['members']['new_members']['new_members_table']['#value'];
@@ -436,78 +476,8 @@ function lti_tool_provider_memberships_form_submit($form, &$form_state) {
         }
         // If with_groups, provision subgroups and grant subgroup membership.
         if (variable_get('lti_tool_provider_memberships_subgroups')) {
-          $selected_subgroup_bundle = variable_get('lti_tool_provider_memberships_subgroup_mapping_bundle');
-          if ($selected_subgroup_bundle != 'none:None') {
-            // Get users current groups.
-            $users_groups = og_get_entity_groups('user', $account->uid);
-            // Does membership include subgroups.
-            if (isset($form_state['complete form']['members']['new_members']['new_members_table']['#options'][$member]['groups'])) {
-              $membership_groups = $form_state['complete form']['members']['new_members']['new_members_table']['#options'][$member]['groups'];
-              list($subgroup_entity, $subgroup_bundle) = explode(':', $selected_subgroup_bundle);
-              $saved_settings = variable_get('lti_tool_provider_memberships_subgroup_mapping', array());
-              $mapping_field = $saved_settings['group_id'];
-              // Loop through the membership groups.
-              foreach ($membership_groups as $membership_group) {
-                // Find the group that matches the membership group_id.
-                $query = new EntityFieldQuery();
-                $entities = $query->entityCondition('entity_type', $subgroup_entity)
-                ->entityCondition('bundle', $subgroup_bundle)
-                ->fieldCondition($mapping_field, 'value', $membership_group['id'], '=')
-                ->execute();
-                if (empty($entities[$subgroup_entity])) {
-                  // No subgroup found, so provision it.
-                  $node = new stdClass();
-                  $node->type = $subgroup_bundle;
-                  $node->language = LANGUAGE_NONE;
-                  node_object_prepare($node);
-                  if ($saved_settings['group_id'] == 'Title') {
-                    $node->title = $membership_group['id'];
-                  }
-                  else {
-                    $node->{$saved_settings['group_id']}[LANGUAGE_NONE][0]['value'] = $membership_group['id'];
-                  }
-                  if ($saved_settings['title'] != 'none') {
-                    if ($saved_settings['title'] == 'title') {
-                      $node->title = $membership_group['title'];
-                    }
-                    else {
-                      $node->{$saved_settings['group_id']}[LANGUAGE_NONE][0]['value'] = $membership_group['title'];
-                    }
-                  }
-                  node_save($node);
-                  // Add subgroup to course group.
-                  og_group($group_entity, $group_eid, array(
-                  'entity_type' => 'node',
-                  'entity' => $node->nid,
-                  'field_name' => $saved_settings['LTI context group reference'],
-                  'state' => OG_STATE_ACTIVE,
-                  ));
-                  $subgroup_eid = $node->nid;
-                  drupal_set_message(t('Group created.'), 'info');
-                }
-                else {
-                  $sg = reset($entities[$subgroup_entity]);
-                  $subgroup_eid = $sg->nid;
-                }
-                // Add the user to the group.
-                if (!array_key_exists($subgroup_entity, $users_groups) || !in_array($subgroup_eid, $users_groups[$subgroup_entity])) {
-                  og_group($subgroup_entity, $subgroup_eid, array(
-                  'entity_type' => 'user',
-                  'entity' => $account->uid,
-                  'field_name' => FALSE,
-                  'state' => OG_STATE_ACTIVE,
-                  ));
-                }
-                // Grant the group roles.
-                if (isset($launch_info['roles'])) {
-                  $found_roles = lti_tool_provider_og_search_roles($launch_info['roles']);
-                  foreach ($found_roles as $lti_role => $found_role) {
-                    og_role_grant($subgroup_entity, $subgroup_eid, $account->uid, $found_role);
-                  }
-                }
-              }
-            }
-          }
+          $membership_groups = $form_state['complete form']['members']['new_members']['new_members_table']['#options'][$member]['groups'];
+          lti_tool_provider_memberships_add_user_to_membership_groups($account->uid, $membership_groups, $roles);
         }
       }
       // Update or create the membership.
@@ -531,7 +501,6 @@ function lti_tool_provider_memberships_form_submit($form, &$form_state) {
         $entity->lti_tool_provider_memberships_uid = $account->uid;
         $entity->lti_tool_provider_memberships_user_id = $member;
         $entity->lti_tool_provider_memberships_role = $roles;
-
       }
       lti_tool_provider_memberships_save($entity);
       drupal_set_message(t('Membership for %name has been updated.', array('%name' => $member)));
@@ -554,7 +523,7 @@ function lti_tool_provider_memberships_form_submit($form, &$form_state) {
           if (variable_get('lti_tool_provider_memberships_subgroups') &&
             (($selected_subgroup_bundle = variable_get('lti_tool_provider_memberships_subgroup_mapping_bundle')) != 'none:None')) {
             foreach ($all_subgroups as $key => $subgroup) {
-              if ($mid = og_get_membership($subgroup_entity, $subgroup->nid, 'user', $membership->lti_tool_provider_memberships_uid)) {
+              if ($mid = og_get_membership($subgroup_entity, $subgroup, 'user', $membership->lti_tool_provider_memberships_uid)) {
                 og_membership_delete($mid->id);
               }
             }
@@ -572,7 +541,7 @@ function lti_tool_provider_memberships_form_submit($form, &$form_state) {
     }
   }
   elseif ($form_state['clicked_button']['#parents']['0'] == 'remove_dropped_members_contents') {
-    $members = $form_state['complete form']['members']['dropped_members']['dropped_members_table']['#value'];   
+    $members = $form_state['complete form']['members']['dropped_members']['dropped_members_table']['#value'];
     foreach ($members as $member) {
       // Find the members membership in this context.
       $query = new EntityFieldQuery();
@@ -604,7 +573,7 @@ function lti_tool_provider_memberships_form_submit($form, &$form_state) {
           if (variable_get('lti_tool_provider_memberships_subgroups') &&
             (($selected_subgroup_bundle = variable_get('lti_tool_provider_memberships_subgroup_mapping_bundle')) != 'none:None')) {
             foreach ($all_subgroups as $key => $subgroup) {
-              if ($mid = og_get_membership($subgroup_entity, $subgroup->nid, 'user', $membership->lti_tool_provider_memberships_uid)) {
+              if ($mid = og_get_membership($subgroup_entity, $subgroup, 'user', $membership->lti_tool_provider_memberships_uid)) {
                 og_membership_delete($mid->id);
               }
             }
@@ -629,6 +598,96 @@ function lti_tool_provider_memberships_form_submit($form, &$form_state) {
       }
       drupal_set_message(t('%name and content removed from context.', array('%name' => $entity[$member]->lti_tool_provider_memberships_user_id)));
     }
+  }
+  elseif ($form_state['clicked_button']['#parents']['0'] == 'update_altered_members') {
+    $members = $form_state['complete form']['members']['altered_members']['altered_members_table']['#value'];
+    foreach ($members as $member) {
+      // Find membership.
+      $query = new EntityFieldQuery();
+      $result = $query
+      -> entityCondition('entity_type', 'lti_tool_provider_memberships')
+      -> propertyCondition('lti_tool_provider_memberships_id', $member, '=')
+      -> propertyCondition('lti_tool_provider_memberships_context_id', $_SESSION['lti_tool_provider_context_info']['context_id'], '=')
+      -> execute();
+      if (empty($result)) {
+        // Missing membership.
+        continue;
+      }
+      $membership = reset(entity_load('lti_tool_provider_memberships',  array_keys($result['lti_tool_provider_memberships'])));
+      $account = user_load($membership->lti_tool_provider_memberships_uid);
+      $old_roles = $form_state['complete form']['members']['altered_members']['altered_members_table']['#options'][$member]['Old Roles'];
+      $new_roles = $form_state['complete form']['members']['altered_members']['altered_members_table']['#options'][$member]['New Roles'];
+      $existing_roles = $form_state['complete form']['members']['altered_members']['altered_members_table']['#options'][$member]['existing_roles'];
+      // If handling context groups.
+      if (module_exists('lti_tool_provider_og') && isset($_SESSION['lti_tool_provider_context_info']['course_entity_type'])) {
+        $group_entity = $_SESSION['lti_tool_provider_context_info']['course_entity_type'];
+        $group_eid = $_SESSION['lti_tool_provider_context_info']['course_entity_eid'];
+        // if roles have changed.
+        if (!empty($old_roles) || !empty($new_roles)) {
+          // Remove current roles from context group.
+          $current_roles = og_get_user_roles($group_entity, $group_eid, $account->uid, FALSE);
+          foreach ($current_roles as $rid => $dropped_role) {
+            og_role_revoke($group_entity, $group_eid, $account->uid, $rid);
+          }
+          $current_roles = og_get_user_roles($group_entity, $group_eid, $account->uid, FALSE);
+          // Add roles to context group.
+          $found_roles = lti_tool_provider_og_search_roles($new_roles);
+          foreach ($found_roles as $lti_role => $found_role) {
+            og_role_grant($group_entity, $group_eid, $account->uid, $found_role);
+          }
+        }
+        // If handling subgroups
+        if (variable_get('lti_tool_provider_memberships_subgroups') &&
+          (($selected_subgroup_bundle = variable_get('lti_tool_provider_memberships_subgroup_mapping_bundle')) != 'none:None')) {
+          list($subgroup_entity, $subgroup_bundle) = explode(':', $selected_subgroup_bundle);
+          // if roles have changed.
+          if (!empty($old_roles) || !empty($new_roles)) {
+            $subgroups = lti_tool_provider_memberships_get_subgroups();
+            // Find the subgroup nids that match the member data groups.
+            // Get users current groups.
+            $users_groups = reset(og_get_entity_groups('user', $account->uid));
+            $old_subgroups = array_intersect($subgroups, $users_groups);
+            $subgroup_roles = lti_tool_provider_memberships_search_roles($new_roles);
+            foreach ($old_subgroups as $old_subgroup) {
+              // Remove old roles from subgroups.
+              $current_roles = og_get_user_roles($subgroup_entity, $old_subgroup, $account->uid, FALSE);
+              foreach ($current_roles as $rid => $dropped_role) {
+                og_role_revoke($subgroup_entity, $old_subgroup, $account->uid, $rid);
+              }
+              // Add new roles to subgroups.
+              foreach ($subgroup_roles as $lti_role => $subgroup_role) {
+                og_role_grant($subgroup_entity, $old_subgroup, $account->uid, $subgroup_role);
+              }
+            }
+          }
+          // Drop user from dropped subgroups.
+          $dropped_subgroups = $form_state['complete form']['members']['altered_members']['altered_members_table']['#options'][$member]['dropped_subgroups'];
+          foreach ($dropped_subgroups as $dropped_subgroup) {
+            // Find the subgroup that matches the dropped_group.
+            $subgroup_eid = lti_tool_provider_memberships_get_subgroup($subgroup_entity, $subgroup_bundle, $dropped_subgroup);
+            if ($mid = og_get_membership($subgroup_entity, $subgroup_eid, 'user', $account->uid)) {
+              og_membership_delete($mid->id);
+            }
+          }
+          // Add user to added subgroups (creating them as necessary).
+          $added_subgroups = $form_state['complete form']['members']['altered_members']['altered_members_table']['#options'][$member]['added_subgroups'];
+          lti_tool_provider_memberships_add_user_to_membership_groups($account->uid, $added_subgroups, $existing_roles);
+        }
+      }
+      if (!empty($old_roles) || !empty($new_roles)) {
+        // Update global roles.
+        lti_tool_provider_unassign_global_roles_from_user($old_roles, $account->uid);
+        lti_tool_provider_assign_global_roles_to_user($new_roles, $account->uid);
+      }
+      // Update membership as updated.
+      $membership->lti_tool_provider_memberships_status = 'Active';
+      if (!empty($old_roles) || !empty($new_roles)) {
+        $membership->lti_tool_provider_memberships_role = $new_roles;
+      }
+      $membership->date_updated = REQUEST_TIME;
+      lti_tool_provider_memberships_save($membership);
+    }
+    drupal_set_message(t('%name\'s membership updated.', array('%name' => $membership->lti_tool_provider_memberships_user_id)));
   }
 }
 
@@ -659,6 +718,16 @@ function lti_tool_provider_memberships_form_validate($form, &$form_state) {
     elseif ($form_state['clicked_button']['#parents']['0'] == 'remove_dropped_members_contents') {
       if (empty($form_state['complete form']['members']['dropped_members']['dropped_members_table']['#value'])) {
         form_set_error('', t('No members selected in Dropped LTI Memberships table.'));
+      }
+    }
+    elseif ($form_state['clicked_button']['#parents']['0'] == 'update_altered_members') {
+      if (empty($form_state['complete form']['members']['altered_members']['altered_members_table']['#value'])) {
+        form_set_error('', t('No members selected in Altered LTI Memberships table.'));
+      }
+    }
+    elseif ($form_state['clicked_button']['#parents']['0'] == 'update_altered_members_contents') {
+      if (empty($form_state['complete form']['members']['altered_members']['altered_members_table']['#value'])) {
+        form_set_error('', t('No members selected in Altered LTI Memberships table.'));
       }
     }
     elseif ($form_state['clicked_button']['#parents']['0'] == 'paging_num_btn') {
@@ -835,7 +904,7 @@ function lti_tool_provider_memberships_get_new_memberships($member_data) {
       -> entityCondition('entity_type', 'lti_tool_provider_memberships')
       -> propertyCondition('lti_tool_provider_memberships_context_id', $_SESSION['lti_tool_provider_context_info']['context_id'], '=')
       -> propertyCondition('lti_tool_provider_memberships_user_id', $member_data[$i]['user_id'])
-      -> propertyCondition('lti_tool_provider_memberships_role', $member_data[$i]['roles'])
+      //     -> propertyCondition('lti_tool_provider_memberships_role', $member_data[$i]['roles'])
       -> propertyCondition('lti_tool_provider_memberships_status', 'Active')
       -> execute();
       if (empty($result)) {
@@ -884,7 +953,7 @@ function lti_tool_provider_memberships_get_dropped_memberships($member_data) {
     foreach ($entities as $entity) {
       $found = FALSE;
       foreach ($member_data as $key => $data) {
-        if (($entity->lti_tool_provider_memberships_user_id == $data['user_id']) && ($entity->lti_tool_provider_memberships_role == $data['roles'])) {
+        if (($entity->lti_tool_provider_memberships_user_id == $data['user_id'])) {
           $found = TRUE;
           unset($member_data[$key]);
           break;
@@ -905,6 +974,79 @@ function lti_tool_provider_memberships_get_dropped_memberships($member_data) {
   }
   return $dropped_members;
 }
+
+function _lti_tool_provider_memberships_compare_groups($g1, $g2) {
+  return strcmp($g1['id'], $g2['id']);
+}
+
+/**
+ * Extract the memberships with altered groups and roles from the memberships list.
+ *
+ * @param array $member_data
+ *   The current saved memberships data.
+ *
+ * @return array
+ *   The altered memberships.
+ */
+function lti_tool_provider_memberships_get_altered_memberships($member_data) {
+  $altered_members = array();
+  if (!empty($member_data)) {
+    for ($i = 0; $i < count($member_data); $i++) {
+      $query = new EntityFieldQuery();
+      $result = $query
+      -> entityCondition('entity_type', 'lti_tool_provider_memberships')
+      -> propertyCondition('lti_tool_provider_memberships_context_id', $_SESSION['lti_tool_provider_context_info']['context_id'], '=')
+      -> propertyCondition('lti_tool_provider_memberships_user_id', $member_data[$i]['user_id'])
+      //      -> propertyCondition('lti_tool_provider_memberships_role', $member_data[$i]['roles'])
+      -> propertyCondition('lti_tool_provider_memberships_status', 'Active')
+      -> execute();
+      if (isset($result['lti_tool_provider_memberships'])) {
+        $member = reset(entity_load('lti_tool_provider_memberships', array_keys($result['lti_tool_provider_memberships'])));
+        if ($member->lti_tool_provider_memberships_role != $member_data[$i]['roles']) {
+          $altered_members[$i]['lti_tool_provider_memberships_id'] = $member->lti_tool_provider_memberships_id;
+          $altered_members[$i]['user_id'] = $member_data[$i]['user_id'];
+          $altered_members[$i]['old_roles'] = $member->lti_tool_provider_memberships_role;
+          $altered_members[$i]['new_roles'] = $member_data[$i]['roles'];
+          $altered_members[$i]['existing_roles'] = $member_data[$i]['roles'];
+        }
+        if (variable_get('lti_tool_provider_memberships_with_groups')) {
+          $subgroups = lti_tool_provider_memberships_get_subgroups();
+          // Find the subgroup nids that match the member data groups.
+          // Get users current groups.
+          $users_groups = reset(og_get_entity_groups('user', $member->lti_tool_provider_memberships_uid));
+          $old_subgroups = array_intersect($subgroups, $users_groups);
+          $current_groups = array();
+          foreach ($old_subgroups as $gid) {
+            $group = node_load($gid);
+            $current_groups[] = array(
+              'id' => $group->field_lti_group_id['und'][0]['value'],
+              'title' => $group->title,
+            );
+          }
+          $new_subgroups = isset($member_data[$i]['groups']) ? $member_data[$i]['groups'] : array();
+          $dropped_subgroups = array_udiff($current_groups, $new_subgroups, '_lti_tool_provider_memberships_compare_groups');
+          $added_subgroups = array_udiff($new_subgroups, $current_groups, '_lti_tool_provider_memberships_compare_groups');
+          if (count($dropped_subgroups) != 0 || count($added_subgroups) != 0) {
+            $altered_members[$i]['lti_tool_provider_memberships_id'] = $member->lti_tool_provider_memberships_id;
+            $altered_members[$i]['user_id'] = $member_data[$i]['user_id'];
+            $altered_members[$i]['dropped_subgroups'] = $dropped_subgroups;
+            $altered_members[$i]['added_subgroups'] = $added_subgroups;
+            $altered_members[$i]['existing_roles'] = $member_data[$i]['roles'];
+          }
+        }
+      }
+    }
+  }
+  if (!empty($altered_members)) {
+    foreach ($altered_members as $key => $row) {
+      $user_id[$key]  = $row['user_id'];
+    }
+    array_multisort($user_id, SORT_ASC, $altered_members);
+  }
+  return $altered_members;
+}
+
+
 
 /**
  * Implements hook_lti_tool_provider_launch().
@@ -1003,4 +1145,148 @@ function lti_tool_provider_memberships_context_load($id = NULL, $reset = FALSE) 
  */
 function lti_tool_provider_memberships_context_load_multiple($ids = FALSE, $conditions = array(), $reset = FALSE) {
   return entity_load('lti_tool_provider_memberships_context', $ids, $conditions, $reset);
+}
+
+/**
+ * Return an array of group roles that are mapped from a string of LTI roles.
+ *
+ * @param string $lti_roles_str
+ *   A string containing the lti roles from the lti launch parameters.
+ *
+ * @return array
+ *   The found roles.
+ */
+function lti_tool_provider_memberships_search_roles($lti_roles_str) {
+  $found_roles = array();
+  $group_role_array = variable_get('lti_tool_provider_memberships_subgroup_role_array');
+  $lti_roles = explode(',', $lti_roles_str);
+  foreach ($lti_roles as $raw_lti_role) {
+    $lti_role_exploded = explode('/', $raw_lti_role);
+    if (count($lti_role_exploded) >= 3) {
+      $lti_role = $lti_role_exploded[2];
+    }
+    else {
+      $lti_role = $lti_role_exploded[0];
+    }
+    if (isset($group_role_array[$lti_role])) {
+      $found_roles[$lti_role] = $group_role_array[$lti_role];
+    }
+    else {
+      drupal_set_message(t('Role @lti_role, not found.', array('@lti_role' => $lti_role)), 'warning');
+    }
+  }
+  return $found_roles;
+}
+
+/**
+ * Get an array of nids of subgroups in the current context.
+ */
+function lti_tool_provider_memberships_get_subgroups() {
+  $selected_subgroup_bundle = variable_get('lti_tool_provider_memberships_subgroup_mapping_bundle');
+  list($subgroup_entity, $subgroup_bundle) = explode(':', $selected_subgroup_bundle);
+  $saved_settings = variable_get('lti_tool_provider_memberships_subgroup_mapping');
+  $mapping_field = $saved_settings['LTI context group reference'];
+  $query = new EntityFieldQuery();
+  $entities = $query->entityCondition('entity_type', $subgroup_entity)
+  ->entityCondition('bundle', $subgroup_bundle)
+  ->fieldCondition($mapping_field, 'og_group_ref_target_id', $_SESSION['lti_tool_provider_context_info']['course_entity_eid'], '=')
+  ->execute();
+  return array_keys($entities['node']);
+}
+
+/**
+ * Find or create a membership subgroup given the id and title.
+ *
+ * @param string $subgroup_entity
+ * @param string $subgroup_bundle
+ * @param array $membership_group
+ *
+ * @return integer
+ */
+function lti_tool_provider_memberships_get_subgroup($subgroup_entity, $subgroup_bundle, $membership_group) {
+  // Find the group that matches the membership group_id.
+  $subgroup_mapping = variable_get('lti_tool_provider_memberships_subgroup_mapping');
+  $mapping_field = $subgroup_mapping['group_id'];
+  $query = new EntityFieldQuery();
+  $entities = $query->entityCondition('entity_type', $subgroup_entity)
+  ->entityCondition('bundle', $subgroup_bundle)
+  ->fieldCondition($subgroup_mapping['group_id'], 'value', $membership_group['id'], '=')
+  ->execute();
+  if (empty($entities[$subgroup_entity])) {
+    // No subgroup found, so provision it.
+    $node = new stdClass();
+    $node->type = $subgroup_bundle;
+    $node->language = LANGUAGE_NONE;
+    node_object_prepare($node);
+    $node->uid = 0;
+    if ($subgroup_mapping['group_id'] == 'Title') {
+      $node->title = $membership_group['id'];
+    }
+    else {
+      $node->{$subgroup_mapping['group_id']}[LANGUAGE_NONE][0]['value'] = $membership_group['id'];
+    }
+    if ($subgroup_mapping['title'] != 'none') {
+      if ($subgroup_mapping['title'] == 'title') {
+        $node->title = $membership_group['title'];
+      }
+      else {
+        $node->{$subgroup_mapping['group_id']}[LANGUAGE_NONE][0]['value'] = $membership_group['title'];
+      }
+    }
+    node_save($node);
+    // Add subgroup to course group.
+    og_group($_SESSION['lti_tool_provider_context_info']['course_entity_type'],
+    $_SESSION['lti_tool_provider_context_info']['course_entity_eid'], array(
+    'entity_type' => 'node',
+    'entity' => $node->nid,
+    'field_name' => $subgroup_mapping['LTI context group reference'],
+    'state' => OG_STATE_ACTIVE,
+    ));
+    $subgroup_eid = $node->nid;
+    drupal_set_message(t('Group created.'), 'info');
+  }
+  else {
+    $sg = reset($entities[$subgroup_entity]);
+    $subgroup_eid = $sg->nid;
+  }
+  return $subgroup_eid;
+}
+
+/**
+ * Add a user to membership groups.
+ *
+ * Groups are created if necessary and roles are assigned.
+ *
+ * @param integer $uid
+ *   The users uid.
+ * @param array $membership_groups
+ *   An array of memberships groups.
+ * @param string $roles
+ *   The list of LTI roles.
+ */
+function lti_tool_provider_memberships_add_user_to_membership_groups($uid, $membership_groups, $lti_roles) {
+  list($subgroup_entity, $subgroup_bundle) = explode(':', variable_get('lti_tool_provider_memberships_subgroup_mapping_bundle'));
+  if ($subgroup_entity != 'none') {
+    // Get users current groups.
+    $users_groups = og_get_entity_groups('user', $uid);
+    // Loop through the membership groups.
+    foreach ($membership_groups as $membership_group) {
+      // Find or create the subgroup that matches the membership_group.
+      $subgroup_eid = lti_tool_provider_memberships_get_subgroup($subgroup_entity, $subgroup_bundle, $membership_group);
+      // Add the user to the group.
+      if (!array_key_exists($subgroup_entity, $users_groups) || !in_array($subgroup_eid, $users_groups[$subgroup_entity])) {
+        og_group($subgroup_entity, $subgroup_eid, array(
+        'entity_type' => 'user',
+        'entity' => $uid,
+        'field_name' => FALSE,
+        'state' => OG_STATE_ACTIVE,
+        ));
+      }
+      // Grant the group roles.
+      $subgroup_roles = lti_tool_provider_memberships_search_roles($lti_roles);
+      foreach ($subgroup_roles as $lti_role => $subgroup_role) {
+        og_role_grant($subgroup_entity, $subgroup_eid, $uid, $subgroup_role);
+      }
+    }
+  }
 }
