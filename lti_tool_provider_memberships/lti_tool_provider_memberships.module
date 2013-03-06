@@ -229,6 +229,9 @@ function lti_tool_provider_memberships_form($form, &$form_state) {
           }
           $new_members_rows[$new_member['user_id']]['groups'] = $new_member['groups'];
         }
+        else {
+          $new_members_rows[$new_member['user_id']]['groups'] = array();
+        }
         $new_members_rows[$new_member['user_id']]['Groups'] = $groups;
       }
     }
