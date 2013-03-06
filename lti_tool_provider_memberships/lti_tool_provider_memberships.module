@@ -1191,7 +1191,12 @@ function lti_tool_provider_memberships_get_subgroups() {
   ->entityCondition('bundle', $subgroup_bundle)
   ->fieldCondition($mapping_field, 'og_group_ref_target_id', $_SESSION['lti_tool_provider_context_info']['course_entity_eid'], '=')
   ->execute();
-  return array_keys($entities['node']);
+  if (exists($entities['node'])) {
+    return array_keys($entities['node']);
+  }
+  else {
+    return array();
+  }
 }
 
 /**
