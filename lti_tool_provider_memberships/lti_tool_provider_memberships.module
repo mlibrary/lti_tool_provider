@@ -1022,7 +1022,7 @@ function lti_tool_provider_memberships_get_altered_memberships($member_data) {
           foreach ($old_subgroups as $gid) {
             $group = node_load($gid);
             $current_groups[] = array(
-              'id' => $group->field_lti_group_id['und'][0]['value'],
+              'id' => $group->field_lti_memberships_group_id['und'][0]['value'],
               'title' => $group->title,
             );
           }
