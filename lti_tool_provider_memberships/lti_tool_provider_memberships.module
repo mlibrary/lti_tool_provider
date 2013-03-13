@@ -979,7 +979,7 @@ function lti_tool_provider_memberships_get_dropped_memberships($member_data) {
 }
 
 function _lti_tool_provider_memberships_compare_groups($g1, $g2) {
-  return strcmp($g1['id'], $g2['id']);
+  return strcmp($g1['title'], $g2['title']);
 }
 
 /**
@@ -1016,7 +1016,8 @@ function lti_tool_provider_memberships_get_altered_memberships($member_data) {
           $subgroups = lti_tool_provider_memberships_get_subgroups();
           // Find the subgroup nids that match the member data groups.
           // Get users current groups.
-          $users_groups = reset(og_get_entity_groups('user', $member->lti_tool_provider_memberships_uid));
+          $entity_groups = og_get_entity_groups('user', $member->lti_tool_provider_memberships_uid);
+          $users_groups = empty($entity_groups) ? array() : reset($entity_groups);
           $old_subgroups = array_intersect($subgroups, $users_groups);
           $current_groups = array();
           foreach ($old_subgroups as $gid) {
