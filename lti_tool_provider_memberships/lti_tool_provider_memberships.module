@@ -793,11 +793,15 @@ function lti_tool_provider_memberships_request() {
       'headers' =>  array('Content-Type' => 'application/x-www-form-urlencoded'),
     );
     $ext_response = drupal_http_request($url, $options);
-    if ($ext_response->status_message != 'OK') {
-      drupal_set_message(t('Request failed.'), 'info');
-      return '';
+    if ($ext_response->code == 200) {
+      if ($ext_response->status_message == 'OK') {
+        return $ext_response->data;
+      }
+      drupal_set_message(t('Request failed with status @message.', array('@message' => $ext_response->status_message)), 'info');
     }
-    return $ext_response->data;
+    else {
+      drupal_set_message(t('Request failed with code @code.', array('@code' => $ext_response->code)), 'info');
+    }
   }
   return '';
 }
