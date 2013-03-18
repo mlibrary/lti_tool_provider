@@ -26,7 +26,8 @@ implements LTIToolProviderMembershipsEntityControllerInterface {
     $entity->lti_tool_provider_memberships_context_id = NULL;
     $entity->lti_tool_provider_memberships_uid = NULL;
     $entity->lti_tool_provider_memberships_user_id = NULL;
-    $entity->lti_tool_provider_memberships_role = NULL;
+    $entity->lti_tool_provider_memberships_role = '';
+    $entity->lti_tool_provider_memberships_person_name_full = '';
     $entity->lti_tool_provider_memberships_status = 'Active';
     $entity->date_added = REQUEST_TIME;
     $entity->date_updated = NULL;

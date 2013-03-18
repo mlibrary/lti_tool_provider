@@ -92,7 +92,7 @@ function lti_tool_provider_launch() {
     }
     // Unauthenticated so create user if necessary.
     if (($account = user_load_by_name($lti_user)) || ($account = user_load_by_mail($launch_info['lis_person_contact_email_primary']))) {
-      // User exists by name or mail.      
+      // User exists by name or mail.
       if ($account->uid == 1) {
         // User 1 must use drupal authentication.
         if (isset($launch_info['launch_presentation_return_url'])) {
@@ -105,7 +105,7 @@ function lti_tool_provider_launch() {
       }
     }
     else {
-      if (!($account = lti_tool_provider_create_account($lti_user, $launch_info))) {
+      if (!$account = lti_tool_provider_create_account($lti_user, $launch_info)) {
         if (isset($launch_info['launch_presentation_return_url'])) {
           lti_tool_provider_goto(url($launch_info['launch_presentation_return_url'], array('query' => array('lti_errormsg' => t('Account creation failed.')))));
         }
@@ -121,7 +121,7 @@ function lti_tool_provider_launch() {
   }
   else {
     $account = user_load($user->uid);
-  } 
+  }
   // $account is the $lti_user.
   // Map Drupal global roles based on the user LTI role.
   if (!empty($launch_info['roles'])) {

@@ -83,7 +83,7 @@ function lti_tool_provider_memberships_subgroup_mapping($form, &$form_state) {
             '#type' => 'select',
             '#options' => ($detail == 'LTI context group reference') ?
               lti_tool_provider_memberships_retrieve_entity_field_types($form['subgroups-detail']['bundle']['#default_value']) :
-              lti_tool_provider_og_retrieve_entity_field_types($form['subgroups-detail']['bundle']['#default_value']),        
+              lti_tool_provider_og_retrieve_entity_field_types($form['subgroups-detail']['bundle']['#default_value']),
           );
           if (isset($form_state['values'][$detail])) {
             $attribute['#default_value'] = $form_state['values'][$detail];
@@ -153,7 +153,6 @@ function lti_tool_provider_memberships_subgroup_mapping($form, &$form_state) {
         unset($lti_role);
         unset($group_role);
       }
-      
     }
   }
   $form['submit'] = array(
