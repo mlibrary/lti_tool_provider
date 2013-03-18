@@ -675,7 +675,10 @@ function lti_tool_provider_create_account($lti_user, $launch_info) {
       $userinfo[$field] = array(LANGUAGE_NONE => array('0' => array('value' => $launch_info[$variable])));
     }
   }
-  return user_save(drupal_anonymous_user(), $userinfo);
+  $account = user_save(drupal_anonymous_user(), $userinfo);
+  // Allow other modules to alter the newly provisioned lti user account.
+  drupal_alter('lti_tool_provider_create_account', $account);
+  return $account;
 }
 
 /**
