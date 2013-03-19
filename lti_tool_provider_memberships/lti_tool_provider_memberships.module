@@ -878,7 +878,7 @@ function lti_tool_provider_memberships_lti_tool_provider_launch_alter(&$launch_i
     $entity->lti_tool_provider_memberships_uid = isset($account->uid) ? $account->uid : NULL;
     $entity->lti_tool_provider_memberships_user_id = $launch_info['user_id'];
     $entity->lti_tool_provider_memberships_role = $launch_info['roles'];
-    $entity->lti_tool_provider_memberships_person_name_full = $launch_info['person_name_full'];
+    $entity->lti_tool_provider_memberships_person_name_full = $launch_info['lis_person_name_full'];
     lti_tool_provider_memberships_save($entity);
   }
 }
@@ -893,7 +893,7 @@ function lti_tool_provider_memberships_user_delete($account) {
   -> entityCondition('entity_type', 'lti_tool_provider_memberships')
   -> propertyCondition('lti_tool_provider_memberships_uid', $account->uid, '=')
   -> execute();
-  if (exists($results['lti_tool_provider_memberships'])) {
+  if (isset($results['lti_tool_provider_memberships'])) {
     lti_tool_provider_memberships_delete_multiple($results['lti_tool_provider_memberships']);
   }
 }
@@ -1041,7 +1041,7 @@ function lti_tool_provider_memberships_get_subgroup($subgroup_entity, $subgroup_
     ->fieldCondition($subgroup_mapping['LTI context group reference'], 'target_id', $_SESSION['lti_tool_provider_context_info']['course_entity_eid'], '=')
     ->execute();
   }
-  if (empty($entities[$subgroup_entity])) {
+  if (isset($entities[$subgroup_entity])) {
     // No subgroup found, so provision it.
     $node = new stdClass();
     $node->type = $subgroup_bundle;
