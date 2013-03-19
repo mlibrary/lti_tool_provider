@@ -364,7 +364,8 @@ function lti_tool_provider_outcomes_get_set_resource($consumer_id, $context_id, 
   }
   if (isset($result['lti_tool_provider_outcomes_resource'])) {
     // Records already exist.
-    return reset(array_keys($result['lti_tool_provider_outcomes_resource']));
+    $resources = array_keys($result['lti_tool_provider_outcomes_resource']);
+    return reset($resources);
   }
   else {
     $entity = new stdClass();
@@ -406,7 +407,8 @@ function lti_tool_provider_outcomes_get_resource($consumer_id, $context_id, $res
   $result = $query->execute();
   if (isset($result['lti_tool_provider_outcomes_resource'])) {
     // Record exists.
-    return reset(entity_load('lti_tool_provider_outcomes_resource', array_keys($result['lti_tool_provider_outcomes_resource'])));
+    $resources = entity_load('lti_tool_provider_outcomes_resource', array_keys($result['lti_tool_provider_outcomes_resource']));
+    return reset($resources);
   }
   return NULL;
 }

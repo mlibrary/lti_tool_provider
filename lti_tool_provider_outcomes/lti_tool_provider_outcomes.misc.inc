@@ -395,7 +395,8 @@ function lti_tool_provider_outcomes_get_datatype_by_resource($resource_id) {
   ->propertyCondition('lti_tool_provider_outcomes_resource_id', $resource_id);
   $result = $query->execute();
   if (isset($result['lti_tool_provider_outcomes_resource'])) {
-    $outcome = reset(entity_load('lti_tool_provider_outcomes_resource', array_keys($result['lti_tool_provider_outcomes_resource'])));
+    $outcomes = entity_load('lti_tool_provider_outcomes_resource', array_keys($result['lti_tool_provider_outcomes_resource']));
+    $outcome = reset($outcomes);
     return $outcome->lti_tool_provider_outcomes_resource_score_datatype;
   }
   drupal_set_message(t('Resource not found.'), 'error');
