@@ -36,6 +36,7 @@ function lti_tool_provider_outcomes_schema() {
         'type' => 'int',
         'size' => 'normal',
         'not null' => TRUE,
+        'default' => 0,
       ),
       'lti_tool_provider_outcomes_score' => array(
         'description' => 'Score',
@@ -47,14 +48,15 @@ function lti_tool_provider_outcomes_schema() {
         'description' => 'Created',
         'type' => 'int',
         'not null' => TRUE,
+        'default' => 0,
       ),
       'lti_tool_provider_outcomes_timestamp' => array(
         'description' => 'Time submitted to LMS.',
         'type' => 'int',
         'not null' => FALSE,
       ),
-      'lti_tool_provider_outcomes_last_updated' => array(
-        'description' => 'Time last updated.',
+      'lti_tool_provider_outcomes_date_changed' => array(
+        'description' => 'Changed',
         'type' => 'int',
         'not null' => FALSE,
       ),
@@ -135,7 +137,7 @@ function lti_tool_provider_outcomes_schema() {
     ),
     'primary key' => array('lti_tool_provider_outcomes_resource_id'),
     'foreign keys' => array(
-      'consumer_account' => array(
+      'consumer' => array(
         'table' => 'lti_tool_provider_consumer',
         'columns' => array('lti_tool_provider_outcomes_resource_consumer_id' => 'lti_tool_provider_consumer_entity_id'),
       ),
@@ -148,9 +150,8 @@ function lti_tool_provider_outcomes_schema() {
  * Implements hook_schema_alter().
  */
 function lti_tool_provider_outcomes_schema_alter(&$schema) {
-  $t = get_t();
   $schema['lti_tool_provider_consumer']['fields']['lti_tool_provider_consumer_outcomes_url'] = array(
-    'description' => $t('Outcomes URL'),
+    'description' => 'Outcomes URL',
     'type' => 'varchar',
     'length' => 512,
   );
@@ -167,9 +168,8 @@ function lti_tool_provider_outcomes_schema_alter(&$schema) {
  * Implements hook_install().
  */
 function lti_tool_provider_outcomes_install() {
-  $t = get_t();
   db_add_field('lti_tool_provider_consumer', 'lti_tool_provider_consumer_outcomes_url', array(
-  'description' => $t('Outcomes URL'),
+  'description' => 'Outcomes URL',
   'type' => 'varchar',
   'length' => 512,
   ));
@@ -188,4 +188,6 @@ function lti_tool_provider_outcomes_install() {
 function lti_tool_provider_outcomes_uninstall() {
   db_drop_field('lti_tool_provider_consumer', 'lti_tool_provider_consumer_outcomes_url');
   db_drop_field('lti_tool_provider_consumer', 'lti_tool_provider_consumer_ext');
+  field_attach_delete_bundle('lti_tool_provider_outcomes', 'lti_tool_provider_outcomes');
+  field_attach_delete_bundle('lti_tool_provider_outcomes_resource', 'lti_tool_provider_outcomes_resource');
 }

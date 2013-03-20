@@ -2,8 +2,7 @@
 
 /**
  * @file
- * Contains functions to call Certified LTI LMS Site.
- * Functions that does http and xml request to LMS site.
+ * Functions for http xml requests to LTI Consumer services.
  */
 
 /**
@@ -312,36 +311,39 @@ function lti_tool_provider_outcomes_send_oauth_xml_body_post($method, $endpoint,
  *   TRUE if success / FALSE if not successful.
  */
 function lti_tool_provider_outcomes_decode_ext_xml_reply($data) {
-  if (isset($data)) {
-    $reader = new XMLReader();
-    $reader->XML($data->data);
-    $result = array();
-    // Default XML elements.
-    $codemajor = 'codemajor';
-    $severity = 'severity';
-    $codeminor = 'codeminor';
-    while ($reader->read()) {
-      // Codemajor    Success / Failure / Unsupported.
-      // Severity     Status / Warning / Error.
-      // Codeminor    fullsuccess / reason for failure.
-      // Value        Value of the setting.
-      if ($reader->nodeType == XMLReader::ELEMENT && ($reader->name == $codemajor || $reader->name == $severity || $reader->name == $codeminor)) {
-        $str = $reader->readInnerXml();
-        $codemajor_check = strcasecmp($str, 'success');
-        $severity_check = strcasecmp($str, 'status');
-        $codeminor_check = strcasecmp($str, 'fullsuccess');
-        if ($codemajor_check == 0|| $severity_check == 0 || $codeminor_check == 0) {
-          $result[] = $str;
-        };
-      }
+  if ($data->code != 200) {
+    drupal_set_message(t('Request failed with code @code.', array('@code' => $data->code)), 'info');
+    return FALSE;
+  }
+  if ($data->status_message != 'OK') {
+    drupal_set_message(t('Request failed with status @message.', array('@message' => $data->status_message)), 'info');
+    return FALSE;
+  }
+  $reader = new XMLReader();
+  $reader->XML($data->data);
+  $result = array();
+  // Default XML elements.
+  $codemajor = 'codemajor';
+  $severity = 'severity';
+  $codeminor = 'codeminor';
+  while ($reader->read()) {
+    // Codemajor    Success / Failure / Unsupported.
+    // Severity     Status / Warning / Error.
+    // Codeminor    fullsuccess / reason for failure.
+    // Value        Value of the setting.
+    if ($reader->nodeType == XMLReader::ELEMENT && ($reader->name == $codemajor || $reader->name == $severity || $reader->name == $codeminor)) {
+      $str = $reader->readInnerXml();
+      $codemajor_check = strcasecmp($str, 'success');
+      $severity_check = strcasecmp($str, 'status');
+      $codeminor_check = strcasecmp($str, 'fullsuccess');
+      if ($codemajor_check == 0|| $severity_check == 0 || $codeminor_check == 0) {
+        $result[] = $str;
+      };
     }
-    $reader->close();
-    if (count($result) == 3) {
-      return TRUE;
-    }
-    else {
-      return FALSE;
-    }
+  }
+  $reader->close();
+  if (count($result) == 3) {
+    return TRUE;
   }
   else {
     return FALSE;
@@ -358,35 +360,38 @@ function lti_tool_provider_outcomes_decode_ext_xml_reply($data) {
  *   TRUE if success / FALSE if not successful.
  */
 function lti_tool_provider_outcomes_decode_xml_reply($data) {
-  if (isset($data)) {
-    $reader = new XMLReader();
-    $reader->XML($data);
-    $result = array();
-    // Default XML elements.
-    $imsx_codemajor = 'imsx_codeMajor';
-    $imsx_severity = 'imsx_severity';
-    $imsx_description = 'imsx_description';
-    while ($reader->read()) {
-      // Codemajor    Success / Failure / Unsupported.
-      // Severity     Status / Warning / Error.
-      // Codeminor    fullsuccess / reason for failure.
-      // Value        Value of the setting.
-      if ($reader->nodeType == XMLReader::ELEMENT && ($reader->name == $imsx_codemajor || $reader->name == $imsx_severity)) {
-        $str = $reader->readInnerXml();
-        $codemajor_check = strcasecmp($str, 'success');
-        $severity_check = strcasecmp($str, 'status');
-        if ($codemajor_check == 0 || $severity_check == 0) {
-          $result[] = $str;
-        };
-      }
+  if ($data->code != 200) {
+    drupal_set_message(t('Request failed with code @code.', array('@code' => $data->code)), 'info');
+    return FALSE;
+  }
+  if ($data->status_message != 'OK') {
+    drupal_set_message(t('Request failed with status @message.', array('@message' => $data->status_message)), 'info');
+    return FALSE;
+  }
+  $reader = new XMLReader();
+  $reader->XML($data);
+  $result = array();
+  // Default XML elements.
+  $imsx_codemajor = 'imsx_codeMajor';
+  $imsx_severity = 'imsx_severity';
+  $imsx_description = 'imsx_description';
+  while ($reader->read()) {
+    // Codemajor    Success / Failure / Unsupported.
+    // Severity     Status / Warning / Error.
+    // Codeminor    fullsuccess / reason for failure.
+    // Value        Value of the setting.
+    if ($reader->nodeType == XMLReader::ELEMENT && ($reader->name == $imsx_codemajor || $reader->name == $imsx_severity)) {
+      $str = $reader->readInnerXml();
+      $codemajor_check = strcasecmp($str, 'success');
+      $severity_check = strcasecmp($str, 'status');
+      if ($codemajor_check == 0 || $severity_check == 0) {
+        $result[] = $str;
+      };
     }
-    $reader->close();
-    if (count($result) == 2) {
-      return TRUE;
-    }
-    else {
-      return FALSE;
-    }
+  }
+  $reader->close();
+  if (count($result) == 2) {
+    return TRUE;
   }
   else {
     return FALSE;

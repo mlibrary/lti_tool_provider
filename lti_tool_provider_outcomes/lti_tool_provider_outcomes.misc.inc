@@ -61,188 +61,35 @@ function lti_tool_provider_outcomes_validate_score($datatype, $score, $base_no) 
 }
 
 /**
- * Validates the name of the consumer.
+ * Retreives Outcomes.
  *
- * Check if it exists and is valid.
- *
- * @param string $name
- *   Consumer Entity name
- *
- * @return boolean
- *   Success or failure
- */
-function lti_tool_provider_outcomes_validate_consumer_name($name) {
-  $results_arr = array();
-  $query = new EntityFieldQuery();
-  $query
-  ->entityCondition('entity_type', 'lti_tool_provider_consumer')
-  ->propertyCondition('lti_tool_provider_consumer_consumer', $name);
-  $result = $query->execute();
-  $entity_type = 'lti_tool_provider_consumer';
-  if (empty($result[$entity_type])) {
-    return FALSE;
-  }
-  else {
-    return TRUE;
-  }
-}
-
-/**
- * Check if there is any existing records in the database.
- *
- * This is typically used to alter the display for the grades mapping,
- * such that an approriate content will be displayed.
- *
- * @return boolean
- *   Success or failure.
- */
-function lti_tool_provider_outcomes_resource_is_empty() {
-  $results_arr = array();
-  $query = new EntityFieldQuery();
-  $query
-  ->entityCondition('entity_type', 'lti_tool_provider_outcomes_resource');
-  $result = $query->execute();
-  $entity_type = 'lti_tool_provider_outcomes_resource';
-  if (!empty($result[$entity_type])) {
-    return FALSE;
-  }
-  else {
-    return TRUE;
-  }
-}
-
-/**
- * Retrieve the Consumer Entity by name.
- *
- * @param string $name
- *   Consumer entity name.
- *
- * @return object
- *   Consumer entity.
- */
-function lti_tool_provider_outcomes_get_consumer_by_name($name) {
-  $results_arr = array();
-  $query = new EntityFieldQuery();
-  $query
-  ->entityCondition('entity_type', 'lti_tool_provider_consumer')
-  ->propertyCondition('lti_tool_provider_consumer_consumer', $name);
-  $result = $query->execute();
-  $entity_type = 'lti_tool_provider_consumer';
-  if (!empty($result[$entity_type])) {
-    $entities = entity_load($entity_type, array_keys($result[$entity_type]));
-    foreach ($entities as $entity) {
-      return $entity;
-    }
-  }
-}
-
-/**
- * Retrieve lti_tool_provider_consumer entity key by id.
- *
- * @param int $consumer_id
- *   Consumer entity id.
- *
- * @return string
- *   Consumer key.
- */
-function lti_tool_provider_outcomes_get_consumer_key($consumer_id) {
-  $results_arr = array();
-  $query = new EntityFieldQuery();
-  $query
-  ->entityCondition('entity_type', 'lti_tool_provider_consumer')
-  ->propertyCondition('lti_tool_provider_consumer_id', $consumer_id);
-  $result = $query->execute();
-  $entity_type = 'lti_tool_provider_consumer';
-  if (!empty($result[$entity_type])) {
-    $outcomes = entity_load($entity_type, array_keys($result[$entity_type]));
-    $key = NULL;
-    foreach ($outcomes as $outcome) {
-      $key = $outcome->lti_tool_provider_consumer_key;
-    }
-    return $key;
-  }
-}
-
-/**
- * Retrieves the consumer entity via its consumer id.
- *
- * @param int $consumer_id
- *   Consumer entity id.
- *
- * @return object
- *   Consumer entity, null if record is unable to be retrieved.
- */
-function lti_tool_provider_outcomes_get_consumer_by_id($consumer_id) {
-  if (isset($consumer_id)) {
-    $entities = entity_load('lti_tool_provider_consumer', array($consumer_id));
-    foreach ($entities as $entity) {
-      $entity_final = $entity;
-    }
-    if (isset($entity_final)) {
-      return $entity_final;
-    }
-    else {
-      return NULL;
-    }
-  }
-  else {
-    return NULL;
-  }
-}
-
-/**
- * Retrieves the lis outcome service url for the particular consumer.
- *
- * @param int $consumer_id
- *   Consumer entity id.
- *
- * @return string
- *   The lis outcome service url.
- */
-function lti_tool_provider_outcomes_get_outcomes_url($consumer_id) {
-  $results_arr = array();
-  $query = new EntityFieldQuery();
-  $query
-  ->entityCondition('entity_type', 'lti_tool_provider_consumer')
-  ->propertyCondition('lti_tool_provider_consumer_id', $consumer_id);
-  $result = $query->execute();
-  $entity_type = 'lti_tool_provider_consumer';
-  if (!empty($result[$entity_type])) {
-    $outcomes = entity_load($entity_type, array_keys($result[$entity_type]));
-    $url = NULL;
-    foreach ($outcomes as $outcome) {
-      $url = $outcome->lti_tool_provider_consumer_outcomes_url;
-    }
-    return $url;
-  }
-}
-
-/**
- * Retreives the current outcome record.
- *
- * @param string $result_sourcedid
- *   Current result source did.
  * @param string $context_id
- *   Current session context id.
+ *   Session context id.
  * @param string $resource_link_id
- *   Resource link id of the current session.
+ *   Resource link id.
  * @param string $consumer_id
  *   Consumer entity id.
  * @param int $uid
- *   Current user id.
+ *   User id.
  *
- * @return object
- *   Outcome entity.
+ * @return array
+ *   An array of Outcomes.
  */
-function lti_tool_provider_outcomes_get_current_outcome($result_sourcedid, $context_id, $resource_link_id, $consumer_id, $uid) {
+function lti_tool_provider_outcomes_get_outcomes($consumer_id, $context_id, $resource_link_id, $uid = NULL) {
   $resource = lti_tool_provider_outcomes_get_resource($consumer_id, $context_id, $resource_link_id);
   if (isset($resource)) {
     $query = new EntityFieldQuery();
-    $query
-    ->entityCondition('entity_type', 'lti_tool_provider_outcomes')
-    ->propertyCondition('lti_tool_provider_outcomes_user_id', $uid)
-    ->propertyCondition('lti_tool_provider_outcomes_resource_entity_id_fk', $resource->lti_tool_provider_outcomes_resource_id)
-    ->propertyCondition('lti_tool_provider_outcomes_result_sourcedid', $result_sourcedid);
+    if (isset($uid)) {
+      $query
+      ->entityCondition('entity_type', 'lti_tool_provider_outcomes')
+      ->propertyCondition('lti_tool_provider_outcomes_user_id', $uid)
+      ->propertyCondition('lti_tool_provider_outcomes_resource_entity_id_fk', $resource->lti_tool_provider_outcomes_resource_id);
+    }
+    else {
+      $query
+      ->entityCondition('entity_type', 'lti_tool_provider_outcomes')
+      ->propertyCondition('lti_tool_provider_outcomes_resource_entity_id_fk', $resource->lti_tool_provider_outcomes_resource_id);
+    }
     $result = $query->execute();
     $entity_type = 'lti_tool_provider_outcomes';
     if (!empty($result[$entity_type])) {
@@ -250,62 +97,27 @@ function lti_tool_provider_outcomes_get_current_outcome($result_sourcedid, $cont
       return $outcomes;
     }
     else {
-      drupal_set_message(t('No records found'));
+      drupal_set_message(t('No outcomes record found'));
     }
   }
   else {
-    drupal_set_message(t('No records found'));
+    drupal_set_message(t('No resource record found'));
   }
+  return array();
 }
 
 /**
- * Retrieves Resource records via the Consumer Id.
+ * Retrieves Resources for a context.
  *
  * @param int $consumer_id
  *   Consumer entity id.
+ * @param int $context_id
+ *   Context id.
  *
  * @return array
  *   Resource_Entities. All the retrieved entities.
  */
-function lti_tool_provider_outcomes_retrieves_resource_records($consumer_id) {
-  $results_arr = array();
-  $query = new EntityFieldQuery();
-  if (isset($consumer_id)) {
-    $query
-    ->entityCondition('entity_type', 'lti_tool_provider_outcomes_resource')
-    ->propertyCondition('lti_tool_provider_outcomes_resource_consumer_id', $consumer_id);
-  }
-  else {
-    $query
-    ->entityCondition('entity_type', 'lti_tool_provider_outcomes_resource');
-  }
-  $result = $query->execute();
-  $entity_type = 'lti_tool_provider_outcomes_resource';
-  if (!empty($result[$entity_type])) {
-    $resources = entity_load($entity_type, array_keys($result[$entity_type]));
-    $loopcounter = 0;
-    $arr = array();
-    foreach ($resources as $resource) {
-      $arr[$loopcounter] = $resource;
-      $loopcounter++;
-    }
-    return $arr;
-  }
-  else {
-    return NULL;
-  }
-}
-
-/**
- * Retrieves Resource records via the Consumer Id.
- *
- * @param int $consumer_id
- *   Consumer entity id.
- *
- * @return array
- *   Resource_Entities. All the retrieved entities.
- */
-function lti_tool_provider_outcomes_retrieves_resource_records_by_context($consumer_id, $context_id) {
+function lti_tool_provider_outcomes_get_resources_for_context($consumer_id, $context_id) {
   $results_arr = array();
   $query = new EntityFieldQuery();
   $query
@@ -324,60 +136,6 @@ function lti_tool_provider_outcomes_retrieves_resource_records_by_context($consu
 }
 
 /**
- * Retrieve the resource title for display, based on its id.
- *
- * @param int $resource_id
- *   Resource id of the resource record.
- *
- * @return string
- *   The resource link title.
- */
-function lti_tool_provider_outcomes_retrieves_resource_title($resource_id) {
-  $results_arr = array();
-  $query = new EntityFieldQuery();
-  $query
-  ->entityCondition('entity_type', 'lti_tool_provider_outcomes_resource')
-  ->propertyCondition('lti_tool_provider_outcomes_resource_id', $resource_id);
-  $result = $query->execute();
-  $entity_type = 'lti_tool_provider_outcomes_resource';
-  if (!empty($result[$entity_type])) {
-    $resources = entity_load($entity_type, array_keys($result[$entity_type]));
-    foreach ($resources as $resource) {
-      return $resource->lti_tool_provider_outcomes_resource_resource_link_title;
-    }
-  }
-  else {
-    return NULL;
-  }
-}
-
-/**
- * Retrieve all corresponding outcomes.
- *
- * @param int $resource_id
- *   Resource id of the resource record.
- *
- * @return array
- *   Outcomes entities.
- */
-function lti_tool_provider_outcomes_retrieves_outcomes_by_resource($resource_id) {
-  $results_arr = array();
-  $query = new EntityFieldQuery();
-  $query
-  ->entityCondition('entity_type', 'lti_tool_provider_outcomes')
-  ->propertyCondition('lti_tool_provider_outcomes_resource_entity_id_fk', $resource_id);
-  $result = $query->execute();
-  $entity_type = 'lti_tool_provider_outcomes';
-  if (!empty($result[$entity_type])) {
-    $outcomes = entity_load($entity_type, array_keys($result[$entity_type]));
-    return $outcomes;
-  }
-  else {
-    return NULL;
-  }
-}
-
-/**
  * Retrieve the associated Datatype of the resource record.
  *
  * @param int $resource_id
@@ -386,7 +144,7 @@ function lti_tool_provider_outcomes_retrieves_outcomes_by_resource($resource_id)
  * @return string
  *   Datatype associated to that resource.
  */
-function lti_tool_provider_outcomes_get_datatype_by_resource($resource_id) {
+function lti_tool_provider_outcomes_get_resource_datatype($resource_id) {
   // Return the selected datatype.
   $results_arr = array();
   $query = new EntityFieldQuery();
@@ -395,53 +153,12 @@ function lti_tool_provider_outcomes_get_datatype_by_resource($resource_id) {
   ->propertyCondition('lti_tool_provider_outcomes_resource_id', $resource_id);
   $result = $query->execute();
   if (isset($result['lti_tool_provider_outcomes_resource'])) {
-    $outcomes = entity_load('lti_tool_provider_outcomes_resource', array_keys($result['lti_tool_provider_outcomes_resource']));
-    $outcome = reset($outcomes);
+    $entity = entity_load('lti_tool_provider_outcomes_resource', array_keys($result['lti_tool_provider_outcomes_resource']));
+    $outcome = reset($entity);
     return $outcome->lti_tool_provider_outcomes_resource_score_datatype;
   }
   drupal_set_message(t('Resource not found.'), 'error');
   return '';
-}
-
-/**
- * Checks update timestamp.
- *
- * Validates if the timestamp is set correctly and returns
- * the approriate string of display.
- *
- * @param string $timestamp
- *   Timestamp of the record.
- *
- * @return string
- *   Message.
- */
-function lti_tool_provider_outcomes_trans_last_updated($timestamp) {
-  if (isset($timestamp)) {
-    return format_date($timestamp);
-  }
-  else {
-    return 'Yet to be updated';
-  }
-}
-
-/**
- * Validates if the timestamp(for date of result sent).
- *
- * Check if its set correctly and returns the approriate string of display.
- *
- * @param string $timestamp
- *   Timestamp of record.
- *
- * @return string
- *   Message.
- */
-function lti_tool_provider_outcomes_trans_last_sent($timestamp) {
-  if (isset($timestamp)) {
-    return format_date($timestamp);
-  }
-  else {
-    return 'Score yet to be sent.';
-  }
 }
 
 /**
@@ -455,7 +172,7 @@ function lti_tool_provider_outcomes_trans_last_sent($timestamp) {
  *   Extension check.
  */
 function lti_tool_provider_outcomes_update_outcome_service_url($consumer_id, $url, $ext_bool) {
-  $consumer = lti_tool_provider_outcomes_get_consumer_by_id($consumer_id);
+  $consumer = lti_tool_provider_consumer_load($consumer_id);
   if ($consumer->lti_tool_provider_consumer_outcomes_url != $url) {
     $consumer->lti_tool_provider_consumer_outcomes_url = $url;
   }
@@ -466,112 +183,39 @@ function lti_tool_provider_outcomes_update_outcome_service_url($consumer_id, $ur
 }
 
 /**
- * Checks if the corresponding resource record exists.
- *
- * @param int $cid
- *   Consumer entity id.
- *
- * @return boolean
- *   Success or failure.
- */
-function lti_tool_provider_outcomes_check_if_result_record_exist($cid) {
-  $query = new EntityFieldQuery();
-  $query
-  ->entityCondition('entity_type', 'lti_tool_provider_outcomes_resource')
-  ->propertyCondition('lti_tool_provider_outcomes_resource_consumer_id', $cid);
-  $result = $query->execute();
-  if (!empty($result)) {
-    return TRUE;
-  }
-  return FALSE;
-}
-
-/**
- * Retreives all consumer.
- *
- * This function purpose is to get all resource for display
- * in grades mapping form.
- *
- * @return array
- *   Consumer entities.
- */
-function lti_tool_provider_outcomes_get_all_consumer() {
-  $query = new EntityFieldQuery();
-  $query
-  ->entityCondition('entity_type', 'lti_tool_provider_consumer');
-  $rs = $query->execute();
-  $entity_type = 'lti_tool_provider_consumer';
-  $result = array();
-  if (!empty($rs[$entity_type])) {
-    $consumers = entity_load($entity_type, array_keys($rs[$entity_type]));
-    foreach ($consumers as $consumer) {
-      if (lti_tool_provider_outcomes_check_if_result_record_exist($consumer->lti_tool_provider_consumer_id)) {
-        $result[] = $consumer;
-      }
-    }
-  }
-  return $result;
-}
-
-/**
- * Simply shorten the string for display.
- *
- * Prevent the display table from stretching too much.
- *
- * @param string $str
- *   Original string.
- * @param int $cap
- *   Maximum length.
- *
- * @return string
- *   The modified string.
- */
-function lti_tool_provider_outcomes_shorten_string($str, $cap = 30) {
-  if (drupal_strlen($str) >= $cap) {
-    $new_str = drupal_drupal_substr($str, 0, $cap);
-    $new_str .= '...';
-    return $new_str;
-  }
-  else {
-    return $str;
-  }
-}
-
-/**
- * Save the score into its respectively outcomes record.
+ * Update the score in an outcome.
  *
  * @param object $outcome
  *   Outcome entity.
- *
  * @param string $score
  *   Score.
  */
-function lti_tool_provider_outcomes_updated_pulled_score($outcome, $score) {
+function lti_tool_provider_outcomes_update_score($outcome, $score) {
   $outcome->lti_tool_provider_outcomes_score = $score;
   $outcome->lti_tool_provider_outcomes_last_updated = REQUEST_TIME;
-  entity_get_controller('lti_tool_provider_outcomes')->save($outcome);
+  lti_tool_provider_outcomes_save($outcome);
 }
 
 /**
  * Count all affected outcomes.
  *
- * @param object $entity
- *   Resource entity.
+ * @param object $resource
+ *   The Resource.
  *
  * @return array
- *   All the affected outcomes record.
+ *   All the affected outcomes.
  */
-function lti_tool_provider_outcomes_get_affected_outcomes($entity) {
+function lti_tool_provider_outcomes_get_outcomes_for_resource($resource) {
   $query = new EntityFieldQuery();
   $query
   ->entityCondition('entity_type', 'lti_tool_provider_outcomes')
-  ->propertyCondition('lti_tool_provider_outcomes_resource_entity_id_fk', $entity->lti_tool_provider_outcomes_resource_id);
+  ->propertyCondition('lti_tool_provider_outcomes_resource_entity_id_fk', $resource->lti_tool_provider_outcomes_resource_id);
   $result = $query->execute();
   if (!empty($result)) {
     $outcomes = entity_load('lti_tool_provider_outcomes', array_keys($result['lti_tool_provider_outcomes']));
     return $outcomes;
   }
-  return NULL;
+  return array();
 }
 
 /**
@@ -976,6 +620,7 @@ function lti_tool_provider_outcomes_set_base($datatype, $base_no = NULL) {
     return 'EMPTY';
   }
 }
+
 /**
  * Formats raw score input.
  *
