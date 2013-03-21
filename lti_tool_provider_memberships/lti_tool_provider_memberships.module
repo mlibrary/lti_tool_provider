@@ -1168,12 +1168,13 @@ function lti_tool_provider_memberships_add_member($member) {
     $group_entity = $_SESSION['lti_tool_provider_context_info']['course_entity_type'];
     $group_eid = $_SESSION['lti_tool_provider_context_info']['course_entity_eid'];
     if (!array_key_exists($group_entity, $users_groups) || !in_array($group_eid, $users_groups[$group_entity])) {
-      og_group($group_entity, $group_eid, array(
+      $membership = og_group($group_entity, $group_eid, array(
       'entity_type' => 'user',
       'entity' => $account->uid,
       'field_name' => FALSE,
       'state' => OG_STATE_ACTIVE,
       ));
+      field_attach_insert('og_membership', $membership);
     }
     // Grant the course group roles.
     if (isset($member['roles'])) {
