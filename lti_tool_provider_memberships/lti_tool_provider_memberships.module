@@ -1041,7 +1041,7 @@ function lti_tool_provider_memberships_get_subgroup($subgroup_entity, $subgroup_
     ->fieldCondition($subgroup_mapping['LTI context group reference'], 'target_id', $_SESSION['lti_tool_provider_context_info']['course_entity_eid'], '=')
     ->execute();
   }
-  if (isset($entities[$subgroup_entity])) {
+  if (!isset($entities[$subgroup_entity])) {
     // No subgroup found, so provision it.
     $node = new stdClass();
     $node->type = $subgroup_bundle;
