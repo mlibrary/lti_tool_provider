@@ -637,7 +637,7 @@ function lti_tool_provider_outcomes_remove_all_outcomes_by_user($uid) {
   $entity_type = 'lti_tool_provider_outcomes';
   if (!empty($result[$entity_type])) {
     $outcomes = entity_load($entity_type, array_keys($result[$entity_type]));
-    entity_get_controller($entity_type)->delete_multiple($outcomes);
+    entity_get_controller($entity_type)->deleteMultiple($outcomes);
     drupal_set_message(check_plain(t('Outcomes for user: [@uid] removed.', array('@uid' => $uid))));
   }
 }
