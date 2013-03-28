@@ -38,7 +38,8 @@ function lti_tool_provider_og_group_mapping($form, &$form_state) {
   // The group_detail section of the form is ajax reloaded when the bundle
   // or the creat_course checkbox changes.
   $form['bundle']['#default_value'] = isset($form_state['values']['bundle']) ? $form_state['values']['bundle'] : $old_bundle;
-  $is_node_type = (reset(explode(':', $form['bundle']['#default_value'])) == 'node') ? TRUE : FALSE;
+  $parts = explode(':', $form['bundle']['#default_value']);
+  $is_node_type = (reset($parts) == 'node') ? TRUE : FALSE;
   $form['group_detail'] = array(
     '#prefix' => '<div id="group-detail">',
     '#suffix' => '</div>',
