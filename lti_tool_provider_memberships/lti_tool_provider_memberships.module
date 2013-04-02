@@ -25,6 +25,7 @@ function lti_tool_provider_memberships_menu() {
     'description' => 'Configure LTI Memberships groups.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('lti_tool_provider_memberships_subgroup_mapping'),
+    'access callback' => 'lti_tool_provider_memberships_access_and_og', 
     'access arguments' => array('administer lti_tool_provider module'),
     'file' => 'lti_tool_provider_memberships.admin.inc',
     'weight' => -3,
@@ -164,24 +165,31 @@ function lti_tool_provider_memberships_form($form, &$form_state) {
     '#submit' => array('lti_tool_provider_memberships_form_submit'),
     '#validate' => array('lti_tool_provider_memberships_form_validate'),
   );
-  $consumer = lti_tool_provider_get_consumer_by_key($_SESSION['lti_tool_provider_context_info']['oauth_consumer_key']);
-  $fetch_new_data = isset($form_state['storage']['fetch_xml_btn']) ? TRUE : FALSE;
-  $member_data = lti_tool_provider_memberships_get_memberships($fetch_new_data);
-  $memberships_context = lti_tool_provider_memberships_get_memberships_context();
-  if (isset($form_state['storage']['fetch_xml_and_apply_btn'])) {
-    $new_members = lti_tool_provider_memberships_get_new_memberships($member_data);
-    foreach ($new_members as $member) {
-      lti_tool_provider_memberships_add_member($member);
-    }
-    $dropped_members = lti_tool_provider_memberships_get_dropped_memberships($member_data);
-    foreach ($dropped_members as $member) {
-      lti_tool_provider_memberships_drop_members($member->lti_tool_provider_memberships_id, TRUE);
-    }
-    $altered_members = lti_tool_provider_memberships_get_altered_memberships($member_data);
-    foreach ($altered_members as $member) {
-      lti_tool_provider_memberships_alter_member($member);
-    }
+  // batch process the preparation of data for the form and/or
+  // retrieve it from the session.
+  if (!isset($_SESSION['lti_tool_provider_memberships_batch_has_run'])) {
+    $batch_prepare_form = array(
+      'title' => t('Preparing membership form.'),
+      'operations' => array(
+        array('lti_tool_provider_memberships_batch_get_memberships', array(FALSE)),
+        array('lti_tool_provider_memberships_batch_get_new_memberships', array()),
+        array('lti_tool_provider_memberships_batch_get_dropped_memberships', array()),
+        array('lti_tool_provider_memberships_batch_get_altered_memberships', array()),
+      ),
+      'finished' => 'lti_tool_provider_memberships_prepare_form_finished',
+      'init_message' => t('Preparing membership form.'),
+      'error_message' => t('Encountered an error while preparing the membership form.'),
+      'file' => drupal_get_path('module', 'lti_tool_provider_memberships') . '/lti_tool_provider_memberships.batch.inc',
+    );
+    batch_set($batch_prepare_form);
+    batch_process('lti-tool-provider/memberships');
   }
+  $member_data = $_SESSION['lti_tool_provider_memberships_batch_results']['members'];
+  $new_members = $_SESSION['lti_tool_provider_memberships_batch_results']['new_members'];
+  $dropped_members = $_SESSION['lti_tool_provider_memberships_batch_results']['dropped_members'];
+  $altered_members = $_SESSION['lti_tool_provider_memberships_batch_results']['altered_members'];
+  // Display time of last data retrieval.
+  $memberships_context = lti_tool_provider_memberships_get_memberships_context();
   $fid = $memberships_context->lti_tool_provider_memberships_context_file_id;
   if ($fid != 0) {
     $file = file_load($fid);
@@ -196,30 +204,17 @@ function lti_tool_provider_memberships_form($form, &$form_state) {
   );
   $form['members']['title'] = array(
     '#type' => 'item',
-    '#markup' => t('Memberships for Consumer: <b>@consumer</b>, Context: <b>@context</b>, Retrieved on: <b>@date</b>', array('@consumer' => $consumer->lti_tool_provider_consumer_consumer,
+    '#markup' => t('Memberships for Context: <b>@context</b>, Retrieved on: <b>@date</b>', array(
       '@context' => $_SESSION['lti_tool_provider_context_info']['context_id'], '@date' => $time_retrieved)),
   );
   $form['members']['fetch_xml_btn']= array(
     '#type' => 'submit',
-    '#value' => t('Retrieve memberships'),
-    '#ajax' => array(
-      'callback' => 'lti_tool_provider_memberships_form_callback',
-      'wrapper' => 'membership-table',
-      'method' => 'replace',
-      'effect' => 'fade',
-    )
+    '#value' => t('Refresh'),
   );
   $form['members']['fetch_xml_and_apply_btn']= array(
     '#type' => 'submit',
-    '#value' => t('Retrieve memberships and apply'),
-    '#ajax' => array(
-      'callback' => 'lti_tool_provider_memberships_form_callback',
-      'wrapper' => 'membership-table',
-      'method' => 'replace',
-      'effect' => 'fade',
-    )
+    '#value' => t('Refresh and apply all changes'),
   );
-  $new_members = lti_tool_provider_memberships_get_new_memberships($member_data);
   if (!empty($new_members)) {
     $form['members']['new_members']['description'] = array(
       '#type' => 'item',
@@ -269,7 +264,6 @@ function lti_tool_provider_memberships_form($form, &$form_state) {
       '#value' => t('Add member(s)'),
     );
   }
-  $dropped_members = lti_tool_provider_memberships_get_dropped_memberships($member_data);
   if (!empty($dropped_members)) {
     $form['members']['dropped_members']['description'] = array(
       '#type' => 'item',
@@ -304,7 +298,6 @@ function lti_tool_provider_memberships_form($form, &$form_state) {
       '#value' => t('Remove selected member(s) and their content'),
     );
   }
-  $altered_members = lti_tool_provider_memberships_get_altered_memberships($member_data);
   if (!empty($altered_members)) {
     $form['members']['altered_members']['description'] = array(
       '#type' => 'item',
@@ -434,18 +427,6 @@ function lti_tool_provider_memberships_form($form, &$form_state) {
 }
 
 /**
- * AJAX callback for the lti_tool_provider_memberships_form.
- *
- * @param array $form
- *   The form.
- * @param array $form_state
- *   The form state.
- */
-function lti_tool_provider_memberships_form_callback($form, &$form_state) {
-  return $form['members'];
-}
-
-/**
  * Membership admin form submit handler.
  *
  * @param array $form
@@ -454,21 +435,112 @@ function lti_tool_provider_memberships_form_callback($form, &$form_state) {
  *   The form state array.
  */
 function lti_tool_provider_memberships_form_submit($form, &$form_state) {
-  if ($form_state['clicked_button']['#parents']['0'] == 'add') {
+  if ($form_state['clicked_button']['#parents']['0'] == 'fetch_xml_btn') {
+    $batch_prepare_form = array(
+      'title' => t('Preparing form.'),
+      'operations' => array(
+        array('lti_tool_provider_memberships_batch_get_memberships', array(TRUE)),
+        array('lti_tool_provider_memberships_batch_get_new_memberships', array()),
+        array('lti_tool_provider_memberships_batch_get_dropped_memberships', array()),
+        array('lti_tool_provider_memberships_batch_get_altered_memberships', array()),
+      ),
+      'finished' => 'lti_tool_provider_memberships_prepare_form_finished',
+      'init_message' => t('Preparing Form.'),
+      'error_message' => t('Encountered an error while preparing the form.'),
+      'file' => drupal_get_path('module', 'lti_tool_provider_memberships') . '/lti_tool_provider_memberships.batch.inc',
+    );
+    batch_set($batch_prepare_form);
+  }
+  elseif ($form_state['clicked_button']['#parents']['0'] == 'fetch_xml_and_apply_btn') {
+    $batch_apply = array(
+      'title' => t('Preparing form.'),
+      'operations' => array(
+        array('lti_tool_provider_memberships_batch_get_memberships', array(TRUE)),
+        array('lti_tool_provider_memberships_batch_get_new_memberships', array()),
+        array('lti_tool_provider_memberships_batch_get_dropped_memberships', array()),
+        array('lti_tool_provider_memberships_batch_get_altered_memberships', array()),
+        array('lti_tool_provider_memberships_batch_process_added_memberships', array()),
+        array('lti_tool_provider_memberships_batch_process_dropped_memberships', array(TRUE)),
+        array('lti_tool_provider_memberships_batch_process_altered_memberships', array()),
+      ),
+      'finished' => 'lti_tool_provider_memberships_apply_finished',
+      'init_message' => t('Preparing Form.'),
+      'error_message' => t('Encountered an error while preparing the form.'),
+      'file' => drupal_get_path('module', 'lti_tool_provider_memberships') . '/lti_tool_provider_memberships.batch.inc',
+    );
+    batch_set($batch_apply);
+  }
+  elseif ($form_state['clicked_button']['#parents']['0'] == 'add') {
+    $members_to_add = array();
     foreach ($form_state['complete form']['members']['new_members']['new_members_table']['#value'] as $member_id) {
-      lti_tool_provider_memberships_add_member($form_state['complete form']['members']['new_members']['new_members_table']['#options'][$member_id]);
+      $members_to_add[] = $form_state['complete form']['members']['new_members']['new_members_table']['#options'][$member_id];
+      //     lti_tool_provider_memberships_add_member($form_state['complete form']['members']['new_members']['new_members_table']['#options'][$member_id]);
     }
+    $batch_add = array(
+      'title' => t('Adding Users.'),
+      'operations' => array(
+        array('lti_tool_provider_memberships_batch_init_new_memberships', array($members_to_add)),
+        array('lti_tool_provider_memberships_batch_process_added_memberships', array()),
+      ),
+      'finished' => 'lti_tool_provider_memberships_apply_finished',
+      'init_message' => t('Adding users.'),
+      'error_message' => t('Encountered an error while adding users.'),
+      'file' => drupal_get_path('module', 'lti_tool_provider_memberships') . '/lti_tool_provider_memberships.batch.inc',
+    );
+    batch_set($batch_add);
+//    unset($_SESSION['lti_tool_provider_memberships_batch_has_run']);
   }
   elseif ($form_state['clicked_button']['#parents']['0'] == 'remove_dropped_members') {
-    lti_tool_provider_memberships_drop_members($form_state['complete form']['members']['dropped_members']['dropped_members_table']['#value'], FALSE);
+//    lti_tool_provider_memberships_drop_members($form_state['complete form']['members']['dropped_members']['dropped_members_table']['#value'], FALSE);
+//    unset($_SESSION['lti_tool_provider_memberships_batch_has_run']);
+    $batch_drop = array(
+      'title' => t('Dropping Users.'),
+      'operations' => array(
+        array('lti_tool_provider_memberships_batch_init_dropped_memberships', array($form_state['complete form']['members']['dropped_members']['dropped_members_table']['#value'])),
+        array('lti_tool_provider_memberships_batch_process_dropped_memberships', array(FALSE)),
+      ),
+      'finished' => 'lti_tool_provider_memberships_apply_finished',
+      'init_message' => t('Dropping users.'),
+      'error_message' => t('Encountered an error while dropping users.'),
+      'file' => drupal_get_path('module', 'lti_tool_provider_memberships') . '/lti_tool_provider_memberships.batch.inc',
+    );
+    batch_set($batch_drop);
   }
   elseif ($form_state['clicked_button']['#parents']['0'] == 'remove_dropped_members_contents') {
-    lti_tool_provider_memberships_drop_members($form_state['complete form']['members']['dropped_members']['dropped_members_table']['#value'], TRUE);
+//    lti_tool_provider_memberships_drop_members($form_state['complete form']['members']['dropped_members']['dropped_members_table']['#value'], TRUE);
+//    unset($_SESSION['lti_tool_provider_memberships_batch_has_run']);
+    $batch_drop = array(
+      'title' => t('Dropping Users.'),
+      'operations' => array(
+        array('lti_tool_provider_memberships_batch_init_dropped_memberships', array($form_state['complete form']['members']['dropped_members']['dropped_members_table']['#value'])),
+        array('lti_tool_provider_memberships_batch_process_dropped_memberships', array(TRUE)),
+      ),
+      'finished' => 'lti_tool_provider_memberships_apply_finished',
+      'init_message' => t('Dropping users.'),
+      'error_message' => t('Encountered an error while dropping users.'),
+      'file' => drupal_get_path('module', 'lti_tool_provider_memberships') . '/lti_tool_provider_memberships.batch.inc',
+    );
+    batch_set($batch_drop);
   }
   elseif ($form_state['clicked_button']['#parents']['0'] == 'update_altered_members') {
+    $members_to_alter = array();
     foreach ($form_state['complete form']['members']['altered_members']['altered_members_table']['#value'] as $member_id) {
-      lti_tool_provider_memberships_alter_member($form_state['complete form']['members']['altered_members']['altered_members_table']['#options'][$member_id]);
+      //lti_tool_provider_memberships_alter_member($form_state['complete form']['members']['altered_members']['altered_members_table']['#options'][$member_id]);
+      $members_to_alter[] = $form_state['complete form']['members']['altered_members']['altered_members_table']['#options'][$member_id];
     }
+    $batch_alter = array(
+      'title' => t('Altering Users.'),
+      'operations' => array(
+        array('lti_tool_provider_memberships_batch_init_altered_memberships', array($members_to_alter)),
+        array('lti_tool_provider_memberships_batch_process_altered_memberships', array()),
+      ),
+      'finished' => 'lti_tool_provider_memberships_apply_finished',
+      'init_message' => t('Altering users.'),
+      'error_message' => t('Encountered an error while altering users.'),
+      'file' => drupal_get_path('module', 'lti_tool_provider_memberships') . '/lti_tool_provider_memberships.batch.inc',
+    );
+    batch_set($batch_alter);
+    //unset($_SESSION['lti_tool_provider_memberships_batch_has_run']);
   }
 }
 
@@ -482,15 +554,6 @@ function lti_tool_provider_memberships_form_submit($form, &$form_state) {
  */
 function lti_tool_provider_memberships_form_validate($form, &$form_state) {
   if (isset($form_state['clicked_button'])) {
-    if ($form_state['clicked_button']['#parents']['0'] == 'fetch_xml_btn') {
-      $form_state['storage']['fetch_xml_btn'] = TRUE;
-      $form_state['rebuild'] = TRUE;
-    }
-    if ($form_state['clicked_button']['#parents']['0'] == 'fetch_xml_and_apply_btn') {
-      $form_state['storage']['fetch_xml_btn'] = TRUE;
-      $form_state['storage']['fetch_xml_and_apply_btn'] = TRUE;
-      $form_state['rebuild'] = TRUE;
-    }
     if ($form_state['clicked_button']['#parents']['0'] == 'add') {
       if (empty($form_state['complete form']['members']['new_members']['new_members_table']['#value'])) {
         form_set_error('', t('No members selected in New LTI Memberships table.'));
@@ -602,7 +665,7 @@ function lti_tool_provider_memberships_request() {
 function lti_tool_provider_memberships_get_memberships($new = FALSE) {
   $memberships_context = lti_tool_provider_memberships_get_memberships_context();
   $fid = $memberships_context->lti_tool_provider_memberships_context_file_id;
-  if ($new) {
+  if ($new || $fid == 0) {
     // Retrieve a new copy of the memberships XML from the Consumer.
     $data = lti_tool_provider_memberships_request();
     if ($fid != 0) {
@@ -619,13 +682,8 @@ function lti_tool_provider_memberships_get_memberships($new = FALSE) {
     lti_tool_provider_memberships_context_save($memberships_context);
   }
   else {
-    if ($fid != 0) {
-      $file = file_load($fid);
-      $data = file_get_contents($file->uri);
-    }
-    else {
-      $data = '';
-    }
+    $file = file_load($fid);
+    $data = file_get_contents($file->uri);
   }
   $memberships = array();
   if ($data != '') {
@@ -1308,6 +1366,7 @@ function lti_tool_provider_memberships_drop_member($member_id, $delete_content) 
  *   An array of data for the member including changed roles and groups.
  */
 function lti_tool_provider_memberships_alter_member($member) {
+  dpm($member, 'member to alter');
   // Find membership.
   $query = new EntityFieldQuery();
   $result = $query
@@ -1390,4 +1449,22 @@ function lti_tool_provider_memberships_alter_member($member) {
   $membership->date_updated = REQUEST_TIME;
   lti_tool_provider_memberships_save($membership);
   drupal_set_message(t('%name\'s membership updated.', array('%name' => $membership->lti_tool_provider_memberships_user_id)));
+}
+
+/**
+ * Access callback that checks for og module as well as user access.
+ *
+ * @param string $access
+ *   The access permission requested.
+ *
+ * @return boolean
+ *   TRUE grants access.
+ */
+function lti_tool_provider_memberships_access_and_og($access) {
+  if (user_access($access) && module_exists('lti_tool_provider_og')) {
+    return TRUE;
+  }
+  else {
+    return FALSE;
+  }
 }
