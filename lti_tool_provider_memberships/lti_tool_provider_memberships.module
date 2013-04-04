@@ -231,22 +231,13 @@ function lti_tool_provider_memberships_form($form, &$form_state) {
     }
     $new_members_rows = array();
     foreach ($new_members as $new_member) {
-      $new_members_rows[$new_member['user_id']] = array(
-        'user_id' => $new_member['user_id'],
-        'roles' => $new_member['roles'],
-        'person_sourcedid' => $new_member['person_sourcedid'],
-        'person_contact_email_primary' => $new_member['person_contact_email_primary'],
-        'person_name_given' => $new_member['person_name_given'],
-        'person_name_family' => $new_member['person_name_family'],
-        'person_name_full' => $new_member['person_name_full'],
-      );
+      $new_members_rows[$new_member['user_id']] = $new_member;
       if (variable_get('lti_tool_provider_memberships_subgroups')) {
         $groups = '';
         if (isset($new_member['groups'])) {
           foreach ($new_member['groups'] as $group) {
             $groups .= $group['title'] . ' ';
           }
-          $new_members_rows[$new_member['user_id']]['groups'] = $new_member['groups'];
         }
         else {
           $new_members_rows[$new_member['user_id']]['groups'] = array();
@@ -704,6 +695,8 @@ function lti_tool_provider_memberships_get_memberships($new = FALSE) {
             $memberships[$i]['groups'][] = array('id' => (string)$group->id, 'title' => (string)$group->title);
           }
         }
+        // Allow other modules to alter.
+        drupal_alter('lti_tool_provider_memberships_get', $memberships[$i], $members[$i]);
       }
     }
   }
@@ -752,19 +745,12 @@ function lti_tool_provider_memberships_get_new_memberships($member_data) {
       -> entityCondition('entity_type', 'lti_tool_provider_memberships')
       -> propertyCondition('lti_tool_provider_memberships_context_id', $_SESSION['lti_tool_provider_context_info']['context_id'], '=')
       -> propertyCondition('lti_tool_provider_memberships_user_id', $member_data[$i]['user_id'])
-      //     -> propertyCondition('lti_tool_provider_memberships_role', $member_data[$i]['roles'])
       -> propertyCondition('lti_tool_provider_memberships_status', 'Active')
       -> execute();
       if (empty($result)) {
-        $new_members[$i]['user_id'] = $member_data[$i]['user_id'];
-        $new_members[$i]['roles'] = $member_data[$i]['roles'];
-        $new_members[$i]['person_sourcedid'] = $member_data[$i]['person_sourcedid'];
-        $new_members[$i]['person_contact_email_primary'] = $member_data[$i]['person_contact_email_primary'];
-        $new_members[$i]['person_name_given'] = $member_data[$i]['person_name_given'];
-        $new_members[$i]['person_name_family'] = $member_data[$i]['person_name_family'];
-        $new_members[$i]['person_name_full'] = $member_data[$i]['person_name_full'];
-        if (variable_get('lti_tool_provider_memberships_subgroups')) {
-          $new_members[$i]['groups'] = isset($member_data[$i]['groups']) ? $member_data[$i]['groups'] : array();
+        $new_members[$i] = $member_data[$i];
+        if (variable_get('lti_tool_provider_memberships_subgroups') && !isset($member_data[$i]['groups'])) {
+          $new_members[$i]['groups'] = array();
         }
       }
     }
@@ -1207,13 +1193,12 @@ function lti_tool_provider_memberships_add_member($member) {
   }
   // Create user
   if (!$user_created) {
-    $member_info = array();
-    $member_info['consumer_domain'] = $_SESSION['lti_tool_provider_context_info']['consumer_domain'];
-    $member_info['lis_person_contact_email_primary'] = $member['person_contact_email_primary'];
-    $member_info['lis_person_name_given'] = $member['person_name_given'];
-    $member_info['lis_person_name_family'] = $member['person_name_family'];
-    $member_info['lis_person_name_full'] = $member['person_name_full'];
-    lti_tool_provider_create_account($lti_user, $member_info);
+    $member['consumer_domain'] = $_SESSION['lti_tool_provider_context_info']['consumer_domain'];
+    $member['lis_person_contact_email_primary'] = $member['person_contact_email_primary'];
+    $member['lis_person_name_given'] = $member['person_name_given'];
+    $member['lis_person_name_family'] = $member['person_name_family'];
+    $member['lis_person_name_full'] = $member['person_name_full'];
+    lti_tool_provider_create_account($lti_user, $member);
   }
   $account = user_load_by_name($lti_user);
   // Map Drupal global roles based on the user LTI role.
@@ -1468,3 +1453,4 @@ function lti_tool_provider_memberships_access_and_og($access) {
     return FALSE;
   }
 }
+
