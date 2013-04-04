@@ -631,24 +631,24 @@ function lti_tool_provider_goto($path) {
 }
 
 /**
- * Provision a user account from the context_info.
+ * Provision a user account from the lti_info.
  *
  * @param string $lti_user
  *   The lti user name.
- * @param array $launch_info
+ * @param array $lti_info
  *   The lti context info.
  *
  * @return object
  *   The user account object or FALSE if the account creation failed.
  */
-function lti_tool_provider_create_account($lti_user, $launch_info) {
+function lti_tool_provider_create_account($lti_user, $lti_info) {
   // If a user image is supplied create a managed file,
   // and attach it to the user account.
   if (isset($context_info['user_image'])) {
     $file = (object) array(
       'uid' => 1,
       'uri' => $context_info['user_image'],
-      'filename' => drupal_basename($context_info['user_image']),
+      'filename' => drupal_basename($lti_info['user_image']),
       'filemime' => file_get_mimetype($filepath),
       'status' => 1,
     );
@@ -664,20 +664,20 @@ function lti_tool_provider_create_account($lti_user, $launch_info) {
   $userinfo = array(
     'name' => $lti_user,
     'pass' => user_password(20),
-    'init' => $launch_info['lis_person_contact_email_primary'],
-    'mail' => $launch_info['lis_person_contact_email_primary'],
+    'init' => $lti_info['lis_person_contact_email_primary'],
+    'mail' => $lti_info['lis_person_contact_email_primary'],
     'picture' => $picture,
     'status' => 1,
     'access' => REQUEST_TIME,
   );
   foreach ($user_attribute_settings as $variable => $field) {
-    if (($field != 'none') && isset($fields[$field]) && isset($launch_info[$variable])) {
-      $userinfo[$field] = array(LANGUAGE_NONE => array('0' => array('value' => $launch_info[$variable])));
+    if (($field != 'none') && isset($fields[$field]) && isset($lti_info[$variable])) {
+      $userinfo[$field] = array(LANGUAGE_NONE => array('0' => array('value' => $lti_info[$variable])));
     }
   }
   $account = user_save(drupal_anonymous_user(), $userinfo);
   // Allow other modules to alter the newly provisioned lti user account.
-  drupal_alter('lti_tool_provider_create_account', $account);
+  drupal_alter('lti_tool_provider_create_account', $account, $lti_info);
   return $account;
 }
 

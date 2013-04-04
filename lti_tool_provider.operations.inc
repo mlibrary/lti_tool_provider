@@ -149,9 +149,11 @@ function lti_tool_provider_launch() {
 function lti_tool_provider_return() {
   // Logout the user and redirect to the return url in the context_info.
   global $user;
-  // Log user out and return to launch presentation.
-  module_invoke_all('lti_tool_provider_return');
-  $url = $_SESSION['lti_tool_provider_context_info']['launch_presentation_return_url'];
+  if (isset($_SESSION['lti_tool_provider_context_info'])) {
+    // Log user out and return to launch presentation.
+    module_invoke_all('lti_tool_provider_return');
+    $url = isset($_SESSION['lti_tool_provider_context_info']['launch_presentation_return_url']) ? $_SESSION['lti_tool_provider_context_info']['launch_presentation_return_url'] : '';
+  }
   watchdog('user', 'Session closed for %name.', array('%name' => $user->name));
   module_invoke_all('user_logout', $user);
   // Destroy the current session, and reset $user to the anonymous user.

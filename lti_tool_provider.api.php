@@ -34,9 +34,10 @@ function hook_lti_tool_provider_return() {
 /**
  * Implements hook_lti_tool_provider_create_account_alter().
  */
-function lti_tool_provider_create_account_alter(&$account) {
+function lti_tool_provider_create_account_alter(&$account, &$lti_info) {
   /*
    * Do stuff at the time of an LTI user being created.
    * Invoked after user $account provisioned.
+   * $lti_info contains the array of info passed to the create account function.
    */
 }
