@@ -336,15 +336,15 @@ function lti_tool_provider_outcomes_set_score($score = '0.0', $user_id = NULL) {
         drupal_set_message(t('Score has been set.'));
       }
       else {
-        drupal_set_message(t('Unable to set score: No outcome.', 'error'));
+        drupal_set_message(t('Unable to set score: No outcome.'), 'error');
       }
     }
     else {
-      drupal_set_message(t('Unable to set score: No resource.', 'error'));
+      drupal_set_message(t('Unable to set score: No resource.'), 'error');
     }
   }
   else {
-    drupal_set_message(t('Unable to set score: No LTI session', 'error'));
+    drupal_set_message(t('Unable to set score: No LTI session'), 'error');
   }
 }
 
@@ -387,7 +387,7 @@ function lti_tool_provider_outcomes_get_score($user_id = NULL) {
     }
   }
   else {
-    drupal_set_message(t('Unable to get score: No LTI session', 'error'));
+    drupal_set_message(t('Unable to get score: No LTI session'), 'error');
   }
   return NULL;
 }

@@ -25,7 +25,7 @@ function lti_tool_provider_outcomes_send_results($mode, $return_url = '') {
   $consumer = lti_tool_provider_consumer_load($consumer_id);
   $url = $consumer->lti_tool_provider_consumer_outcomes_url;
   if (!isset($url)) {
-    drupal_set_message(t('Unable to send results. No Outcome URL is avaliable', 'error'));
+    drupal_set_message(t('Unable to send results. No Outcome URL is avaliable'), 'error');
     drupal_goto($return_url);
   }
   switch ($mode) {
@@ -144,7 +144,7 @@ function lti_tool_provider_outcomes_send_outcome($outcome, $consumer) {
   }
   else {
     // Unable to update.
-    drupal_set_message(t('Unable to send result ID: @outcome', array('@outcome' => $outcome->lti_tool_provider_outcomes_id), 'error'));
+    drupal_set_message(t('Unable to send result ID: @outcome', array('@outcome' => $outcome->lti_tool_provider_outcomes_id)), 'error');
     return FALSE;
   }
 }
@@ -215,7 +215,7 @@ function lti_tool_provider_outcomes_pull_results($mode, $return_url = '') {
   $consumer = lti_tool_provider_consumer_load($consumer_id);
   $url = $consumer->lti_tool_provider_consumer_outcomes_url;
   if (!isset($url)) {
-    drupal_set_message(t('Unable to retrieve results. No Outcome URL is avaliable', 'error'));
+    drupal_set_message(t('Unable to retrieve results. No Outcome URL is avaliable'), 'error');
     drupal_goto($return_url);
   }
   // Get the outcomes to pull.
@@ -338,7 +338,7 @@ function lti_tool_provider_outcomes_pull_outcome($outcome, $consumer) {
   }
   else {
     // Unable to update.
-    drupal_set_message(t('Unable to retreive result ID: @outcome', array('@outcome' => $outcome->lti_tool_provider_outcomes_id), 'error'));
+    drupal_set_message(t('Unable to retreive result ID: @outcome', array('@outcome' => $outcome->lti_tool_provider_outcomes_id)), 'error');
     return FALSE;
   }
 }
