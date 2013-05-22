@@ -740,6 +740,10 @@ function lti_tool_provider_outcomes_pull_score_action() {
 function lti_tool_provider_outcomes_lti_tool_provider_create_account_alter(&$account, &$lti_info) {
   // Create an outcomes record for the user.
   if (isset($lti_info['lis_result_sourcedid'])) {
+    if (!isset($lti_info['resource_id'])) {
+      // Create the resource.
+      $lti_info['resource_id'] = lti_tool_provider_outcomes_get_set_resource($lti_info['consumer_id'], $lti_info['context_id'], $lti_info['resource_link_id'], $lti_info['resource_link_title'], $lti_info['resultvalue_sourcedids']);
+    }
     // Create or update the outcome.
     lti_tool_provider_outcomes_create_outcome($lti_info['lis_result_sourcedid'], $lti_info['context_id'], $_SESSION['lti_tool_provider_context_info']['resource_id'], $account->uid);
   }
