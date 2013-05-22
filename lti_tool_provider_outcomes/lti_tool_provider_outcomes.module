@@ -741,6 +741,8 @@ function lti_tool_provider_outcomes_lti_tool_provider_create_account_alter(&$acc
   // Create an outcomes record for the user.
   if (isset($lti_info['lis_result_sourcedid'])) {
     if (!isset($lti_info['resource_id'])) {
+      // Set the resultvalue_sourcedids in the lti info.
+      $lti_info['resultvalue_sourcedids'] = isset($lti_info['ext_ims_lis_resultvalue_sourcedids']) ? $lti_info['ext_ims_lis_resultvalue_sourcedids'] : 'decimal';
       // Create the resource.
       $lti_info['resource_id'] = lti_tool_provider_outcomes_get_set_resource($lti_info['consumer_id'], $lti_info['context_id'], $lti_info['resource_link_id'], $lti_info['resource_link_title'], $lti_info['resultvalue_sourcedids']);
     }
