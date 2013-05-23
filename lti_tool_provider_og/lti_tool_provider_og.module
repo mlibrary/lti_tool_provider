@@ -193,3 +193,39 @@ function lti_tool_provider_og_lti_tool_provider_launch_alter(&$launch_info, $acc
     }
   }
 }
+
+/**
+ *  Add context negotiation info.
+ *
+ * @return array
+ *   An array of context handler info
+ */
+function lti_tool_provider_og_og_context_negotiation_info() {
+  $providers = array();
+
+  $providers['lti-context'] = array(
+    'name' => t('LTI Context'),
+    'description' => t("Determine context from the LTI context."),
+    'callback' => 'lti_tool_provider_og_og_context_handler',
+  );
+
+  return $providers;
+}
+
+/**
+ * Evaluates and return group IDs to provide group context.
+ *
+ * Callback for hook_og_context_negotiation_info().
+ *
+ * @return array
+ *  A nested array of group IDs, grouped first by entity type. Each value is
+ *  a flat array of group IDs.
+ */
+function lti_tool_provider_og_og_context_handler() {
+  if (isset($_SESSION['lti_tool_provider_context_info']['course_entity_eid'])) {
+    return array(
+      $_SESSION['lti_tool_provider_context_info']['course_entity_type'] => array($_SESSION['lti_tool_provider_context_info']['course_entity_eid']),
+    );
+  }
+}
+
