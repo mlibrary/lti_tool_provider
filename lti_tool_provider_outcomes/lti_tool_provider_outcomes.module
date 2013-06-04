@@ -312,6 +312,9 @@ function lti_tool_provider_outcomes_update_timestamp($entity) {
  *   The new Score.
  * @param $user_id
  *   The user, defaults to current user if not specified.
+ *
+ * @return boolean
+ *   True if successful.
  */
 function lti_tool_provider_outcomes_set_score($score = '0.0', $user_id = NULL) {
   if (isset($_SESSION['lti_tool_provider_context_info'])) {
@@ -334,6 +337,7 @@ function lti_tool_provider_outcomes_set_score($score = '0.0', $user_id = NULL) {
         $outcome->lti_tool_provider_outcomes_last_updated = REQUEST_TIME;
         entity_get_controller($entity_type)->save($outcome);
         drupal_set_message(t('Score has been set.'));
+        return TRUE;
       }
       else {
         drupal_set_message(t('Unable to set score: No outcome.'), 'error');
@@ -346,6 +350,7 @@ function lti_tool_provider_outcomes_set_score($score = '0.0', $user_id = NULL) {
   else {
     drupal_set_message(t('Unable to set score: No LTI session'), 'error');
   }
+  return FALSE;
 }
 
 /**
