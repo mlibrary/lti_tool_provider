@@ -2,42 +2,54 @@
 
 /**
  * @file
- * Hooks provided by the LTI Tool Provider module.
+ * Hooks specific to the LTI Tool Provider module.
  */
 
 /**
- * Implements hook_lti_tool_provider_launch_alter().
+ * @addtogroup hooks
+ * @{
  */
-function hook_lti_tool_provider_launch_alter(&$launch_info, $account) {
-  /*
-   * Do stuff at the time of an LTI launch including
-   *   modifying context variables.
-   * Invoked after user provisioned, authenticated and authorized,
-   *   but before redirect to landing page.
-   * LTI context variables are available in $launch_info, and
-   * user account is $account.
-   */
+
+/**
+ * Allows modules to alter the lti context that is used to authenticate.
+ *
+ * @param array $context
+ *   The LTI context from the launch request.
+ */
+function hook_lti_tool_provider_launch_alter(array &$context) {
 }
 
 /**
- * Implements hook_lti_tool_provider_return().
+ * Allows modules to act on a user entity before creation.
+ *
+ * @param \Drupal\user\Entity\User $user
+ *   The user that has been authenticated.
+ * @param array $context
+ *   The LTI context from the launch request.
  */
-function hook_lti_tool_provider_return() {
-  /*
-   * Do stuff at the time of an LTI return.
-   * Invoked before user logged out and session is destroyed.
-   * LTI context variables are available in
-   * $_SESSION['lti_tool_provider_context_info'].
-   */
+function hook_lti_tool_provider_create_user(User $user, array $context) {
 }
 
 /**
- * Implements hook_lti_tool_provider_create_account_alter().
+ * Allows modules to act on a successful LTI authentication.
+ *
+ * @param \Drupal\user\Entity\User $user
+ *   The user that has been authenticated.
+ * @param array $context
+ *   The LTI context from the launch request.
  */
-function lti_tool_provider_create_account_alter(&$account, &$lti_info) {
-  /*
-   * Do stuff at the time of an LTI user being created.
-   * Invoked after user $account provisioned.
-   * $lti_info contains the array of info passed to the create account function.
-   */
+function hook_lti_tool_provider_authenticated(User $user, array $context) {
 }
+
+/**
+ * Allows modules to act on the LTI return event.
+ *
+ * @param array $context
+ *   The LTI context.
+ */
+function hook_lti_tool_provider_return(array $context) {
+}
+
+/**
+ * @} End of "addtogroup hooks".
+ */

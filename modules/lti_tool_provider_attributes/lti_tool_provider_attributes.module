@@ -1,0 +1,50 @@
+<?php
+
+/**
+ * @file
+ * LTI Tool Provider Attributes hook implementations and support functions.
+ */
+
+use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\user\Entity\User;
+
+/**
+ * Implements hook_help().
+ */
+function lti_tool_provider_attributes_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    case 'help.page.lti_tool_provider_attributes':
+      $output = '<p>' . t('LTI Tool Provider Attributes Mapping') . '</p>';
+      return $output;
+  }
+}
+
+/**
+ * Implements hook_lti_tool_provider_authenticated().
+ */
+function lti_tool_provider_attributes_lti_tool_provider_authenticated(User $user, array $context) {
+  $user_attributes = [];
+
+  // Don't alter the ltiuser as this isn't a unique account.
+  if ($user->getUsername() === 'ltiuser') {
+    return;
+  }
+
+  $userFieldDefinitions = \Drupal::service('entity_field.manager')->getFieldDefinitions('user', 'user');
+  foreach ($userFieldDefinitions as $key => $field) {
+    $type = $field->getType();
+    if ($type === 'string') {
+      $user_attributes[$key] = t('@label (@name)', ['@label' => $field->getLabel(), '@name' => $key]);
+    }
+  }
+
+  $mapped_attributes = \Drupal::service('config.factory')->getEditable('lti_tool_provider_attributes.settings')->get('mapped_attributes');
+  foreach ($mapped_attributes as $key => $user_attribute) {
+    $lti_attribute = $context[$key];
+    if (isset($user_attributes[$user_attribute]) && !empty($lti_attribute)) {
+      $user->set($user_attribute, $lti_attribute);
+    }
+  }
+
+  $user->save();
+}

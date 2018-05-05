@@ -1,0 +1,6 @@
+lti_tool_provider.admin.attributes:
+  title: LTI Attributes Mapping
+  parent: lti_tool_provider.admin
+  description: Administer LTI Attributes Mapping.
+  route_name: lti_tool_provider.admin.attributes
+  weight: 3
