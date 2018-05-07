@@ -9,6 +9,13 @@ use Drupal\lti_tool_provider\Authentication\Provider\LTIToolProvider;
 define("LTI_TOOL_PROVIDER_NONCE_INTERVAL", (5 * 60));
 define("LTI_TOOL_PROVIDER_NONCE_EXPIRY", (1.5 * 60 * 60));
 
+if (!class_exists('\Oauth')) {
+  define("OAUTH_OK", 0);
+  define("OAUTH_BAD_NONCE", 4);
+  define("OAUTH_BAD_TIMESTAMP", 8);
+  define("OAUTH_CONSUMER_KEY_UNKNOWN", 16);
+}
+
 /**
  * LTIToolProvider unit tests.
  *

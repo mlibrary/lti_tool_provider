@@ -55,13 +55,6 @@ class LTIToolProvider implements AuthenticationProviderInterface {
   protected $tempStore;
 
   /**
-   * The PECL OauthProvider class.
-   *
-   * @var \OauthProvider
-   */
-  public $provider;
-
-  /**
    * The consumer entity matching the LTI request.
    *
    * @var array
@@ -95,7 +88,6 @@ class LTIToolProvider implements AuthenticationProviderInterface {
     $this->loggerFactory = $logger_factory->get('lti_tool_provider');
     $this->moduleHandler = $module_handler;
     $this->tempStore = $tempStoreFactory->get('lti_tool_provider');
-    $this->provider = new \OAuthProvider(["oauth_signature_method" => OAUTH_SIG_METHOD_HMACSHA1]);
   }
 
   /**
@@ -136,38 +128,42 @@ class LTIToolProvider implements AuthenticationProviderInterface {
    * {@inheritdoc}
    */
   public function authenticate(Request $request) {
-    $this->context = $request->request->all();
-    $this->moduleHandler->alter('lti_tool_provider_launch', $this->context);
-
     try {
-      $this->provider->consumerHandler([$this, 'consumerHandler']);
-      $this->provider->timestampNonceHandler([$this, 'timestampNonceHandler']);
-      $this->provider->isRequestTokenEndpoint(FALSE);
-      $this->provider->is2LeggedEndpoint(TRUE);
-      $this->provider->checkOAuthRequest();
+      $this->context = $request->request->all();
+      $this->moduleHandler->alter('lti_tool_provider_launch', $this->context);
+
+      $this->validateOauthRequest();
+      $user = $this->provisionUser();
+
+      $this->moduleHandler->invokeAll('lti_tool_provider_authenticated', [$user, $this->context]);
+      $this->userLoginFinalize($user);
+      $this->tempStore->set('context', $this->context);
+
+      return $user;
     }
-    catch (\OAuthException $e) {
+    catch (\Exception $e) {
       $this->loggerFactory->warning($e->getMessage());
       $this->sendLtiError($e->getMessage());
 
       return NULL;
     }
+  }
 
+  /**
+   * Validate the OAuth request.
+   */
+  private function validateOauthRequest() {
     try {
-      $user = $this->provisionUser();
+      $provider = new \OAuthProvider(["oauth_signature_method" => OAUTH_SIG_METHOD_HMACSHA1]);
+      $provider->consumerHandler([$this, 'consumerHandler']);
+      $provider->timestampNonceHandler([$this, 'timestampNonceHandler']);
+      $provider->isRequestTokenEndpoint(FALSE);
+      $provider->is2LeggedEndpoint(TRUE);
+      $provider->checkOAuthRequest();
     }
-    catch (\Exception $e) {
-      $this->loggerFactory->warning($e->getMessage());
-      $this->sendLtiError('Account provisioning failed.');
-
-      return NULL;
+    catch (\OAuthException $e) {
+      throw new \Exception($e->getMessage());
     }
-
-    $this->moduleHandler->invokeAll('lti_tool_provider_authenticated', [$user, $this->context]);
-    $this->userLoginFinalize($user);
-    $this->tempStore->set('context', $this->context);
-
-    return $user;
   }
 
   /**
@@ -177,15 +173,15 @@ class LTIToolProvider implements AuthenticationProviderInterface {
    *   - OAUTH_OK if validated.
    *   - OAUTH_CONSUMER_KEY_UNKNOWN if not.
    */
-  public function consumerHandler() {
+  public function consumerHandler($provider) {
     $ids = $this->entityTypeManager->getStorage('lti_tool_provider_consumer')
       ->getQuery()
-      ->condition('consumer_key', $this->provider->consumer_key, '=')
+      ->condition('consumer_key', $provider->consumer_key, '=')
       ->execute();
 
     if (count($ids)) {
-      $this->consumer_entity = $this->entityTypeManager->getStorage('lti_tool_provider_consumer')->load(key($ids));
-      $this->provider->consumer_secret = $this->consumer_entity->get('consumer_secret')->getValue()[0]['value'];
+      $this->consumerEntity = $this->entityTypeManager->getStorage('lti_tool_provider_consumer')->load(key($ids));
+      $provider->consumer_secret = $this->consumerEntity->get('consumer_secret')->getValue()[0]['value'];
 
       return OAUTH_OK;
     }
@@ -224,20 +220,26 @@ class LTIToolProvider implements AuthenticationProviderInterface {
       return OAUTH_BAD_NONCE;
     }
 
-    $storage = $this->entityTypeManager->getStorage('lti_tool_provider_nonce');
+    try {
+      $storage = $this->entityTypeManager->getStorage('lti_tool_provider_nonce');
 
-    // Verify that current nonce is not a duplicate.
-    $nonce_exists = $storage->getQuery()->condition('nonce', $provider->nonce, '=')->execute();
-    if (count($nonce_exists)) {
+      // Verify that current nonce is not a duplicate.
+      $nonce_exists = $storage->getQuery()->condition('nonce', $provider->nonce, '=')->execute();
+      if (count($nonce_exists)) {
+        return OAUTH_BAD_NONCE;
+      }
+
+      // Store nonce in database.
+      $storage->create([
+        'nonce' => $provider->nonce,
+        'consumer_key' => $provider->consumer_key,
+        'timestamp' => $provider->timestamp,
+      ])->save();
+    }
+    catch (\Exception $e) {
+      $this->loggerFactory->warning($e->getMessage());
       return OAUTH_BAD_NONCE;
     }
-
-    // Store nonce in database.
-    $storage->create([
-      'nonce' => $provider->nonce,
-      'consumer_key' => $provider->consumer_key,
-      'timestamp' => $provider->timestamp,
-    ])->save();
 
     return OAUTH_OK;
   }
@@ -249,41 +251,47 @@ class LTIToolProvider implements AuthenticationProviderInterface {
    *   Returns a user corresponding to the LTI request.
    */
   protected function provisionUser() {
-    $name = 'ltiuser';
-    $mail = 'ltiuser@invalid';
+    try {
+      $name = 'ltiuser';
+      $mail = 'ltiuser@invalid';
 
-    $name_param = $this->consumer_entity->get('name')->getValue()[0]['value'];
-    if (isset($this->context[$name_param]) && !empty($this->context[$name_param])) {
-      $name = $this->context[$name_param];
+      $name_param = $this->consumerEntity->get('name')->getValue()[0]['value'];
+      if (isset($this->context[$name_param]) && !empty($this->context[$name_param])) {
+        $name = $this->context[$name_param];
+      }
+
+      $mail_param = $this->consumerEntity->get('mail')->getValue()[0]['value'];
+      if (isset($this->context[$mail_param]) && !empty($this->context[$mail_param])) {
+        $mail = $this->context[$mail_param];
+      }
+
+      if ($users = $this->entityTypeManager->getStorage('user')->loadByProperties(['name' => $name, 'status' => 1])) {
+        $user = reset($users);
+      }
+      elseif ($users = $this->entityTypeManager->getStorage('user')->loadByProperties(['mail' => $mail, 'status' => 1])) {
+        $user = reset($users);
+      }
+      else {
+        $storage = $this->entityTypeManager->getStorage('user');
+
+        $user = $storage->create();
+        $user->setUsername($name);
+        $user->setEmail($mail);
+        $user->setPassword(user_password());
+        $user->enforceIsNew();
+        $user->activate();
+
+        $this->moduleHandler->invokeAll('lti_tool_provider_create_user', [$user, $this->context]);
+
+        $user->save();
+      }
+
+      return $user;
     }
-
-    $mail_param = $this->consumer_entity->get('mail')->getValue()[0]['value'];
-    if (isset($this->context[$mail_param]) && !empty($this->context[$mail_param])) {
-      $mail = $this->context[$mail_param];
+    catch (\Exception $e) {
+      $this->loggerFactory->warning($e->getMessage());
+      throw new \Exception('Unable to provision user.');
     }
-
-    if ($users = $this->entityTypeManager->getStorage('user')->loadByProperties(['name' => $name, 'status' => 1])) {
-      $user = reset($users);
-    }
-    elseif ($users = $this->entityTypeManager->getStorage('user')->loadByProperties(['mail' => $mail, 'status' => 1])) {
-      $user = reset($users);
-    }
-    else {
-      $storage = $this->entityTypeManager->getStorage('user');
-
-      $user = $storage->create();
-      $user->setUsername($name);
-      $user->setEmail($mail);
-      $user->setPassword(user_password());
-      $user->enforceIsNew();
-      $user->activate();
-
-      $this->moduleHandler->invokeAll('lti_tool_provider_create_user', [$user, $this->context]);
-
-      $user->save();
-    }
-
-    return $user;
   }
 
   /**

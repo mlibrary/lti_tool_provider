@@ -26,6 +26,10 @@ class LTIAuth extends BrowserTestBase {
   protected function setUp() {
     parent::setUp();
 
+    if (!class_exists('\Oauth')) {
+      $this->markTestSkipped('Missing OAuth PECL extension, skipping test.');
+    }
+
     $this->entityStorage = $this->container->get('entity_type.manager')
       ->getStorage('lti_tool_provider_consumer');
     $this->consumer = $this->entityStorage->create([

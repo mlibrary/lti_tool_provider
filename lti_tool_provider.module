@@ -10,12 +10,12 @@ use Drupal\Core\Routing\RouteMatchInterface;
 /**
  * Length of time to accept and store nonces.
  */
-const LTI_TOOL_PROVIDER_NONCE_INTERVAL = 5 * 60;
+const LTI_TOOL_PROVIDER_NONCE_INTERVAL = (5 * 60);
 
 /**
  * Length of time to accept and store nonces.
  */
-const LTI_TOOL_PROVIDER_NONCE_EXPIRY = 1.5 * 60 * 60;
+const LTI_TOOL_PROVIDER_NONCE_EXPIRY = (1.5 * 60 * 60);
 
 /**
  * Implements hook_help().
