@@ -29,9 +29,9 @@ If you would like to change which name and mail field is used during user provis
 
 During the LTI launch request, the authentication handler will use the LTI name and mail fields to either find an existing user, or create a new user. After user provisioning is finished, that user will be logged in to Drupal.
 
-If you'd like to sync the LTI roles or LTI attributes to Drupal user roles or attributes, you can enable the submodules.
+If you'd like to sync the LTI roles or LTI attributes to Drupal user roles or attributes, you can enable the relevant submodule.
 
-Please be aware that roles and attributes are synced every time a user launches an LTI request. If the user is an Instructor in one course, and a Learner in another course, the user's Drupal role will be switched to Learner when the log in from that course. Make sure that this is the expected behavior before enabling and configuring these modules.
+Please be aware that roles and attributes are synced every time a user launches an LTI request. If the user is an Instructor in one course, and a Learner in another course, the user's Drupal role will be switched to Learner when they log in from that course. Make sure that this is the expected behavior before enabling and configuring these modules.
 
 The most common roles that you will want to sync will be 'urn:lti:role:ims/lis/Learner' and 'urn:lti:role:ims/lis/Instructor'.
 
@@ -41,7 +41,7 @@ Currently the only custom parameter that is processed it the custom_destination 
 
 ### Cross Domain and SSL Connections
 
-Most LMS now require that https is used for LTI authentication. However is should be possible to authenicate via HTTP, but it is not recommended.
+Most LMS now require that https is used for LTI authentication. However it should be possible to authenicate via HTTP, but it is not recommended.
 
 ### Module Integration
 
