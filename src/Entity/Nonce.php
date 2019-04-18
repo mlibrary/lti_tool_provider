@@ -24,32 +24,37 @@ use Drupal\Core\Entity\EntityTypeInterface;
  *   },
  * )
  */
-class Nonce extends ContentEntityBase implements ContentEntityInterface {
+class Nonce extends ContentEntityBase implements ContentEntityInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    public static function baseFieldDefinitions(EntityTypeInterface $entity_type)
+    {
+        $fields = parent::baseFieldDefinitions($entity_type);
 
-  /**
-   * {@inheritdoc}
-   */
-  public static function baseFieldDefinitions(EntityTypeInterface $entity_type) {
-    $fields = parent::baseFieldDefinitions($entity_type);
+        $fields['nonce'] = BaseFieldDefinition::create('string')
+            ->setLabel(t('Nonce'))
+            ->setSettings(
+                [
+                    'max_length' => 512,
+                    'text_processing' => 0,
+                ]
+            );
 
-    $fields['nonce'] = BaseFieldDefinition::create('string')
-      ->setLabel(t('Nonce'))
-      ->setSettings([
-        'max_length' => 512,
-        'text_processing' => 0,
-      ]);
+        $fields['consumer_key'] = BaseFieldDefinition::create('string')
+            ->setLabel(t('Consumer Key'))
+            ->setSettings(
+                [
+                    'max_length' => 512,
+                    'text_processing' => 0,
+                ]
+            );
 
-    $fields['consumer_key'] = BaseFieldDefinition::create('string')
-      ->setLabel(t('Consumer Key'))
-      ->setSettings([
-        'max_length' => 512,
-        'text_processing' => 0,
-      ]);
+        $fields['timestamp'] = BaseFieldDefinition::create('created')
+            ->setLabel(t('Timestamp'));
 
-    $fields['timestamp'] = BaseFieldDefinition::create('created')
-      ->setLabel(t('Timestamp'));
-
-    return $fields;
-  }
+        return $fields;
+    }
 
 }

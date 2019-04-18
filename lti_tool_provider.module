@@ -5,7 +5,9 @@
  * LTI Tool Provider hook implementations and support functions.
  */
 
-use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
+use Drupal\Component\Plugin\Exception\PluginNotFoundException;
+use Drupal\Core\Entity\EntityStorageException;
 
 /**
  * Length of time to accept and store nonces.
@@ -19,22 +21,41 @@ const LTI_TOOL_PROVIDER_NONCE_EXPIRY = (1.5 * 60 * 60);
 
 /**
  * Implements hook_help().
+ * @param $route_name
+ * @return string|null
  */
-function lti_tool_provider_help($route_name, RouteMatchInterface $route_match) {
-  switch ($route_name) {
-    case 'help.page.lti_tool_provider':
-      $output = '<p>' . t('The LTI tool provider module provides an oauth based authentication provider for Drupal, as well as configuration options for consumers and user provisioning.') . '</p>';
-      return $output;
-  }
+function lti_tool_provider_help($route_name)
+{
+    switch ($route_name) {
+        case 'help.page.lti_tool_provider':
+            $output = '<p>' . t(
+                    'The LTI tool provider module provides an oauth based authentication provider for Drupal, as well as configuration options for consumers and user provisioning.'
+                ) . '</p>';
+
+            return $output;
+    }
+    return null;
 }
 
 /**
  * Implements hook_cron().
  */
-function lti_tool_provider_cron() {
-  $expires = time() - LTI_TOOL_PROVIDER_NONCE_EXPIRY;
-  $nonceStorage = \Drupal::entityTypeManager()->getStorage('lti_tool_provider_nonce');
-  $ids = $nonceStorage->getQuery()->condition('timestamp', $expires, '<')->execute();
-  $entities = $nonceStorage->loadMultiple($ids);
-  $nonceStorage->delete($entities);
+function lti_tool_provider_cron()
+{
+    $expires = time() - LTI_TOOL_PROVIDER_NONCE_EXPIRY;
+    try {
+        $nonceStorage = Drupal::entityTypeManager()->getStorage('lti_tool_provider_nonce');
+        $ids = $nonceStorage->getQuery()->condition('timestamp', $expires, '<')->execute();
+        $entities = $nonceStorage->loadMultiple($ids);
+        $nonceStorage->delete($entities);
+    }
+    catch (InvalidPluginDefinitionException $e) {
+        error_log($e);
+    }
+    catch (PluginNotFoundException $e) {
+        error_log($e);
+    }
+    catch (EntityStorageException $e) {
+        error_log($e);
+    }
 }

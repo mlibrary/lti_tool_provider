@@ -41,121 +41,162 @@ use Drupal\Core\Entity\EntityTypeInterface;
  *   },
  * )
  */
-class Consumer extends ContentEntityBase implements ContentEntityInterface {
+class Consumer extends ContentEntityBase implements ContentEntityInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    public static function baseFieldDefinitions(EntityTypeInterface $entity_type)
+    {
+        $fields = parent::baseFieldDefinitions($entity_type);
 
-  /**
-   * {@inheritdoc}
-   */
-  public static function baseFieldDefinitions(EntityTypeInterface $entity_type) {
-    $fields = parent::baseFieldDefinitions($entity_type);
+        $fields['consumer'] = BaseFieldDefinition::create('string')
+            ->setLabel(t('Consumer'))
+            ->setDescription(t('The name of the Consumer entity.'))
+            ->setRequired(true)
+            ->setSettings(
+                [
+                    'max_length' => 512,
+                    'text_processing' => 0,
+                ]
+            )
+            ->setDisplayOptions(
+                'view',
+                [
+                    'label' => 'hidden',
+                    'type' => 'string',
+                    'weight' => 1,
+                ]
+            )
+            ->setDisplayOptions(
+                'form',
+                [
+                    'type' => 'string',
+                    'weight' => 1,
+                ]
+            )
+            ->setDisplayConfigurable('form', true)
+            ->setDisplayConfigurable('view', true);
 
-    $fields['consumer'] = BaseFieldDefinition::create('string')
-      ->setLabel(t('Consumer'))
-      ->setDescription(t('The name of the Consumer entity.'))
-      ->setRequired(TRUE)
-      ->setSettings([
-        'max_length' => 512,
-        'text_processing' => 0,
-      ])
-      ->setDisplayOptions('view', [
-        'label' => 'hidden',
-        'type' => 'string',
-        'weight' => 1,
-      ])
-      ->setDisplayOptions('form', [
-        'type' => 'string',
-        'weight' => 1,
-      ])
-      ->setDisplayConfigurable('form', TRUE)
-      ->setDisplayConfigurable('view', TRUE);
+        $fields['consumer_key'] = BaseFieldDefinition::create('string')
+            ->setLabel(t('Key'))
+            ->setDescription(t('The key of the Consumer entity.'))
+            ->setRequired(true)
+            ->setSettings(
+                [
+                    'max_length' => 512,
+                    'text_processing' => 0,
+                ]
+            )
+            ->setDisplayOptions(
+                'view',
+                [
+                    'label' => 'inline',
+                    'type' => 'string',
+                    'weight' => 2,
+                ]
+            )
+            ->setDisplayOptions(
+                'form',
+                [
+                    'type' => 'string',
+                    'weight' => 2,
+                ]
+            )
+            ->setDisplayConfigurable('form', true)
+            ->setDisplayConfigurable('view', true);
 
-    $fields['consumer_key'] = BaseFieldDefinition::create('string')
-      ->setLabel(t('Key'))
-      ->setDescription(t('The key of the Consumer entity.'))
-      ->setRequired(TRUE)
-      ->setSettings([
-        'max_length' => 512,
-        'text_processing' => 0,
-      ])
-      ->setDisplayOptions('view', [
-        'label' => 'inline',
-        'type' => 'string',
-        'weight' => 2,
-      ])
-      ->setDisplayOptions('form', [
-        'type' => 'string',
-        'weight' => 2,
-      ])
-      ->setDisplayConfigurable('form', TRUE)
-      ->setDisplayConfigurable('view', TRUE);
+        $fields['consumer_secret'] = BaseFieldDefinition::create('string')
+            ->setLabel(t('Secret'))
+            ->setDescription(t('The secret of the Consumer entity.'))
+            ->setRequired(true)
+            ->setSettings(
+                [
+                    'max_length' => 512,
+                    'text_processing' => 0,
+                ]
+            )
+            ->setDisplayOptions(
+                'view',
+                [
+                    'label' => 'inline',
+                    'type' => 'string',
+                    'weight' => 3,
+                ]
+            )
+            ->setDisplayOptions(
+                'form',
+                [
+                    'type' => 'string',
+                    'weight' => 3,
+                ]
+            )
+            ->setDisplayConfigurable('form', true)
+            ->setDisplayConfigurable('view', true);
 
-    $fields['consumer_secret'] = BaseFieldDefinition::create('string')
-      ->setLabel(t('Secret'))
-      ->setDescription(t('The secret of the Consumer entity.'))
-      ->setRequired(TRUE)
-      ->setSettings([
-        'max_length' => 512,
-        'text_processing' => 0,
-      ])
-      ->setDisplayOptions('view', [
-        'label' => 'inline',
-        'type' => 'string',
-        'weight' => 3,
-      ])
-      ->setDisplayOptions('form', [
-        'type' => 'string',
-        'weight' => 3,
-      ])
-      ->setDisplayConfigurable('form', TRUE)
-      ->setDisplayConfigurable('view', TRUE);
+        $fields['name'] = BaseFieldDefinition::create('string')
+            ->setLabel(t('Name field'))
+            ->setDescription(t('The LTI field to get the users unique name from. Default is "lis_person_contact_email_primary"'))
+            ->setRequired(true)
+            ->setDefaultValue('lis_person_contact_email_primary')
+            ->setSettings(
+                [
+                    'max_length' => 512,
+                    'text_processing' => 0,
+                ]
+            )
+            ->setDisplayOptions(
+                'view',
+                [
+                    'label' => 'inline',
+                    'type' => 'string',
+                    'weight' => 4,
+                ]
+            )
+            ->setDisplayOptions(
+                'form',
+                [
+                    'type' => 'string',
+                    'weight' => 4,
+                ]
+            )
+            ->setDisplayConfigurable('form', true)
+            ->setDisplayConfigurable('view', true);
 
-    $fields['name'] = BaseFieldDefinition::create('string')
-      ->setLabel(t('Name field'))
-      ->setDescription(t('The LTI field to get the users unique name from. Default is "lis_person_contact_email_primary"'))
-      ->setRequired(TRUE)
-      ->setDefaultValue('lis_person_contact_email_primary')
-      ->setSettings([
-        'max_length' => 512,
-        'text_processing' => 0,
-      ])
-      ->setDisplayOptions('view', [
-        'label' => 'inline',
-        'type' => 'string',
-        'weight' => 4,
-      ])
-      ->setDisplayOptions('form', [
-        'type' => 'string',
-        'weight' => 4,
-      ])
-      ->setDisplayConfigurable('form', TRUE)
-      ->setDisplayConfigurable('view', TRUE);
+        $fields['mail'] = BaseFieldDefinition::create('string')
+            ->setLabel(t('Mail field'))
+            ->setDescription(t('The LTI field to get the users email from. Default is "lis_person_contact_email_primary"'))
+            ->setRequired(true)
+            ->setDefaultValue('lis_person_contact_email_primary')
+            ->setSettings(
+                [
+                    'max_length' => 512,
+                    'text_processing' => 0,
+                ]
+            )
+            ->setDisplayOptions(
+                'view',
+                [
+                    'label' => 'inline',
+                    'type' => 'string',
+                    'weight' => 5,
+                ]
+            )
+            ->setDisplayOptions(
+                'form',
+                [
+                    'type' => 'string',
+                    'weight' => 5,
+                ]
+            )
+            ->setDisplayConfigurable('form', true)
+            ->setDisplayConfigurable('view', true);
 
-    $fields['mail'] = BaseFieldDefinition::create('string')
-      ->setLabel(t('Mail field'))
-      ->setDescription(t('The LTI field to get the users email from. Default is "lis_person_contact_email_primary"'))
-      ->setRequired(TRUE)
-      ->setDefaultValue('lis_person_contact_email_primary')
-      ->setSettings([
-        'max_length' => 512,
-        'text_processing' => 0,
-      ])
-      ->setDisplayOptions('view', [
-        'label' => 'inline',
-        'type' => 'string',
-        'weight' => 5,
-      ])
-      ->setDisplayOptions('form', [
-        'type' => 'string',
-        'weight' => 5,
-      ])
-      ->setDisplayConfigurable('form', TRUE)
-      ->setDisplayConfigurable('view', TRUE);
+        $fields['created'] = BaseFieldDefinition::create('created')
+            ->setLabel(t('Date created'))
+            ->setDescription(t('Date the consumer was created'));
 
-    $fields['created'] = BaseFieldDefinition::create('created')
-      ->setLabel(t('Date created'))
-      ->setDescription(t('Date the consumer was created'));
-
-    return $fields;
-  }
+        return $fields;
+    }
 
 }

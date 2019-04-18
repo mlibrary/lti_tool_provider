@@ -7,30 +7,34 @@
 
 /**
  * Implements hook_requirements().
+ * @param $phase
+ * @return array
  */
-function lti_tool_provider_requirements($phase) {
-  $requirements = [];
-  $oauth_available = class_exists('\\OauthProvider');
+function lti_tool_provider_requirements($phase)
+{
+    $requirements = [];
+    $oauth_available = class_exists('\\OauthProvider');
 
-  if ($oauth_available) {
-    $requirements['lti_tool_provider_oauth'] = [
-      'title' => t('LTI Tool Provider - OAuth'),
-      'value' => t('OAuth PECL library installed'),
-    ];
-  }
-  else {
-    $requirements['lti_tool_provider_oauth'] = [
-      'title' => t('LTI Tool Provider - OAuth'),
-      'severity' => REQUIREMENT_ERROR,
-      'description' => t("OAuth module requires the <a href='@oauth_url' target='_blank'>PECL OAuth</a> library.",
-        ['@oauth_url' => 'http://www.php.net/manual/en/book.oauth.php']),
-    ];
-    if ($phase == 'runtime') {
-      $requirements['lti_tool_provider_oauth'] += [
-        'value' => t('OAuth PECL library not installed'),
-      ];
+    if ($oauth_available) {
+        $requirements['lti_tool_provider_oauth'] = [
+            'title' => t('LTI Tool Provider - OAuth'),
+            'value' => t('OAuth PECL library installed'),
+        ];
     }
-  }
+    else {
+        $requirements['lti_tool_provider_oauth'] = [
+            'title' => t('LTI Tool Provider - OAuth'),
+            'severity' => REQUIREMENT_ERROR,
+            'description' => t(
+                'The LTI Tool Provider module requires the <a href="https://www.php.net/manual/en/book.oauth.php" target="_blank">PECL OAuth</a> library.'
+            ),
+        ];
+        if ($phase == 'runtime') {
+            $requirements['lti_tool_provider_oauth'] += [
+                'value' => t('OAuth PECL library not installed'),
+            ];
+        }
+    }
 
-  return $requirements;
+    return $requirements;
 }

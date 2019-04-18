@@ -12,20 +12,23 @@ use Drupal\Core\Session\AccountInterface;
  *
  * @see \Drupal\comment\Entity\Comment.
  */
-class ConsumerAccessControlHandler extends EntityAccessControlHandler {
+class ConsumerAccessControlHandler extends EntityAccessControlHandler
+{
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function checkAccess(EntityInterface $entity, $operation, AccountInterface $account) {
-    return AccessResult::allowedIfHasPermission($account, 'administer lti_tool_provider module');
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function checkAccess(EntityInterface $entity, $operation, AccountInterface $account)
+    {
+        return AccessResult::allowedIfHasPermission($account, 'administer lti_tool_provider module');
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function checkCreateAccess(AccountInterface $account, array $context, $entity_bundle = NULL) {
-    return AccessResult::allowedIfHasPermission($account, 'administer lti_tool_provider module');
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function checkCreateAccess(AccountInterface $account, array $context, $entity_bundle = null)
+    {
+        return AccessResult::allowedIfHasPermission($account, 'administer lti_tool_provider module');
+    }
 
 }
