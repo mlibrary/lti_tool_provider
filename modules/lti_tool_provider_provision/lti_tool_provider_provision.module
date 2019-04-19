@@ -87,7 +87,7 @@ function lti_tool_provider_provision_provision_entity(
         }
     }
 
-    Drupal::moduleHandler()->alter('lti_tool_provider_provision_alter', $entity, $context);
+    Drupal::moduleHandler()->alter('lti_tool_provider_provision', $entity, $context);
     $entity->save();
 
     $provision = LtiToolProviderProvision::create();
