@@ -26,11 +26,12 @@ function lti_tool_provider_provision_lti_tool_provider_launch_redirect_alter(str
 
     if ($entityType && $entityBundle && isset($context['consumer_id']) && !empty($context['consumer_id']) && isset($context['context_id']) && !empty($context['context_id']) && isset($context['resource_link_id']) && !empty($context['resource_link_id'])) {
         try {
-            $entity = lti_tool_provider_provision_provision_entity($entityType, $entityBundle, $entityDefaults, $context);
-            if ($entity && $settings->get('entity_redirect')) {
-                $destination = $entity->toUrl()->toString();
+            if ($entity = lti_tool_provider_provision_provision_entity($entityType, $entityBundle, $entityDefaults, $context)) {
+                if ($settings->get('entity_redirect')) {
+                    $destination = $entity->toUrl()->toString();
+                }
+                Drupal::moduleHandler()->invokeAll('lti_tool_provider_provision_finished', [$entity, $context]);
             }
-            Drupal::moduleHandler()->invokeAll('lti_tool_provider_provision_finished', [$entity, $context]);
         }
         catch (Exception $e) {
             Drupal::logger('lti_tool_provider_provision')->error($e->getMessage());
@@ -54,20 +55,10 @@ function lti_tool_provider_provision_provision_entity(
     array $entityDefaults,
     array $context
 ): EntityInterface {
-
     $entityTypeManager = Drupal::entityTypeManager();
-    $provision = current(
-        $entityTypeManager->getStorage('lti_tool_provider_provision')
-            ->loadByProperties(
-                [
-                    'consumer_id' => $context['consumer_id'],
-                    'context_id' => $context['context_id'],
-                    'resource_link_id' => $context['resource_link_id'],
-                ]
-            )
-    );
 
-    if ($provision instanceof LtiToolProviderProvision) {
+    $provision = lti_tool_provider_provision_get_provision_from_context($context);
+    if ($provision && $provision instanceof LtiToolProviderProvision) {
         $entity = $entityTypeManager->getStorage($provision->get('provision_type')->value)->load($provision->get('provision_id')->value);
         if (!$entity) {
             $provision->delete();
@@ -100,6 +91,31 @@ function lti_tool_provider_provision_provision_entity(
     $provision->save();
 
     return $entity;
+}
+
+/**
+ * @param $context
+ * @return bool|EntityInterface
+ * @throws InvalidPluginDefinitionException
+ * @throws PluginNotFoundException
+ */
+function lti_tool_provider_provision_get_provision_from_context($context)
+{
+    $provision = Drupal::entityTypeManager()->getStorage('lti_tool_provider_provision')
+        ->loadByProperties(
+            [
+                'consumer_id' => $context['consumer_id'],
+                'context_id' => $context['context_id'],
+                'resource_link_id' => $context['resource_link_id'],
+            ]
+        );
+
+
+    if (count($provision)) {
+        return reset($provision);
+    }
+
+    return false;
 }
 
 /**
