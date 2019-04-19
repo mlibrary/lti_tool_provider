@@ -26,7 +26,9 @@ function lti_tool_provider_requirements($phase)
             'title' => t('LTI Tool Provider - OAuth'),
             'severity' => REQUIREMENT_ERROR,
             'description' => t(
-                'The LTI Tool Provider module requires the <a href="https://www.php.net/manual/en/book.oauth.php" target="_blank">PECL OAuth</a> library.'
+                'The LTI Tool Provider module requires the <a href="@href" target="_blank">PECL OAuth</a> library.', [
+                    '@href' => 'https://www.php.net/manual/en/book.oauth.php'
+                ]
             ),
         ];
         if ($phase == 'runtime') {

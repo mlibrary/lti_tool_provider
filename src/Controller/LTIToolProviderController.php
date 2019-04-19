@@ -2,6 +2,7 @@
 
 namespace Drupal\lti_tool_provider\Controller;
 
+use Drupal;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Controller\ControllerBase;
@@ -107,18 +108,27 @@ class LTIToolProviderController extends ControllerBase
      */
     public function launch()
     {
+        $destination = '/';
+
         try {
             $context = $this->tempStore->get('context');
-
-            if (isset($context['custom_destination']) && !empty($context['custom_destination'])) {
-                return new RedirectResponse($context['custom_destination']);
-            }
         }
         catch (Exception $e) {
             $this->loggerFactory->warning($e->getMessage());
         }
 
-        return new RedirectResponse('/');
+        $settings = Drupal::config('lti_tool_provider.settings');
+        if (!empty($settings->get('destination'))) {
+            $destination = $settings->get('destination');
+        }
+
+        if (isset($context['custom_destination']) && !empty($context['custom_destination'])) {
+            $destination = $context['custom_destination'];
+        }
+
+        $this->moduleHandler->alter('lti_tool_provider_launch_redirect', $destination, $context);
+
+        return new RedirectResponse($destination);
     }
 
     /**

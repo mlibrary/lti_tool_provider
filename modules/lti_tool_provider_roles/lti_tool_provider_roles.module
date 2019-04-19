@@ -9,38 +9,26 @@ use Drupal\Core\Entity\EntityStorageException;
 use Drupal\user\Entity\User;
 
 /**
- * Implements hook_help().
- * @param $route_name
- * @return string|null
- */
-function lti_tool_provider_roles_help($route_name)
-{
-    switch ($route_name) {
-        case 'help.page.lti_tool_provider_roles':
-            $output = '<p>' . t('Provides role mapping for the LTI Tool Provider module.') . '</p>';
-
-            return $output;
-    }
-    return null;
-}
-
-/**
  * Implements hook_lti_tool_provider_authenticated().
  * @param User $user
  * @param array $context
  */
 function lti_tool_provider_roles_lti_tool_provider_authenticated(User $user, array $context)
 {
+    $mapped_roles = Drupal::config('lti_tool_provider_roles.settings')->get('mapped_roles');
+
     $user_roles = user_roles(true, null);
     $lti_roles = parse_roles($context['roles']);
 
-    // Don't alter the ltiuser as this isn't a unique account.
     if ($user->getUsername() === 'ltiuser') {
         return;
     }
 
-    $mapped_roles = Drupal::service('config.factory')->getEditable('lti_tool_provider_roles.settings')->get('mapped_roles');
-    foreach ($mapped_roles as $lti_role => $user_role) {
+    if (!count($mapped_roles)) {
+        return;
+    }
+
+    foreach ($mapped_roles as $user_role => $lti_role) {
         if (array_key_exists($user_role, $user_roles)) {
             if (in_array($lti_role, $lti_roles)) {
                 $user->addRole($user_role);

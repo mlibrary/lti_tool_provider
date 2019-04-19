@@ -11,3 +11,9 @@ services:
       - name: authentication_provider
         provider_id: lti_auth
         priority: 100
+  lti_tool_provider.xframe.event_subscriber:
+    class: Drupal\lti_tool_provider\EventSubscriber\RemoveXFrameOptionsSubscriber
+    tags:
+      - { name: 'event_subscriber' }
+    arguments:
+      - '@tempstore.private'

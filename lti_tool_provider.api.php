@@ -47,6 +47,18 @@ function hook_lti_tool_provider_authenticated(User $user, array $context)
 }
 
 /**
+ * Allows modules to alter the redirect destination after launch and authentication is successful.
+ *
+ * @param string $destination
+ *   The url to redirect to via RedirectResponse.
+ * @param array $context
+ *   The LTI context from the launch request.
+ */
+function hook_lti_tool_provider_launch_redirect_alter(string &$destination, array &$context)
+{
+}
+
+/**
  * Allows modules to act on the LTI return event.
  *
  * @param array $context

@@ -151,6 +151,9 @@ class LTIToolProvider implements AuthenticationProviderInterface
 
             $this->moduleHandler->invokeAll('lti_tool_provider_authenticated', [$user, $this->context]);
             $this->userLoginFinalize($user);
+
+            $this->context['consumer_id'] = $this->consumerEntity->id();
+            $this->context['consumer_label'] = $this->consumerEntity->label();
             $this->tempStore->set('context', $this->context);
 
             return $user;

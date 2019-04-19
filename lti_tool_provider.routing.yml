@@ -55,3 +55,10 @@ entity.lti_tool_provider_consumer.delete_form:
     _title: Delete Consumer
   requirements:
     _entity_access: lti_tool_provider_consumer.delete
+lti_tool_provider.settings:
+  path: '/admin/config/lti-tool-provider/settings'
+  defaults:
+    _form: 'Drupal\lti_tool_provider\Form\LtiToolProviderSettingsForm'
+    _title: 'LTI Settings'
+  requirements:
+    _permission: 'administer site configuration'

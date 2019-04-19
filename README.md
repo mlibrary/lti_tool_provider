@@ -2,20 +2,26 @@
 
 ## INTRODUCTION
 
-The LTI tool provider module provides an oauth based authentication provider for Drupal, as well as configuration options for managing consumers and user provisioning.
+The LTI tool provider module provides an LTI authentication provider for Drupal, as well as configuration options for managing LTI consumers, user provisioning, attribute mapping, and default entity provisioning.
 
 Currently it supports LTI v1.0 and v1.1.
 
 ## REQUIREMENTS
 
+* PHP 7
 * OAuth PECL extension [http://php.net/manual/en/book.oauth.php](http://php.net/manual/en/book.oauth.php)
 
 ## INSTALLATION
 
 * Install the OAuth PECL extension as per: [http://php.net/manual/en/oauth.installation.php](http://php.net/manual/en/oauth.installation.php)
 * Install the module as per: [https://www.drupal.org/docs/8/extending-drupal-8/installing-drupal-8-modules](https://www.drupal.org/docs/8/extending-drupal-8/installing-drupal-8-modules)
+* Optionally, install the lti_tool_provider_attributes, lti_tool_provider_roles, or lti_tool_provider_provision submodules.
 
 ## CONFIGURATION
+
+### General Settings
+
+You most likely will need to enable 'Allow iFrame embeds' in order for LTI consumers to be able to embed your site within an iframe. Because this has security implications it is not turned on by default. As a caveat, the xframe header is only removed when receiving authenticated LTI requests, so there should be minimal security risk.
 
 ### LTI Consumers
 
@@ -35,6 +41,10 @@ Please be aware that roles and attributes are synced every time a user launches 
 
 The most common roles that you will want to sync will be 'urn:lti:role:ims/lis/Learner' and 'urn:lti:role:ims/lis/Instructor'.
 
+### Entity Provisioning
+
+If the lti_tool_provider_provision module is enabled, you can configure a default entity to be automatically created or loaded on each LTI launch request. You can also configure default field values to be mapped from the LTI launch reqeust data.
+
 ### Custom Parameters
 
 Currently the only custom parameter that is processed it the custom_destination parameter. You will need to add this in the LMS using 'destination={some internal drupal path}'.
@@ -48,5 +58,5 @@ Most LMS now require that https is used for LTI authentication. However it shoul
 If you would like to alter the LTI launch, user provisioning, or LTI return, you can do this using the hooks as documented in the lti_tool_provider.api.php file. Also the LTI context variables are available per user via the private temp store. For example:
 
 ```php
-$context = $this->tempStore->get('context');
+$context = \Drupal::service('user.private_tempstore')->get('lti_tool_provider')->get('context');
 ```

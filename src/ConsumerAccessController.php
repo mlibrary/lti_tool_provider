@@ -7,14 +7,8 @@ use Drupal\Core\Entity\EntityAccessControlHandler;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Session\AccountInterface;
 
-/**
- * Access controller for the lti_tool_provider entity.
- *
- * @see \Drupal\comment\Entity\Comment.
- */
-class ConsumerAccessControlHandler extends EntityAccessControlHandler
+class ConsumerAccessController extends EntityAccessControlHandler
 {
-
     /**
      * {@inheritdoc}
      */
@@ -30,5 +24,4 @@ class ConsumerAccessControlHandler extends EntityAccessControlHandler
     {
         return AccessResult::allowedIfHasPermission($account, 'administer lti_tool_provider module');
     }
-
 }

@@ -23,7 +23,7 @@ use Drupal\Core\Entity\EntityTypeInterface;
  *       "edit" = "Drupal\lti_tool_provider\Form\ConsumerForm",
  *       "delete" = "Drupal\lti_tool_provider\Form\ConsumerDeleteForm",
  *     },
- *     "access" = "Drupal\lti_tool_provider\ConsumerAccessControlHandler",
+ *     "access" = "Drupal\lti_tool_provider\ConsumerAccessController",
  *   },
  *   base_table = "lti_tool_provider_consumer",
  *   admin_permission = "administer lti_tool_provider module",

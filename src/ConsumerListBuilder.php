@@ -8,14 +8,8 @@ use Drupal\Core\Entity\EntityListBuilder;
 use Drupal\Core\Url;
 use Drupal\lti_tool_provider\Entity\Consumer;
 
-/**
- * Defines a class to build a listing of user entities.
- *
- * @see \Drupal\user\Entity\User
- */
 class ConsumerListBuilder extends EntityListBuilder
 {
-
     /**
      * {@inheritdoc}
      */
@@ -94,5 +88,4 @@ class ConsumerListBuilder extends EntityListBuilder
 
         return $build;
     }
-
 }
