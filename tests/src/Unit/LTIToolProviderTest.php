@@ -6,7 +6,6 @@ use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Logger\LoggerChannelFactory;
-use Drupal\Core\TempStore\PrivateTempStoreFactory;
 use Drupal\Tests\UnitTestCase;
 use OauthProvider;
 use PHPUnit_Framework_MockObject_MockObject;
@@ -63,13 +62,6 @@ class LTIToolProviderTest extends UnitTestCase
     protected $moduleHandler;
 
     /**
-     * The mocked private temp store for storing LTI context info.
-     *
-     * @var PrivateTempStoreFactory|PHPUnit_Framework_MockObject_MockObject
-     */
-    protected $tempStore;
-
-    /**
      * The mocked PECL OauthProvider class.
      *
      * @var OauthProvider | mixed
@@ -89,10 +81,6 @@ class LTIToolProviderTest extends UnitTestCase
 
         $this->loggerFactory = $this->getMockBuilder('\Drupal\Core\Logger\LoggerChannelFactory')
             ->setMethods(['__construct'])
-            ->disableOriginalConstructor()
-            ->getMock();
-
-        $this->tempStore = $this->getMockBuilder('\Drupal\Core\TempStore\PrivateTempStoreFactory')
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -121,8 +109,7 @@ class LTIToolProviderTest extends UnitTestCase
             $this->configFactory,
             $this->entityTypeManager,
             $this->loggerFactory,
-            $this->moduleHandler,
-            $this->tempStore
+            $this->moduleHandler
         );
 
         $actual = $provider->applies($request);
@@ -240,8 +227,7 @@ class LTIToolProviderTest extends UnitTestCase
             $this->configFactory,
             $this->entityTypeManager,
             $this->loggerFactory,
-            $this->moduleHandler,
-            $this->tempStore
+            $this->moduleHandler
         );
 
         $expected = OAUTH_BAD_TIMESTAMP;
@@ -261,8 +247,7 @@ class LTIToolProviderTest extends UnitTestCase
             $this->configFactory,
             $this->entityTypeManager,
             $this->loggerFactory,
-            $this->moduleHandler,
-            $this->tempStore
+            $this->moduleHandler
         );
 
         $this->provider->timestamp = time();
@@ -283,8 +268,7 @@ class LTIToolProviderTest extends UnitTestCase
             $this->configFactory,
             $this->entityTypeManager,
             $this->loggerFactory,
-            $this->moduleHandler,
-            $this->tempStore
+            $this->moduleHandler
         );
 
         $this->provider->consumer_key = '';
@@ -365,8 +349,7 @@ class LTIToolProviderTest extends UnitTestCase
             $this->configFactory,
             $this->entityTypeManager,
             $this->loggerFactory,
-            $this->moduleHandler,
-            $this->tempStore
+            $this->moduleHandler
         );
 
         $this->provider->consumer_key = '';
@@ -410,8 +393,7 @@ class LTIToolProviderTest extends UnitTestCase
             $this->configFactory,
             $entityTypeManager,
             $this->loggerFactory,
-            $this->moduleHandler,
-            $this->tempStore
+            $this->moduleHandler
         );
     }
 
@@ -450,13 +432,11 @@ class LTIToolProviderTest extends UnitTestCase
             $this->configFactory,
             $entityTypeManager,
             $this->loggerFactory,
-            $this->moduleHandler,
-            $this->tempStore
+            $this->moduleHandler
         );
 
         $expected = OAUTH_BAD_NONCE;
         $actual = $provider->timestampNonceHandler($this->provider);
         $this->assertEquals($expected, $actual);
     }
-
 }

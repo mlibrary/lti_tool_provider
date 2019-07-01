@@ -198,5 +198,4 @@ class Consumer extends ContentEntityBase implements ContentEntityInterface
 
         return $fields;
     }
-
 }

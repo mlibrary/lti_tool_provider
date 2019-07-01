@@ -14,7 +14,6 @@ use Drupal\Core\Form\FormStateInterface;
  */
 class ConsumerForm extends ContentEntityForm
 {
-
     /**
      * {@inheritdoc}
      */
@@ -49,5 +48,4 @@ class ConsumerForm extends ContentEntityForm
 
         return $status;
     }
-
 }

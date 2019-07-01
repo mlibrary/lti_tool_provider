@@ -111,7 +111,6 @@ class LTIAuth extends BrowserTestBase
 
         $response = $this->request('POST', $url, ['form_params' => $params]);
 
-//        $userStorage = $this->container->get('entity_type.manager')->getStorage('user');
         $ids = $this->userStorage->getQuery()
             ->condition('name', 'ltiuser', '=')
             ->condition('mail', 'ltiuser@invalid', '=')
@@ -431,5 +430,4 @@ class LTIAuth extends BrowserTestBase
 
         return $request_options;
     }
-
 }

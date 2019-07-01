@@ -1,7 +1,7 @@
 lti_tool_provider.lti:
   path: /lti
   defaults:
-    _controller: '\Drupal\lti_tool_provider\Controller\LTIToolProviderController::launch'
+    _controller: '\Drupal\lti_tool_provider\Controller\LTIToolProviderController::ltiLaunch'
   options:
     _auth:
       - lti_auth
@@ -10,7 +10,7 @@ lti_tool_provider.lti:
 lti_tool_provider.lti.return:
   path: /lti/return
   defaults:
-    _controller: '\Drupal\lti_tool_provider\Controller\LTIToolProviderController::return'
+    _controller: '\Drupal\lti_tool_provider\Controller\LTIToolProviderController::ltiReturn'
   requirements:
     _custom_access: '\Drupal\lti_tool_provider\Controller\LTIToolProviderController::access'
 lti_tool_provider.admin:

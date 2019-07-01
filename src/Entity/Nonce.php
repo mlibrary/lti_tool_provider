@@ -56,5 +56,4 @@ class Nonce extends ContentEntityBase implements ContentEntityInterface
 
         return $fields;
     }
-
 }

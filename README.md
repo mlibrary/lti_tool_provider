@@ -55,8 +55,8 @@ Most LMS now require that https is used for LTI authentication. However it shoul
 
 ### Module Integration
 
-If you would like to alter the LTI launch, user provisioning, or LTI return, you can do this using the hooks as documented in the lti_tool_provider.api.php file. Also the LTI context variables are available per user via the private temp store. For example:
+If you would like to alter the LTI launch, user provisioning, or LTI return, you can do this using the hooks as documented in the lti_tool_provider.api.php file. Also the LTI context variables are available per user in the session variable. For example:
 
 ```php
-$context = \Drupal::service('tempstore.private')->get('lti_tool_provider')->get('context');
+$context = \Drupal::request()->getSession()->get('lti_tool_provider_context');
 ```

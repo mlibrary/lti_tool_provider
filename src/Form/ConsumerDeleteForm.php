@@ -14,7 +14,6 @@ use Drupal\Core\Url;
  */
 class ConsumerDeleteForm extends ContentEntityConfirmFormBase
 {
-
     /**
      * {@inheritdoc}
      */
@@ -69,5 +68,4 @@ class ConsumerDeleteForm extends ContentEntityConfirmFormBase
 
         $form_state->setRedirect('entity.lti_tool_provider_consumer.collection');
     }
-
 }

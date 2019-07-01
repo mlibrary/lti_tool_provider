@@ -6,7 +6,6 @@ services:
       - '@entity_type.manager'
       - '@logger.factory'
       - '@module_handler'
-      - '@tempstore.private'
     tags:
       - name: authentication_provider
         provider_id: lti_auth
@@ -15,5 +14,3 @@ services:
     class: Drupal\lti_tool_provider\EventSubscriber\RemoveXFrameOptionsSubscriber
     tags:
       - { name: 'event_subscriber' }
-    arguments:
-      - '@tempstore.private'

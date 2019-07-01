@@ -9,8 +9,6 @@ use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Logger\LoggerChannelFactory;
-use Drupal\Core\TempStore\PrivateTempStore;
-use Drupal\Core\TempStore\PrivateTempStoreFactory;
 use Drupal\Core\Url;
 use Drupal\lti_tool_provider\Entity\Consumer;
 use Drupal\user\Entity\User;
@@ -24,7 +22,6 @@ use Symfony\Component\HttpFoundation\Request;
  */
 class LTIToolProvider implements AuthenticationProviderInterface
 {
-
     /**
      * The configuration factory.
      *
@@ -54,13 +51,6 @@ class LTIToolProvider implements AuthenticationProviderInterface
     protected $moduleHandler;
 
     /**
-     * The private temp store for storing LTI context info.
-     *
-     * @var PrivateTempStore
-     */
-    protected $tempStore;
-
-    /**
      * The consumer entity matching the LTI request.
      *
      * @var Consumer
@@ -85,21 +75,17 @@ class LTIToolProvider implements AuthenticationProviderInterface
      *   A logger instance.
      * @param ModuleHandlerInterface $module_handler
      *   The module handler.
-     * @param PrivateTempStoreFactory $tempStoreFactory
-     *   The temp store factory.
      */
     public function __construct(
         ConfigFactoryInterface $config_factory,
         EntityTypeManagerInterface $entity_type_manager,
         LoggerChannelFactory $logger_factory,
-        ModuleHandlerInterface $module_handler,
-        PrivateTempStoreFactory $tempStoreFactory
+        ModuleHandlerInterface $module_handler
     ) {
         $this->configFactory = $config_factory;
         $this->entityTypeManager = $entity_type_manager;
         $this->loggerFactory = $logger_factory->get('lti_tool_provider');
         $this->moduleHandler = $module_handler;
-        $this->tempStore = $tempStoreFactory->get('lti_tool_provider');
     }
 
     /**
@@ -154,7 +140,9 @@ class LTIToolProvider implements AuthenticationProviderInterface
 
             $this->context['consumer_id'] = $this->consumerEntity->id();
             $this->context['consumer_label'] = $this->consumerEntity->label();
-            $this->tempStore->set('context', $this->context);
+
+            $session = $request->getSession();
+            $session->set('lti_tool_provider_context', $this->context);
 
             return $user;
         }
