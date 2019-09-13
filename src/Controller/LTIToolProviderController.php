@@ -8,6 +8,7 @@ use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Logger\LoggerChannelFactory;
+use Drupal\Core\Routing\TrustedRedirectResponse;
 use Exception;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -70,6 +71,7 @@ class LTIToolProviderController extends ControllerBase
         $logger_factory = $container->get('logger.factory');
         /* @var $module_handler ModuleHandlerInterface */
         $module_handler = $container->get('module_handler');
+
         return new static(
             $config_factory,
             $logger_factory,
@@ -141,7 +143,7 @@ class LTIToolProviderController extends ControllerBase
             $this->moduleHandler->invokeAll('lti_tool_provider_return', [$context]);
             user_logout();
 
-            return new RedirectResponse($context['launch_presentation_return_url']);
+            return new TrustedRedirectResponse($context['launch_presentation_return_url']);
         }
         catch (Exception $e) {
             $this->loggerFactory->warning($e->getMessage());
