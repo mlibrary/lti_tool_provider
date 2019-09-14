@@ -8,11 +8,13 @@ use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Logger\LoggerChannelFactory;
+use Drupal\Core\PageCache\ResponsePolicy\KillSwitch;
 use Drupal\Core\Routing\TrustedRedirectResponse;
 use Exception;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 
 /**
  * Returns responses for lti_tool_provider module routes.
@@ -41,23 +43,78 @@ class LTIToolProviderController extends ControllerBase
     protected $moduleHandler;
 
     /**
+     * The page cache kill switch.
+     *
+     * @var KillSwitch
+     */
+    protected $killSwitch;
+
+    /**
+     * The request.
+     *
+     * @var Request
+     */
+    protected $request;
+
+    /**
+     * The request session.
+     *
+     * @var SessionInterface
+     */
+    protected $session;
+
+    /**
+     * The LTI context.
+     *
+     * @var mixed
+     */
+    protected $context;
+
+    /**
+     * Optional destination.
+     *
+     * @var string
+     */
+    protected $destination;
+
+    /**
      * Constructs a HTTP basic authentication provider object.
      *
-     * @param ConfigFactoryInterface $config_factory
+     * @param ConfigFactoryInterface $configFactory
      *   The configuration factory.
-     * @param LoggerChannelFactory $logger_factory
+     * @param LoggerChannelFactory $loggerFactory
      *   A logger instance.
-     * @param ModuleHandlerInterface $module_handler
+     * @param ModuleHandlerInterface $moduleHandler
      *   The module handler.
+     * @param KillSwitch $killSwitch
+     *   The page cache kill switch.
+     * @param Request $request
+     *   The request.
+     * @param SessionInterface $session
+     *   The request session.
+     * @param mixed $context
+     *   The LTI context.
+     * @param mixed $destination
+     *   Optional destination.
      */
     public function __construct(
-        ConfigFactoryInterface $config_factory,
-        LoggerChannelFactory $logger_factory,
-        ModuleHandlerInterface $module_handler
+        ConfigFactoryInterface $configFactory,
+        LoggerChannelFactory $loggerFactory,
+        ModuleHandlerInterface $moduleHandler,
+        KillSwitch $killSwitch,
+        Request $request,
+        SessionInterface $session,
+        $context,
+        $destination
     ) {
-        $this->configFactory = $config_factory;
-        $this->loggerFactory = $logger_factory->get('lti_tool_provider');
-        $this->moduleHandler = $module_handler;
+        $this->configFactory = $configFactory;
+        $this->loggerFactory = $loggerFactory->get('lti_tool_provider');
+        $this->moduleHandler = $moduleHandler;
+        $this->killSwitch = $killSwitch;
+        $this->request = $request;
+        $this->session = $session;
+        $this->context = $context;
+        $this->destination = $destination;
     }
 
     /**
@@ -65,17 +122,28 @@ class LTIToolProviderController extends ControllerBase
      */
     public static function create(ContainerInterface $container)
     {
-        /* @var $config_factory ConfigFactoryInterface */
-        $config_factory = $container->get('config.factory');
-        /* @var $logger_factory LoggerChannelFactory */
-        $logger_factory = $container->get('logger.factory');
-        /* @var $module_handler ModuleHandlerInterface */
-        $module_handler = $container->get('module_handler');
+        /* @var $configFactory ConfigFactoryInterface */
+        $configFactory = $container->get('config.factory');
+        /* @var $loggerFactory LoggerChannelFactory */
+        $loggerFactory = $container->get('logger.factory');
+        /* @var $moduleHandler ModuleHandlerInterface */
+        $moduleHandler = $container->get('module_handler');
+        /* @var $killSwitch KillSwitch */
+        $killSwitch = $container->get('page_cache_kill_switch');
+        $request = Drupal::request();
+        $session = $request->getSession();
+        $context = $session->get('lti_tool_provider_context');
+        $destination = Drupal::config('lti_tool_provider.settings')->get('destination');
 
         return new static(
-            $config_factory,
-            $logger_factory,
-            $module_handler
+            $configFactory,
+            $loggerFactory,
+            $moduleHandler,
+            $killSwitch,
+            $request,
+            $session,
+            $context,
+            $destination
         );
     }
 
@@ -83,9 +151,8 @@ class LTIToolProviderController extends ControllerBase
      * LTI launch.
      *
      * Authenticates the user via the authentication.lti_tool_provider service,
-     * logins that user, and then redirects the user to the appropriate page.
+     * login that user, and then redirect the user to the appropriate page.
      *
-     * @param Request $request
      * @return RedirectResponse
      *   Redirect user to appropriate LTI url.
      *
@@ -93,33 +160,34 @@ class LTIToolProviderController extends ControllerBase
      *   This controller requires that the authentication.lti_tool_provider
      *   service is attached to this route in lti_tool_provider.routing.yml.
      */
-    public function ltiLaunch(Request $request)
+    public function ltiLaunch()
     {
-        $destination = '/';
-
         try {
-            $session = $request->getSession();
-            $context = $session->get('lti_tool_provider_context');
-            if (!empty($context)) {
+            $destination = '/';
+
+            if (empty($this->context)) {
                 throw new Exception('LTI context missing.');
             }
+
+            if (!empty($this->destination)) {
+                $destination = $this->destination;
+            }
+
+            if (isset($this->context['custom_destination']) && !empty($this->context['custom_destination'])) {
+                $destination = $this->context['custom_destination'];
+            }
+
+            $this->moduleHandler->alter('lti_tool_provider_launch_redirect', $destination, $this->context);
+
+            $this->killSwitch->trigger();
+
+            return new RedirectResponse($destination);
         }
         catch (Exception $e) {
             $this->loggerFactory->warning($e->getMessage());
+
+            return new RedirectResponse('/', 500);
         }
-
-        $settings = Drupal::config('lti_tool_provider.settings');
-        if (!empty($settings->get('destination'))) {
-            $destination = $settings->get('destination');
-        }
-
-        if (isset($context['custom_destination']) && !empty($context['custom_destination'])) {
-            $destination = $context['custom_destination'];
-        }
-
-        $this->moduleHandler->alter('lti_tool_provider_launch_redirect', $destination, $context);
-
-        return new RedirectResponse($destination);
     }
 
     /**
@@ -127,29 +195,38 @@ class LTIToolProviderController extends ControllerBase
      *
      * Logs the user out and returns the user to the LMS.
      *
-     * @param Request $request
      * @return RedirectResponse
      *   Redirect user to appropriate return url.
      */
-    public function ltiReturn(Request $request)
+    public function ltiReturn()
     {
         try {
-            $session = $request->getSession();
-            $context = $session->get('lti_tool_provider_context');
-            if (empty($context)) {
+            $destination = '/';
+
+            if (empty($this->context)) {
                 throw new Exception('LTI context missing in launch request.');
             }
 
-            $this->moduleHandler->invokeAll('lti_tool_provider_return', [$context]);
-            user_logout();
+            if (!empty($this->destination)) {
+                $destination = $this->destination;
+            }
 
-            return new TrustedRedirectResponse($context['launch_presentation_return_url']);
+            if (isset($this->context['launch_presentation_return_url']) && !empty($this->context['launch_presentation_return_url'])) {
+                $destination = $this->context['launch_presentation_return_url'];
+                $this->userLogout();
+            }
+
+            $this->moduleHandler->invokeAll('lti_tool_provider_return', [$this->context]);
+
+            $this->killSwitch->trigger();
+
+            return new TrustedRedirectResponse($destination);
         }
         catch (Exception $e) {
             $this->loggerFactory->warning($e->getMessage());
-        }
 
-        return new RedirectResponse('/');
+            return new RedirectResponse('/', 500);
+        }
     }
 
     /**
@@ -160,9 +237,11 @@ class LTIToolProviderController extends ControllerBase
      */
     public function access()
     {
-        $session = \Drupal::request()->getSession();
-        $context = $session->get('lti_tool_provider_context');
+        return AccessResult::allowedIf(!empty($this->context));
+    }
 
-        return AccessResult::allowedIf(!empty($context));
+    protected function userLogout()
+    {
+        user_logout();
     }
 }
