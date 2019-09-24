@@ -28,13 +28,13 @@ class ConsumerListBuilder extends EntityListBuilder
                 'class' => [RESPONSIVE_PRIORITY_LOW],
             ],
             'consumer_key' => [
-                'data' => $this->t('Label'),
+                'data' => $this->t('Consumer Key'),
                 'field' => 'consumer_key',
                 'specifier' => 'consumer_key',
                 'class' => [RESPONSIVE_PRIORITY_LOW],
             ],
             'consumer_secret' => [
-                'data' => $this->t('Label'),
+                'data' => $this->t('Consumer Secret'),
                 'field' => 'consumer_secret',
                 'specifier' => 'consumer_secret',
                 'class' => [RESPONSIVE_PRIORITY_LOW],
