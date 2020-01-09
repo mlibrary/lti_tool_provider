@@ -84,7 +84,10 @@ function lti_tool_provider_provision_provision_entity(
     $provision = LtiToolProviderProvision::create();
     $provision->set('consumer_id', $context['consumer_id']);
     $provision->set('context_id', $context['context_id']);
+    $provision->set('context_label', $context['context_label']);
+    $provision->set('context_title', $context['context_title']);
     $provision->set('resource_link_id', $context['resource_link_id']);
+    $provision->set('resource_link_title', $context['resource_link_title']);
     $provision->set('provision_type', $entityType);
     $provision->set('provision_bundle', $entityBundle);
     $provision->set('provision_id', $entity->id());

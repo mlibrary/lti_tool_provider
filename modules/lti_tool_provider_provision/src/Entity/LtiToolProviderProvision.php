@@ -46,8 +46,35 @@ class LtiToolProviderProvision extends ContentEntityBase implements ContentEntit
                 ]
             );
 
+        $fields['context_label'] = BaseFieldDefinition::create('string')
+            ->setLabel(t('Context Label'))
+            ->setSettings(
+                [
+                    'max_length' => 512,
+                    'text_processing' => 0,
+                ]
+            );
+
+        $fields['context_title'] = BaseFieldDefinition::create('string')
+            ->setLabel(t('Context Title'))
+            ->setSettings(
+                [
+                    'max_length' => 512,
+                    'text_processing' => 0,
+                ]
+            );
+
         $fields['resource_link_id'] = BaseFieldDefinition::create('string')
             ->setLabel(t('Resource Link Id'))
+            ->setSettings(
+                [
+                    'max_length' => 512,
+                    'text_processing' => 0,
+                ]
+            );
+
+        $fields['resource_link_title'] = BaseFieldDefinition::create('string')
+            ->setLabel(t('Resource Link Label'))
             ->setSettings(
                 [
                     'max_length' => 512,
