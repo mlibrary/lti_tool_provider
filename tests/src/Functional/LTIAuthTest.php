@@ -6,7 +6,7 @@ use Behat\Mink\Driver\BrowserKitDriver;
 use Behat\Mink\Driver\GoutteDriver;
 use Drupal\Core\Entity\EntityStorageException;
 use Drupal\Core\Entity\EntityStorageInterface;
-use Drupal\lti_tool_provider\Entity\Consumer;
+use Drupal\lti_tool_provider\Entity\LtiToolProviderConsumer;
 use Drupal\Tests\BrowserTestBase;
 use Drupal\Core\Url;
 use Drupal\user\Entity\User;
@@ -46,7 +46,7 @@ class LTIAuth extends BrowserTestBase
     public $nonceStorage;
 
     /**
-     * @var Consumer
+     * @var LtiToolProviderConsumer
      */
     public $consumer;
 

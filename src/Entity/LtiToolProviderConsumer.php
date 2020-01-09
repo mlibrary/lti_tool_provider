@@ -17,13 +17,13 @@ use Drupal\Core\Entity\EntityTypeInterface;
  *   label = @Translation("Consumer entity"),
  *   handlers = {
  *     "view_builder" = "Drupal\Core\Entity\EntityViewBuilder",
- *     "list_builder" = "Drupal\lti_tool_provider\ConsumerListBuilder",
+ *     "list_builder" = "Drupal\lti_tool_provider\LtiToolProviderConsumerListBuilder",
  *     "form" = {
- *       "add" = "Drupal\lti_tool_provider\Form\ConsumerForm",
- *       "edit" = "Drupal\lti_tool_provider\Form\ConsumerForm",
- *       "delete" = "Drupal\lti_tool_provider\Form\ConsumerDeleteForm",
+ *       "add" = "Drupal\lti_tool_provider\Form\LtiToolProviderConsumerForm",
+ *       "edit" = "Drupal\lti_tool_provider\Form\LtiToolProviderConsumerForm",
+ *       "delete" = "Drupal\lti_tool_provider\Form\LtiToolProviderConsumerDeleteForm",
  *     },
- *     "access" = "Drupal\lti_tool_provider\ConsumerAccessController",
+ *     "access" = "Drupal\lti_tool_provider\LtiToolProviderConsumerAccessController",
  *   },
  *   base_table = "lti_tool_provider_consumer",
  *   admin_permission = "administer lti_tool_provider module",
@@ -41,7 +41,7 @@ use Drupal\Core\Entity\EntityTypeInterface;
  *   },
  * )
  */
-class Consumer extends ContentEntityBase implements ContentEntityInterface
+class LtiToolProviderConsumer extends ContentEntityBase implements ContentEntityInterface
 {
     /**
      * {@inheritdoc}

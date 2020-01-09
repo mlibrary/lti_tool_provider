@@ -10,9 +10,9 @@ use Drupal\Core\Form\FormStateInterface;
 /**
  * Form for editing a lti_tool_provider_consumer entity.
  *
- * @see \Drupal\lti_tool_provider\Entity\Consumer
+ * @see \Drupal\lti_tool_provider\Entity\LtiToolProviderConsumer
  */
-class ConsumerForm extends ContentEntityForm
+class LtiToolProviderConsumerForm extends ContentEntityForm
 {
     /**
      * {@inheritdoc}

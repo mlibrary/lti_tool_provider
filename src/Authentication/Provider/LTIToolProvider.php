@@ -10,7 +10,7 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\Core\Url;
-use Drupal\lti_tool_provider\Entity\Consumer;
+use Drupal\lti_tool_provider\Entity\LtiToolProviderConsumer;
 use Drupal\user\Entity\User;
 use Exception;
 use OAuthProvider;
@@ -53,7 +53,7 @@ class LTIToolProvider implements AuthenticationProviderInterface
     /**
      * The consumer entity matching the LTI request.
      *
-     * @var Consumer
+     * @var LtiToolProviderConsumer
      */
     protected $consumerEntity;
 

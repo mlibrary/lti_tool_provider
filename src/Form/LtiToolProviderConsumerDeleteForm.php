@@ -10,9 +10,9 @@ use Drupal\Core\Url;
 /**
  * Form for deleting a lti_tool_provider_consumer entity.
  *
- * @see Drupal\lti_tool_provider\Entity\Consumer
+ * @see Drupal\lti_tool_provider\Entity\LtiToolProviderConsumer
  */
-class ConsumerDeleteForm extends ContentEntityConfirmFormBase
+class LtiToolProviderConsumerDeleteForm extends ContentEntityConfirmFormBase
 {
     /**
      * {@inheritdoc}

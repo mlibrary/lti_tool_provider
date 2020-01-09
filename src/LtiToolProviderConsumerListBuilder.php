@@ -6,9 +6,9 @@ use Drupal;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityListBuilder;
 use Drupal\Core\Url;
-use Drupal\lti_tool_provider\Entity\Consumer;
+use Drupal\lti_tool_provider\Entity\LtiToolProviderConsumer;
 
-class ConsumerListBuilder extends EntityListBuilder
+class LtiToolProviderConsumerListBuilder extends EntityListBuilder
 {
     /**
      * {@inheritdoc}
@@ -58,7 +58,7 @@ class ConsumerListBuilder extends EntityListBuilder
     {
         $row = [];
 
-        if ($entity instanceof Consumer) {
+        if ($entity instanceof LtiToolProviderConsumer) {
             $row = [
                 'id' => $entity->id(),
                 'consumer' => $link = Drupal\Core\Link::fromTextAndUrl(
