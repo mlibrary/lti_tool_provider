@@ -8,7 +8,7 @@ use Drupal\Core\Authentication\AuthenticationProviderInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
-use Drupal\Core\Logger\LoggerChannelFactory;
+use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\Core\Url;
 use Drupal\lti_tool_provider\Entity\Consumer;
 use Drupal\user\Entity\User;
@@ -39,7 +39,7 @@ class LTIToolProvider implements AuthenticationProviderInterface
     /**
      * A logger instance.
      *
-     * @var LoggerChannelFactory
+     * @var LoggerChannelFactoryInterface
      */
     protected $loggerFactory;
 
@@ -71,7 +71,7 @@ class LTIToolProvider implements AuthenticationProviderInterface
      *   The configuration factory.
      * @param EntityTypeManagerInterface $entity_type_manager
      *   The entity manager.
-     * @param LoggerChannelFactory $logger_factory
+     * @param LoggerChannelFactoryInterface $logger_factory
      *   A logger instance.
      * @param ModuleHandlerInterface $module_handler
      *   The module handler.
@@ -79,7 +79,7 @@ class LTIToolProvider implements AuthenticationProviderInterface
     public function __construct(
         ConfigFactoryInterface $config_factory,
         EntityTypeManagerInterface $entity_type_manager,
-        LoggerChannelFactory $logger_factory,
+        LoggerChannelFactoryInterface $logger_factory,
         ModuleHandlerInterface $module_handler
     ) {
         $this->configFactory = $config_factory;

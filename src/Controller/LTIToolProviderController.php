@@ -7,7 +7,7 @@ use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Extension\ModuleHandlerInterface;
-use Drupal\Core\Logger\LoggerChannelFactory;
+use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\Core\PageCache\ResponsePolicy\KillSwitch;
 use Drupal\Core\Routing\TrustedRedirectResponse;
 use Exception;
@@ -31,7 +31,7 @@ class LTIToolProviderController extends ControllerBase
     /**
      * A logger instance.
      *
-     * @var LoggerChannelFactory
+     * @var LoggerChannelFactoryInterface
      */
     protected $loggerFactory;
 
@@ -82,7 +82,7 @@ class LTIToolProviderController extends ControllerBase
      *
      * @param ConfigFactoryInterface $configFactory
      *   The configuration factory.
-     * @param LoggerChannelFactory $loggerFactory
+     * @param LoggerChannelFactoryInterface $loggerFactory
      *   A logger instance.
      * @param ModuleHandlerInterface $moduleHandler
      *   The module handler.
@@ -99,7 +99,7 @@ class LTIToolProviderController extends ControllerBase
      */
     public function __construct(
         ConfigFactoryInterface $configFactory,
-        LoggerChannelFactory $loggerFactory,
+        LoggerChannelFactoryInterface $loggerFactory,
         ModuleHandlerInterface $moduleHandler,
         KillSwitch $killSwitch,
         Request $request,
@@ -124,7 +124,7 @@ class LTIToolProviderController extends ControllerBase
     {
         /* @var $configFactory ConfigFactoryInterface */
         $configFactory = $container->get('config.factory');
-        /* @var $loggerFactory LoggerChannelFactory */
+        /* @var $loggerFactory LoggerChannelFactoryInterface */
         $loggerFactory = $container->get('logger.factory');
         /* @var $moduleHandler ModuleHandlerInterface */
         $moduleHandler = $container->get('module_handler');
