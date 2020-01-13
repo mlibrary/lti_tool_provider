@@ -48,33 +48,3 @@ function lti_tool_provider_roles_lti_tool_provider_authenticated(User $user, arr
         );
     }
 }
-
-/**
- * Get an array of fully qualified LTI user roles.
- *
- * @param mixed $roles
- *   Comma-separated list of roles or array of roles.
- *
- * @return array
- *   An array of roles
- */
-function parse_roles($roles)
-{
-    $parsedRoles = [];
-
-    if (!is_array($roles)) {
-        $roles = explode(',', $roles);
-    }
-
-    foreach ($roles as $role) {
-        $role = trim($role);
-        if (!empty($role)) {
-            if (substr($role, 0, 4) !== 'urn:') {
-                $role = 'urn:lti:role:ims/lis/' . $role;
-            }
-            $parsedRoles[] = $role;
-        }
-    }
-
-    return $parsedRoles;
-}
