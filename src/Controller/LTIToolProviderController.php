@@ -6,12 +6,15 @@ use Drupal;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Controller\ControllerBase;
-use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
-use Drupal\Core\PageCache\ResponsePolicy\KillSwitch;
+use Drupal\Core\PageCache\ResponsePolicyInterface;
 use Drupal\Core\Routing\TrustedRedirectResponse;
+use Drupal\lti_tool_provider\Event\LtiToolProviderLaunchRedirectEvent;
+use Drupal\lti_tool_provider\Event\LtiToolProviderReturnEvent;
+use Drupal\lti_tool_provider\LtiToolProviderEvent;
 use Exception;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
@@ -36,16 +39,16 @@ class LTIToolProviderController extends ControllerBase
     protected $loggerFactory;
 
     /**
-     * The module handler.
+     * The event dispatcher.
      *
-     * @var ModuleHandlerInterface
+     * @var EventDispatcherInterface
      */
-    protected $moduleHandler;
+    protected $eventDispatcher;
 
     /**
      * The page cache kill switch.
      *
-     * @var KillSwitch
+     * @var ResponsePolicyInterface
      */
     protected $killSwitch;
 
@@ -84,9 +87,9 @@ class LTIToolProviderController extends ControllerBase
      *   The configuration factory.
      * @param LoggerChannelFactoryInterface $loggerFactory
      *   A logger instance.
-     * @param ModuleHandlerInterface $moduleHandler
-     *   The module handler.
-     * @param KillSwitch $killSwitch
+     * @param EventDispatcherInterface $eventDispatcher
+     *   The event dispatcher.
+     * @param ResponsePolicyInterface $killSwitch
      *   The page cache kill switch.
      * @param Request $request
      *   The request.
@@ -94,14 +97,14 @@ class LTIToolProviderController extends ControllerBase
      *   The request session.
      * @param mixed $context
      *   The LTI context.
-     * @param mixed $destination
+     * @param string $destination
      *   Optional destination.
      */
     public function __construct(
         ConfigFactoryInterface $configFactory,
         LoggerChannelFactoryInterface $loggerFactory,
-        ModuleHandlerInterface $moduleHandler,
-        KillSwitch $killSwitch,
+        EventDispatcherInterface $eventDispatcher,
+        ResponsePolicyInterface $killSwitch,
         Request $request,
         SessionInterface $session,
         $context,
@@ -109,7 +112,7 @@ class LTIToolProviderController extends ControllerBase
     ) {
         $this->configFactory = $configFactory;
         $this->loggerFactory = $loggerFactory->get('lti_tool_provider');
-        $this->moduleHandler = $moduleHandler;
+        $this->eventDispatcher = $eventDispatcher;
         $this->killSwitch = $killSwitch;
         $this->request = $request;
         $this->session = $session;
@@ -126,9 +129,9 @@ class LTIToolProviderController extends ControllerBase
         $configFactory = $container->get('config.factory');
         /* @var $loggerFactory LoggerChannelFactoryInterface */
         $loggerFactory = $container->get('logger.factory');
-        /* @var $moduleHandler ModuleHandlerInterface */
-        $moduleHandler = $container->get('module_handler');
-        /* @var $killSwitch KillSwitch */
+        /* @var $eventDispatcher EventDispatcherInterface */
+        $eventDispatcher = $container->get('event_dispatcher');
+        /* @var $killSwitch ResponsePolicyInterface */
         $killSwitch = $container->get('page_cache_kill_switch');
         $request = Drupal::request();
         $session = $request->getSession();
@@ -138,7 +141,7 @@ class LTIToolProviderController extends ControllerBase
         return new static(
             $configFactory,
             $loggerFactory,
-            $moduleHandler,
+            $eventDispatcher,
             $killSwitch,
             $request,
             $session,
@@ -177,9 +180,16 @@ class LTIToolProviderController extends ControllerBase
                 $destination = $this->context['custom_destination'];
             }
 
-            $this->moduleHandler->alter('lti_tool_provider_launch_redirect', $destination, $this->context);
-
             $this->killSwitch->trigger();
+
+            $event = new LtiToolProviderLaunchRedirectEvent($this->context, $destination);
+            LtiToolProviderEvent::dispatchEvent($this->eventDispatcher, $event);
+
+            if ($event->isCancelled()) {
+                throw new Exception($event->getMessage());
+            }
+
+            $destination = $event->getDestination();
 
             return new RedirectResponse($destination);
         }
@@ -204,7 +214,7 @@ class LTIToolProviderController extends ControllerBase
             $destination = '/';
 
             if (empty($this->context)) {
-                throw new Exception('LTI context missing in launch request.');
+                throw new Exception('LTI context missing in return request.');
             }
 
             if (!empty($this->destination)) {
@@ -213,12 +223,19 @@ class LTIToolProviderController extends ControllerBase
 
             if (isset($this->context['launch_presentation_return_url']) && !empty($this->context['launch_presentation_return_url'])) {
                 $destination = $this->context['launch_presentation_return_url'];
-                $this->userLogout();
             }
 
-            $this->moduleHandler->invokeAll('lti_tool_provider_return', [$this->context]);
-
             $this->killSwitch->trigger();
+
+            $event = new LtiToolProviderReturnEvent($this->context, $destination);
+            LtiToolProviderEvent::dispatchEvent($this->eventDispatcher, $event);
+
+            if ($event->isCancelled()) {
+                throw new Exception($event->getMessage());
+            }
+
+            $destination = $event->getDestination();
+            $this->userLogout();
 
             return new TrustedRedirectResponse($destination);
         }

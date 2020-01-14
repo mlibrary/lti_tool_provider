@@ -5,7 +5,7 @@ services:
       - '@config.factory'
       - '@entity_type.manager'
       - '@logger.factory'
-      - '@module_handler'
+      - '@event_dispatcher'
     tags:
       - name: authentication_provider
         provider_id: lti_auth

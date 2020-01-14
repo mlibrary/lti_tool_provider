@@ -11,6 +11,9 @@ lti_tool_provider_provision.settings:
     entity_redirect:
       type: boolean
       label: Redirect to entity on launch
+    entity_sync:
+      type: boolean
+      label: Sync entity fields on launch
     entity_defaults:
       type: mapping
       label: Provisioned entity field defaults
@@ -21,3 +24,13 @@ lti_tool_provider_provision.settings:
         lti_attribute:
           type: string
           label: LTI Attribute
+    allowed_roles:
+      type: mapping
+      label: Allowed LTI roles to provision entities
+      mapping:
+        name:
+          type: string
+          label: LTI Role
+        lti_attribute:
+          type: boolean
+          label: Value (True or false).

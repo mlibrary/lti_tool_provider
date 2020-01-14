@@ -7,13 +7,18 @@ use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\Core\Authentication\AuthenticationProviderInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\Core\Url;
 use Drupal\lti_tool_provider\Entity\LtiToolProviderConsumer;
+use Drupal\lti_tool_provider\Event\LtiToolProviderAuthenticatedEvent;
+use Drupal\lti_tool_provider\Event\LtiToolProviderLaunchEvent;
+use Drupal\lti_tool_provider\Event\LtiToolProviderProvisionUserEvent;
+use Drupal\lti_tool_provider\LtiToolProviderEvent;
 use Drupal\user\Entity\User;
+use Drupal\user\UserInterface;
 use Exception;
 use OAuthProvider;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -44,11 +49,11 @@ class LTIToolProvider implements AuthenticationProviderInterface
     protected $loggerFactory;
 
     /**
-     * The module handler.
+     * The event dispatcher.
      *
-     * @var ModuleHandlerInterface
+     * @var EventDispatcherInterface
      */
-    protected $moduleHandler;
+    protected $eventDispatcher;
 
     /**
      * The consumer entity matching the LTI request.
@@ -65,6 +70,14 @@ class LTIToolProvider implements AuthenticationProviderInterface
     protected $context;
 
     /**
+     * The LTI provisioned user.
+     *
+     * @var UserInterface
+     *
+     */
+    protected $user;
+
+    /**
      * Constructs a HTTP basic authentication provider object.
      *
      * @param ConfigFactoryInterface $config_factory
@@ -73,19 +86,19 @@ class LTIToolProvider implements AuthenticationProviderInterface
      *   The entity manager.
      * @param LoggerChannelFactoryInterface $logger_factory
      *   A logger instance.
-     * @param ModuleHandlerInterface $module_handler
-     *   The module handler.
+     * @param EventDispatcherInterface $eventDispatcher
+     *   The event dispatcher.
      */
     public function __construct(
         ConfigFactoryInterface $config_factory,
         EntityTypeManagerInterface $entity_type_manager,
         LoggerChannelFactoryInterface $logger_factory,
-        ModuleHandlerInterface $module_handler
+        EventDispatcherInterface $eventDispatcher
     ) {
         $this->configFactory = $config_factory;
         $this->entityTypeManager = $entity_type_manager;
         $this->loggerFactory = $logger_factory->get('lti_tool_provider');
-        $this->moduleHandler = $module_handler;
+        $this->eventDispatcher = $eventDispatcher;
     }
 
     /**
@@ -130,13 +143,30 @@ class LTIToolProvider implements AuthenticationProviderInterface
     {
         try {
             $this->context = $request->request->all();
-            $this->moduleHandler->alter('lti_tool_provider_launch', $this->context);
+
+            $event = new LtiToolProviderLaunchEvent($this->context);
+            LtiToolProviderEvent::dispatchEvent($this->eventDispatcher, $event);
+
+            if ($event->isCancelled()) {
+                throw new Exception($event->getMessage());
+            }
+
+            $this->context = $event->getContext();
 
             $this->validateOauthRequest();
-            $user = $this->provisionUser();
+            $this->provisionUser();
 
-            $this->moduleHandler->invokeAll('lti_tool_provider_authenticated', [$user, $this->context]);
-            $this->userLoginFinalize($user);
+            $event = new LtiToolProviderAuthenticatedEvent($this->context, $this->user);
+            LtiToolProviderEvent::dispatchEvent($this->eventDispatcher, $event);
+
+            if ($event->isCancelled()) {
+                throw new Exception($event->getMessage());
+            }
+
+            $this->context = $event->getContext();
+            $this->user = $event->getUser();
+
+            $this->userLoginFinalize();
 
             $this->context['consumer_id'] = $this->consumerEntity->id();
             $this->context['consumer_label'] = $this->consumerEntity->label();
@@ -144,7 +174,7 @@ class LTIToolProvider implements AuthenticationProviderInterface
             $session = $request->getSession();
             $session->set('lti_tool_provider_context', $this->context);
 
-            return $user;
+            return $this->user;
         }
         catch (Exception $e) {
             $this->loggerFactory->warning($e->getMessage());
@@ -259,10 +289,8 @@ class LTIToolProvider implements AuthenticationProviderInterface
     }
 
     /**
-     * Get the user that matches the LTI request context info.
+     * Provision a user that matches the LTI request context info.
      *
-     * @return User
-     *   Returns a user corresponding to the LTI request.
      * @throws Exception
      */
     protected function provisionUser()
@@ -282,42 +310,44 @@ class LTIToolProvider implements AuthenticationProviderInterface
             }
 
             if ($users = $this->entityTypeManager->getStorage('user')->loadByProperties(['name' => $name, 'status' => 1])) {
-                $user = reset($users);
+                $this->user = reset($users);
             }
             elseif ($users = $this->entityTypeManager->getStorage('user')->loadByProperties(['mail' => $mail, 'status' => 1])) {
-                $user = reset($users);
+                $this->user = reset($users);
             }
             else {
-                $user = User::create();
-                $user->setUsername($name);
-                $user->setEmail($mail);
-                $user->setPassword(user_password());
-                $user->enforceIsNew();
-                $user->activate();
+                $this->user = User::create();
+                $this->user->setUsername($name);
+                $this->user->setEmail($mail);
+                $this->user->setPassword(user_password());
+                $this->user->enforceIsNew();
+                $this->user->activate();
 
-                $this->moduleHandler->invokeAll('lti_tool_provider_create_user', [$user, $this->context]);
+                $event = new LtiToolProviderProvisionUserEvent($this->context, $this->user);
+                LtiToolProviderEvent::dispatchEvent($this->eventDispatcher, $event);
 
-                $user->save();
+                if ($event->isCancelled()) {
+                    throw new Exception($event->getMessage());
+                }
+
+                $this->context = $event->getContext();
+                $this->user = $event->getUser();
+
+                $this->user->save();
             }
-
-            return $user;
         }
         catch (Exception $e) {
             $this->loggerFactory->warning($e->getMessage());
+            $this->sendLtiError($e->getMessage());
         }
-
-        throw new Exception('Unable to provision user.');
     }
 
     /**
      * Finalizes the user login.
-     *
-     * @param User $user
-     *   The user.
      */
-    protected function userLoginFinalize(User $user)
+    protected function userLoginFinalize()
     {
-        user_login_finalize($user);
+        user_login_finalize($this->user);
     }
 
     /**

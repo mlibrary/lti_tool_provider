@@ -31,11 +31,15 @@ class LtiToolProviderProvisionSettingsForm extends ConfigFormBase
     public function buildForm(array $form, FormStateInterface $form_state, $filter = '')
     {
         $settings = $this->config('lti_tool_provider_provision.settings');
+        $lti_roles = $this->config('lti_tool_provider.settings')->get('lti_roles');
 
         $entityType = $form_state->getValue('entity_type') ? $form_state->getValue('entity_type') : $settings->get('entity_type');
         $entityBundle = $form_state->getValue('entity_bundle') ? $form_state->getValue('entity_bundle') : $settings->get('entity_bundle');
         $entityRedirect = $form_state->getValue('entity_redirect') ? $form_state->getValue('entity_redirect') : $settings->get('entity_redirect');
         $entityDefaults = $form_state->getValue('entity_defaults') ? $form_state->getValue('entity_defaults') : $settings->get('entity_defaults');
+        $entitySync = $form_state->getValue('entity_sync') ? $form_state->getValue('entity_sync') : $settings->get('entity_sync');
+        $allowedRolesEnabled = $form_state->getValue('allowed_roles_enabled') ? $form_state->getValue('allowed_roles_enabled') : $settings->get('allowed_roles_enabled');
+        $allowedRoles = $form_state->getValue('allowed_roles') ? $form_state->getValue('allowed_roles') : $settings->get('allowed_roles');
 
         $form['#attributes']['id'] = uniqid($this->getFormId());
 
@@ -131,6 +135,34 @@ class LtiToolProviderProvisionSettingsForm extends ConfigFormBase
                     ];
                 }
             }
+
+            $form['entity_sync'] = [
+                '#type' => 'checkbox',
+                '#title' => $this->t('Always sync entity fields from context during launch.'),
+                '#default_value' => $entitySync,
+            ];
+        }
+
+        $form['allowed_roles_enabled'] = [
+            '#type' => 'checkbox',
+            '#title' => $this->t('Restrict entity provision to specific LTI roles.'),
+            '#default_value' => $allowedRolesEnabled,
+        ];
+
+        $form['allowed_roles'] = [
+            '#type' => 'details',
+            '#title' => 'Allowed Roles',
+            '#description' => $this->t('If enabled above, allow only specific LTI roles to provision entities.'),
+            '#tree' => true,
+            '#open' => false,
+        ];
+
+        foreach ($lti_roles as $ltiRole) {
+            $form['allowed_roles'][$ltiRole] = [
+                '#type' => 'checkbox',
+                '#title' => $this->t($ltiRole),
+                '#default_value' => $allowedRoles[$ltiRole],
+            ];
         }
 
         return parent::buildForm($form, $form_state);
@@ -145,12 +177,16 @@ class LtiToolProviderProvisionSettingsForm extends ConfigFormBase
         $lti_launch = $this->config('lti_tool_provider.settings')->get('lti_launch');
 
         $entityType = $form_state->getValue('entity_type');
-        $entityBundle = $form_state->getValue('entity_bundle') ;
+        $entityBundle = $form_state->getValue('entity_bundle');
         $entityRedirect = $form_state->getValue('entity_redirect');
+        $entitySync = $form_state->getValue('entity_sync');
+        $allowedRolesEnabled = $form_state->getValue('entity_sync');
 
         $settings->set('entity_type', $entityType)->save();
         $settings->set('entity_bundle', $entityBundle)->save();
         $settings->set('entity_redirect', $entityRedirect)->save();
+        $settings->set('entity_sync', $entitySync)->save();
+        $settings->set('allowed_roles_enabled', $allowedRolesEnabled)->save();
 
         $entityDefaults = [];
         foreach ($form_state->getValue('entity_defaults') as $key => $value) {
@@ -158,8 +194,13 @@ class LtiToolProviderProvisionSettingsForm extends ConfigFormBase
                 $entityDefaults[$key] = $value['lti_attribute'];
             }
         }
-
         $settings->set('entity_defaults', $entityDefaults)->save();
+
+        $allowedRoles = [];
+        foreach ($form_state->getValue('allowed_roles') as $key => $value) {
+            $allowedRoles[$key] = $value;
+        }
+        $settings->set('allowed_roles', $allowedRoles)->save();
 
         parent::submitForm($form, $form_state);
     }

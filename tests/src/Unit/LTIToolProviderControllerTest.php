@@ -4,14 +4,14 @@ namespace Drupal\Tests\lti_tool_provider\Unit;
 
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Config\ConfigFactoryInterface;
-use Drupal\Core\Extension\ModuleHandlerInterface;
-use Drupal\Core\Logger\LoggerChannelFactory;
-use Drupal\Core\PageCache\ResponsePolicy\KillSwitch;
+use Drupal\Core\Logger\LoggerChannelFactoryInterface;
+use Drupal\Core\PageCache\ResponsePolicyInterface;
 use Drupal\Core\Routing\TrustedRedirectResponse;
 use Drupal\lti_tool_provider\Controller\LTIToolProviderController;
 use Drupal\Tests\UnitTestCase;
 use InvalidArgumentException;
 use PHPUnit_Framework_MockObject_MockObject;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Session\Session;
@@ -34,17 +34,17 @@ class LTIToolProviderControllerTest extends UnitTestCase
     protected $configFactory;
 
     /**
-     * @var LoggerChannelFactory|PHPUnit_Framework_MockObject_MockObject
+     * @var LoggerChannelFactoryInterface|PHPUnit_Framework_MockObject_MockObject
      */
     protected $loggerFactory;
 
     /**
-     * @var ModuleHandlerInterface|PHPUnit_Framework_MockObject_MockObject
+     * @var EventDispatcherInterface|PHPUnit_Framework_MockObject_MockObject
      */
-    protected $moduleHandler;
+    protected $eventDispatcher;
 
     /**
-     * @var KillSwitch|PHPUnit_Framework_MockObject_MockObject
+     * @var ResponsePolicyInterface|PHPUnit_Framework_MockObject_MockObject
      */
     protected $killSwitch;
 
@@ -56,8 +56,16 @@ class LTIToolProviderControllerTest extends UnitTestCase
         parent::setUp();
 
         $this->configFactory = $this->createMock('\Drupal\Core\Config\ConfigFactoryInterface');
-        $this->moduleHandler = $this->createMock('\Drupal\Core\Extension\ModuleHandlerInterface');
-        $this->killSwitch = $this->createMock('Drupal\Core\PageCache\ResponsePolicy\KillSwitch');
+
+        $this->eventDispatcher = $this->getMockBuilder('\Symfony\Component\EventDispatcher\EventDispatcher')
+            ->setMethods(['__construct'])
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $this->killSwitch = $this->getMockBuilder('\Drupal\Core\PageCache\ResponsePolicy\KillSwitch')
+            ->setMethods(['__construct'])
+            ->disableOriginalConstructor()
+            ->getMock();
 
         $this->loggerFactory = $this->getMockBuilder('\Drupal\Core\Logger\LoggerChannelFactory')
             ->setMethods(['__construct'])
@@ -80,7 +88,7 @@ class LTIToolProviderControllerTest extends UnitTestCase
         $controller = new LTIToolProviderController(
             $this->configFactory,
             $this->loggerFactory,
-            $this->moduleHandler,
+            $this->eventDispatcher,
             $this->killSwitch,
             $request,
             $session,
@@ -113,7 +121,7 @@ class LTIToolProviderControllerTest extends UnitTestCase
         $controller = new LTIToolProviderController(
             $this->configFactory,
             $this->loggerFactory,
-            $this->moduleHandler,
+            $this->eventDispatcher,
             $this->killSwitch,
             new Request(),
             new Session(),
@@ -140,7 +148,7 @@ class LTIToolProviderControllerTest extends UnitTestCase
         $controller = new LTIToolProviderController(
             $this->configFactory,
             $this->loggerFactory,
-            $this->moduleHandler,
+            $this->eventDispatcher,
             $this->killSwitch,
             $request,
             $session,
@@ -185,7 +193,7 @@ class LTIToolProviderControllerTest extends UnitTestCase
         $controller = new LTIToolProviderController(
             $this->configFactory,
             $this->loggerFactory,
-            $this->moduleHandler,
+            $this->eventDispatcher,
             $this->killSwitch,
             new Request(),
             new Session(),
@@ -220,7 +228,7 @@ class LTIToolProviderControllerTest extends UnitTestCase
                 [
                     $this->configFactory,
                     $this->loggerFactory,
-                    $this->moduleHandler,
+                    $this->eventDispatcher,
                     $this->killSwitch,
                     $request,
                     $session,

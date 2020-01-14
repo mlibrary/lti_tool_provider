@@ -386,7 +386,6 @@ class LTIAuth extends BrowserTestBase
      *   The response.
      *
      * @throws Exception
-     * @throws GuzzleException
      * @see \GuzzleHttp\ClientInterface::request()
      */
     protected function request($method, Url $url, array $request_options)

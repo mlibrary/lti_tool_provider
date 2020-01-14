@@ -4,11 +4,11 @@ namespace Drupal\Tests\lti_tool_provider\Unit;
 
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\Core\Extension\ModuleHandlerInterface;
-use Drupal\Core\Logger\LoggerChannelFactory;
+use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\Tests\UnitTestCase;
 use OauthProvider;
 use PHPUnit_Framework_MockObject_MockObject;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Drupal\lti_tool_provider\Authentication\Provider\LTIToolProvider;
 
@@ -50,16 +50,16 @@ class LTIToolProviderTest extends UnitTestCase
     /**
      * A mocked logger instance.
      *
-     * @var LoggerChannelFactory|PHPUnit_Framework_MockObject_MockObject
+     * @var LoggerChannelFactoryInterface|PHPUnit_Framework_MockObject_MockObject
      */
     protected $loggerFactory;
 
     /**
      * The mocked module handler.
      *
-     * @var ModuleHandlerInterface|PHPUnit_Framework_MockObject_MockObject
+     * @var EventDispatcherInterface|PHPUnit_Framework_MockObject_MockObject
      */
-    protected $moduleHandler;
+    protected $eventDispatcher;
 
     /**
      * The mocked PECL OauthProvider class.
@@ -77,7 +77,11 @@ class LTIToolProviderTest extends UnitTestCase
 
         $this->configFactory = $this->createMock('\Drupal\Core\Config\ConfigFactoryInterface');
         $this->entityTypeManager = $this->createMock('\Drupal\Core\Entity\EntityTypeManagerInterface');
-        $this->moduleHandler = $this->createMock('\Drupal\Core\Extension\ModuleHandlerInterface');
+
+        $this->eventDispatcher = $this->getMockBuilder('\Symfony\Component\EventDispatcher\EventDispatcher')
+            ->setMethods(['__construct'])
+            ->disableOriginalConstructor()
+            ->getMock();
 
         $this->loggerFactory = $this->getMockBuilder('\Drupal\Core\Logger\LoggerChannelFactory')
             ->setMethods(['__construct'])
@@ -109,7 +113,7 @@ class LTIToolProviderTest extends UnitTestCase
             $this->configFactory,
             $this->entityTypeManager,
             $this->loggerFactory,
-            $this->moduleHandler
+            $this->eventDispatcher
         );
 
         $actual = $provider->applies($request);
@@ -227,7 +231,7 @@ class LTIToolProviderTest extends UnitTestCase
             $this->configFactory,
             $this->entityTypeManager,
             $this->loggerFactory,
-            $this->moduleHandler
+            $this->eventDispatcher
         );
 
         $expected = OAUTH_BAD_TIMESTAMP;
@@ -247,7 +251,7 @@ class LTIToolProviderTest extends UnitTestCase
             $this->configFactory,
             $this->entityTypeManager,
             $this->loggerFactory,
-            $this->moduleHandler
+            $this->eventDispatcher
         );
 
         $this->provider->timestamp = time();
@@ -268,7 +272,7 @@ class LTIToolProviderTest extends UnitTestCase
             $this->configFactory,
             $this->entityTypeManager,
             $this->loggerFactory,
-            $this->moduleHandler
+            $this->eventDispatcher
         );
 
         $this->provider->consumer_key = '';
@@ -349,7 +353,7 @@ class LTIToolProviderTest extends UnitTestCase
             $this->configFactory,
             $this->entityTypeManager,
             $this->loggerFactory,
-            $this->moduleHandler
+            $this->eventDispatcher
         );
 
         $this->provider->consumer_key = '';
@@ -393,7 +397,7 @@ class LTIToolProviderTest extends UnitTestCase
             $this->configFactory,
             $entityTypeManager,
             $this->loggerFactory,
-            $this->moduleHandler
+            $this->eventDispatcher
         );
     }
 
@@ -432,7 +436,7 @@ class LTIToolProviderTest extends UnitTestCase
             $this->configFactory,
             $entityTypeManager,
             $this->loggerFactory,
-            $this->moduleHandler
+            $this->eventDispatcher
         );
 
         $expected = OAUTH_BAD_NONCE;

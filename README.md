@@ -55,7 +55,50 @@ Most LMS now require that https is used for LTI authentication. However it shoul
 
 ### Module Integration
 
-If you would like to alter the LTI launch, user provisioning, or LTI return, you can do this using the hooks as documented in the lti_tool_provider.api.php file. Also the LTI context variables are available per user in the session variable. For example:
+If you would like to alter the LTI launch, user provisioning, or LTI return, you can do this using an event subscriber. See the src/Events directory for more information on specific events.
+
+For example, to set the redirect path to a custom path:
+
+my_module/my_module.services.yml
+```yaml
+my_module.lti_tool_provider.event_subscriber:
+  class: Drupal\my_module\EventSubscriber\MyModuleLtiToolProviderEventSubscriber
+  tags:
+    - { name: 'event_subscriber' }
+```
+my_module/src/EventSubscriber\MyModuleLtiToolProviderEventSubscriber.php
+```php
+namespace Drupal\my_module\EventSubscriber;
+
+use Drupal\lti_tool_provider\Event\LtiToolProviderLaunchRedirectEvent;
+use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+
+class MyModuleLtiToolProviderEventSubscriber implements EventSubscriberInterface
+{
+    /**
+     * @param LtiToolProviderLaunchRedirectEvent $event
+     */
+    public function onLaunchRedirect(LtiToolProviderLaunchRedirectEvent $event)
+    {
+        if ($event instanceof LtiToolProviderLaunchRedirectEvent) {
+            $event->setDestination('/some-path');
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public static function getSubscribedEvents()
+    {
+        return [
+            LtiToolProviderLaunchRedirectEvent::EVENT_NAME => 'onLaunchRedirect',
+        ];
+    }
+}
+
+```
+
+Also the LTI context variables are available per user in the session variable. For example:
 
 ```php
 $context = \Drupal::request()->getSession()->get('lti_tool_provider_context');
