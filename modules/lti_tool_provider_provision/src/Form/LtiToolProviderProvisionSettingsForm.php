@@ -46,7 +46,6 @@ class LtiToolProviderProvisionSettingsForm extends ConfigFormBase
         $options = [];
         $definitions = Drupal::entityTypeManager()->getDefinitions();
 
-        /* @var $definition Drupal\Core\Entity\EntityTypeInterface */
         foreach ($definitions as $definition) {
             if ($definition instanceof ContentEntityType) {
                 $options[$definition->id()] = $definition->getLabel();
@@ -205,7 +204,7 @@ class LtiToolProviderProvisionSettingsForm extends ConfigFormBase
         parent::submitForm($form, $form_state);
     }
 
-    public function getEntityBundles(array &$form)
+    public function getEntityBundles(array $form)
     {
         return $form;
     }
