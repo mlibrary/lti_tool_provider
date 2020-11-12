@@ -179,7 +179,7 @@ class LtiToolProviderProvisionSettingsForm extends ConfigFormBase
         $entityBundle = $form_state->getValue('entity_bundle');
         $entityRedirect = $form_state->getValue('entity_redirect');
         $entitySync = $form_state->getValue('entity_sync');
-        $allowedRolesEnabled = $form_state->getValue('entity_sync');
+        $allowedRolesEnabled = $form_state->getValue('allowed_roles_enabled');
 
         $settings->set('entity_type', $entityType)->save();
         $settings->set('entity_bundle', $entityBundle)->save();
