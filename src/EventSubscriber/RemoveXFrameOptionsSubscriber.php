@@ -11,8 +11,10 @@ class RemoveXFrameOptionsSubscriber implements EventSubscriberInterface
 {
     /**
      * @param ResponseEvent $event
+     *
+     * @todo Only add ResponseEvent typing to $event once D8 is no longer supported.
      */
-    public function RemoveXFrameOptions(ResponseEvent $event)
+    public function RemoveXFrameOptions($event)
     {
         if (Drupal::config('lti_tool_provider.settings')->get('iframe')) {
             $session = $event->getRequest()->getSession();
