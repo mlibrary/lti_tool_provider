@@ -5,3 +5,6 @@ package: LTI Tool Provider
 core: 8.x
 core_version_requirement: ^8 || ^9
 configure: lti_tool_provider.admin
+dependencies:
+  - drupal:options
+  - key:key

@@ -3,38 +3,36 @@
 namespace Drupal\lti_tool_provider\Event;
 
 use Drupal\lti_tool_provider\LtiToolProviderEvent;
+use Symfony\Component\HttpFoundation\Request;
 
-class LtiToolProviderLaunchEvent extends LtiToolProviderEvent
-{
-    const EVENT_NAME = 'LTI_TOOL_PROVIDER_LAUNCH_EVENT';
+class LtiToolProviderLaunchEvent extends LtiToolProviderEvent {
 
-    /**
-     * @var array
-     */
-    private $context;
+  /**
+   * @var \Symfony\Component\HttpFoundation\Request
+   */
+  private $request;
 
-    /**
-     * LtiToolProviderLaunchEvent constructor.
-     * @param array $context
-     */
-    public function __construct(array $context)
-    {
-        $this->setContext($context);
-    }
+  /**
+   * LtiToolProviderLaunchEvent constructor.
+   *
+   * @param \Symfony\Component\HttpFoundation\Request $request
+   */
+  public function __construct(Request $request) {
+    $this->setRequest($request);
+  }
 
-    /**
-     * @return array
-     */
-    public function getContext(): array
-    {
-        return $this->context;
-    }
+  /**
+   * @return \Symfony\Component\HttpFoundation\Request
+   */
+  public function getRequest(): Request {
+    return $this->request;
+  }
 
-    /**
-     * @param array $context
-     */
-    public function setContext(array $context)
-    {
-        $this->context = $context;
-    }
+  /**
+   * @param \Symfony\Component\HttpFoundation\Request $request
+   */
+  public function setRequest(Request $request) {
+    $this->request = $request;
+  }
+
 }

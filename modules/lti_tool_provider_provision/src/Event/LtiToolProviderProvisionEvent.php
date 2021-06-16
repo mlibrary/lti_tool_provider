@@ -3,85 +3,82 @@
 namespace Drupal\lti_tool_provider_provision\Event;
 
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\lti_tool_provider\LTIToolProviderContextInterface;
 use Drupal\lti_tool_provider\LtiToolProviderEvent;
 
-class LtiToolProviderProvisionEvent extends LtiToolProviderEvent
-{
-    const EVENT_NAME = 'LTI_TOOL_PROVIDER_PROVISION_EVENT';
+/**
+ * Implementation LtiToolProviderProvisionEvent class.
+ */
+class LtiToolProviderProvisionEvent extends LtiToolProviderEvent {
 
-    /**
-     * @var array
-     */
-    private $context;
+  /**
+   * @var \Drupal\lti_tool_provider\LTIToolProviderContextInterface
+   */
+  private $context;
 
-    /**
-     * @var EntityInterface
-     */
-    private $entity;
+  /**
+   * @var \Drupal\Core\Entity\EntityInterface
+   */
+  private $entity;
 
-    /**
-     * @var string
-     */
-    private $destination;
+  /**
+   * @var string
+   */
+  private $destination;
 
-    /**
-     * LtiToolProviderProvisionEvent constructor.
-     * @param array $context
-     * @param EntityInterface $entity
-     * @param string $destination
-     */
-    public function __construct(array $context, EntityInterface $entity, string $destination)
-    {
-        $this->setContext($context);
-        $this->setEntity($entity);
-        $this->setDestination($destination);
-    }
+  /**
+   * LtiToolProviderProvisionEvent constructor.
+   *
+   * @param \Drupal\lti_tool_provider\LTIToolProviderContextInterface $context
+   * @param \Drupal\Core\Entity\EntityInterface $entity
+   * @param string $destination
+   */
+  public function __construct(LTIToolProviderContextInterface $context, EntityInterface $entity, string $destination) {
+    $this->setContext($context);
+    $this->setEntity($entity);
+    $this->setDestination($destination);
+  }
 
-    /**
-     * @return array
-     */
-    public function getContext(): array
-    {
-        return $this->context;
-    }
+  /**
+   * @return \Drupal\lti_tool_provider\LTIToolProviderContextInterface
+   */
+  public function getContext(): LTIToolProviderContextInterface {
+    return $this->context;
+  }
 
-    /**
-     * @param array $context
-     */
-    public function setContext(array $context)
-    {
-        $this->context = $context;
-    }
+  /**
+   * @param \Drupal\lti_tool_provider\LTIToolProviderContextInterface $context
+   */
+  public function setContext(LTIToolProviderContextInterface $context) {
+    $this->context = $context;
+  }
 
-    /**
-     * @return EntityInterface
-     */
-    public function getEntity(): EntityInterface
-    {
-        return $this->entity;
-    }
+  /**
+   * @return \Drupal\Core\Entity\EntityInterface
+   */
+  public function getEntity(): EntityInterface {
+    return $this->entity;
+  }
 
-    /**
-     * @param EntityInterface $entity
-     */
-    public function setEntity(EntityInterface $entity): void
-    {
-        $this->entity = $entity;
-    }
+  /**
+   * @param \Drupal\Core\Entity\EntityInterface $entity
+   */
+  public function setEntity(EntityInterface $entity): void {
+    $this->entity = $entity;
+  }
 
-    /**
-     * @return string
-     */
-    public function getDestination(): string
-    {
-        return $this->destination;
-    }
+  /**
+   * @return string
+   */
+  public function getDestination(): string {
+    return $this->destination;
+  }
 
-    /**
-     * @param string $destination
-     */
-    public function setDestination(string $destination): void
-    {
-        $this->destination = $destination;
-    }
+  /**
+   * @param string $destination
+   */
+  public function setDestination(string $destination): void {
+    $this->destination = $destination;
+  }
+
 }
