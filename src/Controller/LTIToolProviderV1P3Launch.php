@@ -4,10 +4,10 @@ namespace Drupal\lti_tool_provider\Controller;
 
 use Drupal;
 use Drupal\Core\Controller\ControllerBase;
-use Drupal\lti_tool_provider\Event\LtiToolProviderLaunchRedirectEvent;
+use Drupal\lti_tool_provider\Event\LtiToolProviderEvents;
+use Drupal\lti_tool_provider\Event\LtiToolProviderLaunchEvent;
 use Drupal\lti_tool_provider\LTIToolProviderContext;
 use Drupal\lti_tool_provider\LTIToolProviderContextInterface;
-use Drupal\lti_tool_provider\LtiToolProviderEvent;
 use Exception;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -37,16 +37,10 @@ class LTIToolProviderV1P3Launch extends ControllerBase {
       $payload = $context->getPayload();
       $custom = $payload->getCustom();
 
-      $event = new LtiToolProviderLaunchRedirectEvent($context, $custom['destination'] ?? '/');
-      LtiToolProviderEvent::dispatchEvent($eventDispatcher, $event);
+      $event = new LtiToolProviderLaunchEvent($context, $custom['destination'] ?? '/');
+      $eventDispatcher->dispatch(LtiToolProviderEvents::LAUNCH, $event);
 
-      if ($event->isCancelled()) {
-        throw new Exception($event->getMessage());
-      }
-
-      $destination = $event->getDestination();
-
-      return new RedirectResponse($destination);
+      return new RedirectResponse($event->getDestination());
     }
     catch (Exception $e) {
       $this->getLogger('lti_tool_provider')->warning($e->getMessage());

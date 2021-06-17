@@ -3,10 +3,10 @@
 namespace Drupal\lti_tool_provider\Event;
 
 use Drupal\lti_tool_provider\LTIToolProviderContextInterface;
-use Drupal\lti_tool_provider\LtiToolProviderEvent;
 use Drupal\user\UserInterface;
+use Symfony\Component\EventDispatcher\Event;
 
-class LtiToolProviderCreateUserEvent extends LtiToolProviderEvent {
+class LtiToolProviderCreateUserEvent extends Event {
 
   /**
    * @var \Drupal\lti_tool_provider\LTIToolProviderContextInterface
@@ -39,7 +39,7 @@ class LtiToolProviderCreateUserEvent extends LtiToolProviderEvent {
   /**
    * @param \Drupal\lti_tool_provider\LTIToolProviderContextInterface $context
    */
-  public function setContext(LTIToolProviderContextInterface $context) {
+  private function setContext(LTIToolProviderContextInterface $context) {
     $this->context = $context;
   }
 

@@ -6,10 +6,10 @@ use Drupal;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\lti_tool_provider\Authentication\Provider\LTIToolProviderV1P0;
-use Drupal\lti_tool_provider\Event\LtiToolProviderLaunchRedirectEvent;
+use Drupal\lti_tool_provider\Event\LtiToolProviderEvents;
+use Drupal\lti_tool_provider\Event\LtiToolProviderLaunchEvent;
 use Drupal\lti_tool_provider\LTIToolProviderContext;
 use Drupal\lti_tool_provider\LTIToolProviderContextInterface;
-use Drupal\lti_tool_provider\LtiToolProviderEvent;
 use Exception;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -46,16 +46,10 @@ class LTIToolProviderV1P0Launch extends ControllerBase {
     try {
       $context_data = $context->getContext();
 
-      $event = new LtiToolProviderLaunchRedirectEvent($context, $context_data['custom_destination'] ?? '/');
-      LtiToolProviderEvent::dispatchEvent($eventDispatcher, $event);
+      $event = new LtiToolProviderLaunchEvent($context, $context_data['custom_destination'] ?? '/');
+      $eventDispatcher->dispatch(LtiToolProviderEvents::LAUNCH, $event);
 
-      if ($event->isCancelled()) {
-        throw new Exception($event->getMessage());
-      }
-
-      $destination = $event->getDestination();
-
-      return new RedirectResponse($destination);
+      return new RedirectResponse($event->getDestination());
     }
     catch (Exception $e) {
       $this->getLogger('lti_tool_provider')->warning($e->getMessage());

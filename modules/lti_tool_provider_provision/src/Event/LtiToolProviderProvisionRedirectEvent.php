@@ -1,11 +1,15 @@
 <?php
 
-namespace Drupal\lti_tool_provider\Event;
+namespace Drupal\lti_tool_provider_provision\Event;
 
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\lti_tool_provider\LTIToolProviderContextInterface;
-use Drupal\lti_tool_provider\LtiToolProviderEvent;
+use Symfony\Component\EventDispatcher\Event;
 
-class LtiToolProviderLaunchRedirectEvent extends LtiToolProviderEvent {
+/**
+ * Implementation LtiToolProviderProvisionRedirectEvent class.
+ */
+class LtiToolProviderProvisionRedirectEvent extends Event {
 
   /**
    * @var \Drupal\lti_tool_provider\LTIToolProviderContextInterface
@@ -13,19 +17,25 @@ class LtiToolProviderLaunchRedirectEvent extends LtiToolProviderEvent {
   private $context;
 
   /**
+   * @var \Drupal\Core\Entity\EntityInterface
+   */
+  private $entity;
+
+  /**
    * @var string
    */
   private $destination;
 
   /**
-   * LtiToolProviderLaunchRedirectEvent constructor.
+   * LtiToolProviderProvisionRedirectEvent constructor.
    *
    * @param \Drupal\lti_tool_provider\LTIToolProviderContextInterface $context
-   *
+   * @param \Drupal\Core\Entity\EntityInterface $entity
    * @param string $destination
    */
-  public function __construct(LTIToolProviderContextInterface $context, string $destination) {
+  public function __construct(LTIToolProviderContextInterface $context, EntityInterface $entity, string $destination) {
     $this->setContext($context);
+    $this->setEntity($entity);
     $this->setDestination($destination);
   }
 
@@ -41,6 +51,20 @@ class LtiToolProviderLaunchRedirectEvent extends LtiToolProviderEvent {
    */
   public function setContext(LTIToolProviderContextInterface $context) {
     $this->context = $context;
+  }
+
+  /**
+   * @return \Drupal\Core\Entity\EntityInterface
+   */
+  public function getEntity(): EntityInterface {
+    return $this->entity;
+  }
+
+  /**
+   * @param \Drupal\Core\Entity\EntityInterface $entity
+   */
+  public function setEntity(EntityInterface $entity): void {
+    $this->entity = $entity;
   }
 
   /**

@@ -4,12 +4,12 @@ namespace Drupal\lti_tool_provider_provision\Event;
 
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\lti_tool_provider\LTIToolProviderContextInterface;
-use Drupal\lti_tool_provider\LtiToolProviderEvent;
+use Symfony\Component\EventDispatcher\Event;
 
 /**
  * Implementation LtiToolProviderProvisionSyncProvisionedEntityEvent class.
  */
-class LtiToolProviderProvisionSyncProvisionedEntityEvent extends LtiToolProviderEvent {
+class LtiToolProviderProvisionSyncProvisionedEntityEvent extends Event {
 
   /**
    * @var \Drupal\lti_tool_provider\LTIToolProviderContextInterface

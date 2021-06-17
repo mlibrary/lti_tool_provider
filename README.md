@@ -1,20 +1,19 @@
-# LTI Tool Provider
+`# LTI Tool Provider
 
 ## INTRODUCTION
 
 The LTI tool provider module provides an LTI authentication provider for Drupal, as well as configuration options for
 managing LTI consumers, user provisioning, attribute mapping, and default entity provisioning.
 
-Currently it supports LTI v1.0 and v1.1.
+Currently it supports LTI v1.0, v1.1, and LTI 1.3.
 
 ## REQUIREMENTS
 
-* PHP 7
-* OAuth PECL extension [http://php.net/manual/en/book.oauth.php](http://php.net/manual/en/book.oauth.php)
+* PHP 7.3
 
 ## INSTALLATION
 
-* Install the OAuth PECL extension as per:
+* If using LTI 1.0/1.1, install the OAuth PECL extension as per:
   [http://php.net/manual/en/oauth.installation.php](http://php.net/manual/en/oauth.installation.php)
 * Install the module as per:
   [https://www.drupal.org/docs/8/extending-drupal-8/installing-drupal-8-modules](https://www.drupal.org/docs/8/extending-drupal-8/installing-drupal-8-modules)
@@ -93,17 +92,18 @@ my_module/src/EventSubscriber\MyModuleLtiToolProviderEventSubscriber.php
 ```php
 namespace Drupal\my_module\EventSubscriber;
 
-use Drupal\lti_tool_provider\Event\LtiToolProviderLaunchRedirectEvent;
+use Drupal\lti_tool_provider\Event\LtiToolProviderEvents;
+use Drupal\lti_tool_provider\Event\LtiToolProviderLaunchEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 class MyModuleLtiToolProviderEventSubscriber implements EventSubscriberInterface
 {
   /**
-   * @param LtiToolProviderLaunchRedirectEvent $event
+   * @param LtiToolProviderLaunchEvent $event
    */
-  public function onLaunchRedirect(LtiToolProviderLaunchRedirectEvent $event)
+  public function onLaunch(LtiToolProviderLaunchEvent $event)
   {
-    if ($event instanceof LtiToolProviderLaunchRedirectEvent) {
+    if ($event instanceof LtiToolProviderLaunchEvent) {
       $event->setDestination('/some-path');
     }
   }
@@ -114,7 +114,7 @@ class MyModuleLtiToolProviderEventSubscriber implements EventSubscriberInterface
   public static function getSubscribedEvents(): array
   {
     return [
-      LtiToolProviderLaunchRedirectEvent::class => 'onLaunchRedirect',
+      LtiToolProviderEvents::LAUNCH => 'onLaunch',
     ];
   }
 }

@@ -1,15 +1,15 @@
 <?php
 
-namespace Drupal\lti_tool_provider_attributes\Event;
+namespace Drupal\lti_tool_provider_roles\Event;
 
 use Drupal\lti_tool_provider\LTIToolProviderContextInterface;
-use Drupal\lti_tool_provider\LtiToolProviderEvent;
 use Drupal\user\UserInterface;
+use Symfony\Component\EventDispatcher\Event;
 
 /**
- * Implementation LtiToolProviderAttributesEvent class.
+ * Implementation LtiToolProviderRolesProvisionEvent class.
  */
-class LtiToolProviderAttributesEvent extends LtiToolProviderEvent {
+class LtiToolProviderRolesProvisionEvent extends Event {
 
   /**
    * @var \Drupal\lti_tool_provider\LTIToolProviderContextInterface
@@ -17,12 +17,12 @@ class LtiToolProviderAttributesEvent extends LtiToolProviderEvent {
   private $context;
 
   /**
-   * @var \Drupal\user\UserInterface
+   * @var UserInterface
    */
   private $user;
 
   /**
-   * LtiToolProviderAttributesEvent constructor.
+   * LtiToolProviderRolesProvisionEvent constructor.
    *
    * @param \Drupal\lti_tool_provider\LTIToolProviderContextInterface $context
    * @param \Drupal\user\UserInterface $user

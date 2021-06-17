@@ -7,12 +7,10 @@ use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\lti_tool_provider\LTIToolProviderContextInterface;
-use Drupal\lti_tool_provider\LtiToolProviderEvent;
 use Drupal\lti_tool_provider_provision\Entity\LtiToolProviderProvision;
 use Drupal\lti_tool_provider_provision\Event\LtiToolProviderProvisionCreateProvisionedEntityEvent;
 use Drupal\lti_tool_provider_provision\Event\LtiToolProviderProvisionCreateProvisionEvent;
-use Drupal\lti_tool_provider_provision\Event\LtiToolProviderProvisionSyncProvisionedEntityEvent;
-use Exception;
+use Drupal\lti_tool_provider_provision\Event\LtiToolProviderProvisionEvents;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
@@ -112,14 +110,10 @@ class ProvisionService {
           $provision->set('provision_bundle', $entityBundle);
         }
 
-        $event = new LtiToolProviderProvisionCreateProvisionEvent($context, $provision);
-        LtiToolProviderEvent::dispatchEvent($this->eventDispatcher, $event);
+        $createProvisionEvent = new LtiToolProviderProvisionCreateProvisionEvent($context, $provision);
+        $this->eventDispatcher->dispatch(LtiToolProviderProvisionEvents::CREATE_PROVISION, $createProvisionEvent);
 
-        if ($event->isCancelled()) {
-          throw new Exception($event->getMessage());
-        }
-
-        $provision = $event->getEntity();
+        $provision = $createProvisionEvent->getEntity();
         $provision->save();
       }
 
@@ -132,7 +126,7 @@ class ProvisionService {
           $entity = $this->createProvisionedEntity($context, $provision);
         }
 
-        $entity = $this->syncProvisionedEntity($context, $entity);
+        $entity = $this->setEntityDefaults($context, $entity);
 
         $entity->save();
         $provision->set('provision_id', $entity->id());
@@ -212,11 +206,7 @@ class ProvisionService {
       ->create([$bundleType => $entityBundle]);
 
     $event = new LtiToolProviderProvisionCreateProvisionedEntityEvent($context, $entity);
-    LtiToolProviderEvent::dispatchEvent($this->eventDispatcher, $event);
-
-    if ($event->isCancelled()) {
-      throw new Exception($event->getMessage());
-    }
+    $this->eventDispatcher->dispatch(LtiToolProviderProvisionEvents::CREATE_ENTITY, $event);
 
     return $event->getEntity();
   }
@@ -229,7 +219,7 @@ class ProvisionService {
    *
    * @throws \Exception
    */
-  public function syncProvisionedEntity(LTIToolProviderContextInterface $context, EntityInterface $entity): EntityInterface {
+  public function setEntityDefaults(LTIToolProviderContextInterface $context, EntityInterface $entity): EntityInterface {
     $entityDefaults = [];
     $lti_version = $context->getVersion();
 
@@ -269,14 +259,7 @@ class ProvisionService {
       }
     }
 
-    $event = new LtiToolProviderProvisionSyncProvisionedEntityEvent($context, $entity);
-    LtiToolProviderEvent::dispatchEvent($this->eventDispatcher, $event);
-
-    if ($event->isCancelled()) {
-      throw new Exception($event->getMessage());
-    }
-
-    return $event->getEntity();
+    return $entity;
   }
 
   /**

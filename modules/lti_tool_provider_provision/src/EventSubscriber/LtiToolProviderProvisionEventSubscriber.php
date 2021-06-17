@@ -4,12 +4,14 @@ namespace Drupal\lti_tool_provider_provision\EventSubscriber;
 
 use Drupal;
 use Drupal\Core\Config\ConfigFactoryInterface;
-use Drupal\lti_tool_provider\Event\LtiToolProviderLaunchRedirectEvent;
+use Drupal\lti_tool_provider\Event\LtiToolProviderEvents;
+use Drupal\lti_tool_provider\Event\LtiToolProviderLaunchEvent;
 use Drupal\lti_tool_provider\LTIToolProviderContext;
 use Drupal\lti_tool_provider\LTIToolProviderContextInterface;
-use Drupal\lti_tool_provider\LtiToolProviderEvent;
 use Drupal\lti_tool_provider_provision\Event\LtiToolProviderProvisionCreateProvisionEvent;
-use Drupal\lti_tool_provider_provision\Event\LtiToolProviderProvisionEvent;
+use Drupal\lti_tool_provider_provision\Event\LtiToolProviderProvisionEvents;
+use Drupal\lti_tool_provider_provision\Event\LtiToolProviderProvisionRedirectEvent;
+use Drupal\lti_tool_provider_provision\Event\LtiToolProviderProvisionSyncProvisionedEntityEvent;
 use Drupal\lti_tool_provider_provision\Services\ProvisionService;
 use Exception;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -59,15 +61,15 @@ class LtiToolProviderProvisionEventSubscriber implements EventSubscriberInterfac
    */
   public static function getSubscribedEvents(): array {
     return [
-      LtiToolProviderLaunchRedirectEvent::class => 'onLaunch',
-      LtiToolProviderProvisionCreateProvisionEvent::class => 'onCreateProvision',
+      LtiToolProviderEvents::LAUNCH => 'onLaunch',
+      LtiToolProviderProvisionEvents::CREATE_PROVISION => 'onCreateProvision',
     ];
   }
 
   /**
-   * @param LtiToolProviderLaunchRedirectEvent $event
+   * @param LtiToolProviderLaunchEvent $event
    */
-  public function onLaunch(LtiToolProviderLaunchRedirectEvent $event) {
+  public function onLaunch(LtiToolProviderLaunchEvent $event) {
     $is_entity_sync = FALSE;
     $is_entity_redirect = FALSE;
     $context = $event->getContext();
@@ -91,20 +93,21 @@ class LtiToolProviderProvisionEventSubscriber implements EventSubscriberInterfac
     try {
       if ($entity = $this->provisionService->provision($context)) {
         if ($is_entity_sync) {
-          $this->provisionService->syncProvisionedEntity($context, $entity);
+          $entity = $this->provisionService->setEntityDefaults($context, $entity);
+
+          $syncProvisionedEntityEvent = new LtiToolProviderProvisionSyncProvisionedEntityEvent($context, $entity);
+          $this->eventDispatcher->dispatch(LtiToolProviderProvisionEvents::SYNC_ENTITY, $syncProvisionedEntityEvent);
+
+          $entity = $syncProvisionedEntityEvent->getEntity();
           $entity->save();
         }
 
         $url = $entity->toUrl()->toString();
-        $provisionEvent = new LtiToolProviderProvisionEvent($context, $entity, $url);
-        LtiToolProviderEvent::dispatchEvent($this->eventDispatcher, $provisionEvent);
-
-        if ($provisionEvent->isCancelled()) {
-          throw new Exception($provisionEvent->getMessage());
-        }
+        $redirectEvent = new LtiToolProviderProvisionRedirectEvent($context, $entity, $url);
+        $this->eventDispatcher->dispatch(LtiToolProviderProvisionEvents::REDIRECT, $redirectEvent);
 
         if ($is_entity_redirect) {
-          $event->setDestination($provisionEvent->getDestination());
+          $event->setDestination($redirectEvent->getDestination());
         }
       }
     }
@@ -116,6 +119,8 @@ class LtiToolProviderProvisionEventSubscriber implements EventSubscriberInterfac
 
   /**
    * @param LtiToolProviderProvisionCreateProvisionEvent $event
+   *
+   * @throws \Exception
    */
   public function onCreateProvision(LtiToolProviderProvisionCreateProvisionEvent $event) {
     $context = $event->getContext();
@@ -158,7 +163,8 @@ class LtiToolProviderProvisionEventSubscriber implements EventSubscriberInterfac
     }
 
     if (!$access) {
-      $event->cancel('Unable to provision entity.');
+      $event->stopPropagation();
+      throw new Exception('Unable to provision entity.');
     }
   }
 

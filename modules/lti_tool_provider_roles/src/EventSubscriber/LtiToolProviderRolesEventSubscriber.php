@@ -4,11 +4,12 @@ namespace Drupal\lti_tool_provider_roles\EventSubscriber;
 
 use Drupal;
 use Drupal\Core\Config\ConfigFactoryInterface;
-use Drupal\lti_tool_provider\Event\LtiToolProviderAuthenticatedEvent;
+use Drupal\lti_tool_provider\Event\LtiToolProviderEvents;
+use Drupal\lti_tool_provider\Event\LtiToolProviderProvisionUserEvent;
 use Drupal\lti_tool_provider\LTIToolProviderContext;
 use Drupal\lti_tool_provider\LTIToolProviderContextInterface;
-use Drupal\lti_tool_provider\LtiToolProviderEvent;
-use Drupal\lti_tool_provider_roles\Event\LtiToolProviderRolesEvent;
+use Drupal\lti_tool_provider_roles\Event\LtiToolProviderRolesEvents;
+use Drupal\lti_tool_provider_roles\Event\LtiToolProviderRolesProvisionEvent;
 use Exception;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -49,14 +50,14 @@ class LtiToolProviderRolesEventSubscriber implements EventSubscriberInterface {
    */
   public static function getSubscribedEvents(): array {
     return [
-      LtiToolProviderAuthenticatedEvent::class => 'onAuthenticated',
+      LtiToolProviderEvents::PROVISION_USER => 'onProvisionUser',
     ];
   }
 
   /**
-   * @param LtiToolProviderAuthenticatedEvent $event
+   * @param \Drupal\lti_tool_provider\Event\LtiToolProviderProvisionUserEvent $event
    */
-  public function onAuthenticated(LtiToolProviderAuthenticatedEvent $event) {
+  public function onProvisionUser(LtiToolProviderProvisionUserEvent $event) {
     $context = $event->getContext();
     $lti_version = $context->getVersion();
 
@@ -97,14 +98,9 @@ class LtiToolProviderRolesEventSubscriber implements EventSubscriberInterface {
     }
 
     try {
-      $rolesEvent = new LtiToolProviderRolesEvent($context, $user);
-      LtiToolProviderEvent::dispatchEvent($this->eventDispatcher, $rolesEvent);
-
-      if ($rolesEvent->isCancelled()) {
-        throw new Exception($event->getMessage());
-      }
-
-      $user->save();
+      $rolesEvent = new LtiToolProviderRolesProvisionEvent($context, $user);
+      $this->eventDispatcher->dispatch(LtiToolProviderRolesEvents::PROVISION, $rolesEvent);
+      $rolesEvent->getUser()->save();
     }
     catch (Exception $e) {
       Drupal::logger('lti_tool_provider_roles')->error($e->getMessage());

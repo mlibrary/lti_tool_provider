@@ -6,10 +6,10 @@ use Drupal;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\PageCache\ResponsePolicy\KillSwitch;
 use Drupal\Core\Routing\TrustedRedirectResponse;
-use Drupal\lti_tool_provider\Event\LtiToolProviderLaunchRedirectEvent;
+use Drupal\lti_tool_provider\Event\LtiToolProviderEvents;
+use Drupal\lti_tool_provider\Event\LtiToolProviderReturnEvent;
 use Drupal\lti_tool_provider\LTIToolProviderContext;
 use Drupal\lti_tool_provider\LTIToolProviderContextInterface;
-use Drupal\lti_tool_provider\LtiToolProviderEvent;
 use Exception;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -48,17 +48,12 @@ class LTIToolProviderV1P0Return extends ControllerBase {
         $killSwitch->trigger();
       }
 
-      $event = new LtiToolProviderLaunchRedirectEvent($context, $context_data['launch_presentation_return_url'] ?? '/');
-      LtiToolProviderEvent::dispatchEvent($eventDispatcher, $event);
+      $event = new LtiToolProviderReturnEvent($context, $context_data['launch_presentation_return_url'] ?? '/');
+      $eventDispatcher->dispatch(LtiToolProviderEvents::RETURN, $event);
 
-      if ($event->isCancelled()) {
-        throw new Exception($event->getMessage());
-      }
-
-      $destination = $event->getDestination();
       $this->userLogout();
 
-      return new TrustedRedirectResponse($destination);
+      return new TrustedRedirectResponse($event->getDestination());
     }
     catch (Exception $e) {
       $this->getLogger('lti_tool_provider')->warning($e->getMessage());

@@ -4,11 +4,12 @@ namespace Drupal\lti_tool_provider_attributes\EventSubscriber;
 
 use Drupal;
 use Drupal\Core\Config\ConfigFactoryInterface;
-use Drupal\lti_tool_provider\Event\LtiToolProviderAuthenticatedEvent;
+use Drupal\lti_tool_provider\Event\LtiToolProviderEvents;
+use Drupal\lti_tool_provider\Event\LtiToolProviderProvisionUserEvent;
 use Drupal\lti_tool_provider\LTIToolProviderContext;
 use Drupal\lti_tool_provider\LTIToolProviderContextInterface;
-use Drupal\lti_tool_provider\LtiToolProviderEvent;
-use Drupal\lti_tool_provider_attributes\Event\LtiToolProviderAttributesEvent;
+use Drupal\lti_tool_provider_attributes\Event\LtiToolProviderAttributesEvents;
+use Drupal\lti_tool_provider_attributes\Event\LtiToolProviderAttributesProvisionEvent;
 use Exception;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -49,14 +50,14 @@ class LtiToolProviderAttributesEventSubscriber implements EventSubscriberInterfa
    */
   public static function getSubscribedEvents(): array {
     return [
-      LtiToolProviderAuthenticatedEvent::class => 'onAuthenticated',
+      LtiToolProviderEvents::PROVISION_USER => 'onProvisionUser',
     ];
   }
 
   /**
-   * @param LtiToolProviderAuthenticatedEvent $event
+   * @param \Drupal\lti_tool_provider\Event\LtiToolProviderProvisionUserEvent $event
    */
-  public function onAuthenticated(LtiToolProviderAuthenticatedEvent $event) {
+  public function onProvisionUser(LtiToolProviderProvisionUserEvent $event) {
     $context = $event->getContext();
     $lti_version = $context->getVersion();
     $user = $event->getUser();
@@ -94,14 +95,9 @@ class LtiToolProviderAttributesEventSubscriber implements EventSubscriberInterfa
     }
 
     try {
-      $attributesEvent = new LtiToolProviderAttributesEvent($context, $user);
-      LtiToolProviderEvent::dispatchEvent($this->eventDispatcher, $attributesEvent);
-
-      if ($attributesEvent->isCancelled()) {
-        throw new Exception($event->getMessage());
-      }
-
-      $user->save();
+      $attributesEvent = new LtiToolProviderAttributesProvisionEvent($context, $user);
+      $this->eventDispatcher->dispatch(LtiToolProviderAttributesEvents::PROVISION, $attributesEvent);
+      $attributesEvent->getUser()->save();
     }
     catch (Exception $e) {
       Drupal::logger('lti_tool_provider_attributes')->error($e->getMessage());

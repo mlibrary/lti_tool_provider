@@ -3,9 +3,9 @@
 namespace Drupal\lti_tool_provider\Event;
 
 use Drupal\lti_tool_provider\LTIToolProviderContextInterface;
-use Drupal\lti_tool_provider\LtiToolProviderEvent;
+use Symfony\Component\EventDispatcher\Event;
 
-class LtiToolProviderReturnEvent extends LtiToolProviderEvent {
+class LtiToolProviderReturnEvent extends Event {
 
   /**
    * @var \Drupal\lti_tool_provider\LTIToolProviderContextInterface

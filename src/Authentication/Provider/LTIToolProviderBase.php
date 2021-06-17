@@ -8,10 +8,10 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\lti_tool_provider\Event\LtiToolProviderAuthenticatedEvent;
 use Drupal\lti_tool_provider\Event\LtiToolProviderCreateUserEvent;
+use Drupal\lti_tool_provider\Event\LtiToolProviderEvents;
 use Drupal\lti_tool_provider\Event\LtiToolProviderProvisionUserEvent;
 use Drupal\lti_tool_provider\LTIToolProviderContext;
 use Drupal\lti_tool_provider\LTIToolProviderContextInterface;
-use Drupal\lti_tool_provider\LtiToolProviderEvent;
 use Drupal\user\Entity\User;
 use Drupal\user\UserInterface;
 use Exception;
@@ -76,18 +76,18 @@ abstract class LTIToolProviderBase implements AuthenticationProviderInterface {
       $context = $this->validate($this->convertToPsrRequest($request));
       $user = $this->provisionUser($context);
 
-      $event = new LtiToolProviderProvisionUserEvent($context, $user);
-      $this->processEvent($event);
+      $provisionUserEvent = new LtiToolProviderProvisionUserEvent($context, $user);
+      $this->eventDispatcher->dispatch(LtiToolProviderEvents::PROVISION_USER, $provisionUserEvent);
 
-      $event = new LtiToolProviderAuthenticatedEvent($context, $event->getUser());
-      $this->processEvent($event);
+      $authenticatedEvent = new LtiToolProviderAuthenticatedEvent($provisionUserEvent->getContext(), $provisionUserEvent->getUser());
+      $this->eventDispatcher->dispatch(LtiToolProviderEvents::AUTHENTICATED, $authenticatedEvent);
 
-      $this->userLoginFinalize($event->getUser());
+      $this->userLoginFinalize($authenticatedEvent->getUser());
 
       $session = $request->getSession();
-      $session->set('lti_tool_provider_context', $context);
+      $session->set('lti_tool_provider_context', $authenticatedEvent->getContext());
 
-      return $user;
+      return $authenticatedEvent->getUser();
     }
     catch (Exception $e) {
       $this->loggerFactory->warning($e->getMessage());
@@ -162,27 +162,13 @@ abstract class LTIToolProviderBase implements AuthenticationProviderInterface {
     $user->enforceIsNew();
     $user->activate();
 
-    $event = new LtiToolProviderCreateUserEvent($context, $user);
-    $this->processEvent($event);
+    $createUserEvent = new LtiToolProviderCreateUserEvent($context, $user);
+    $this->eventDispatcher->dispatch(LtiToolProviderEvents::CREATE_USER, $createUserEvent);
 
+    $user = $createUserEvent->getUser();
     $user->save();
 
     return $user;
-  }
-
-  /**
-   * Process LTI events.
-   *
-   * @param \Drupal\lti_tool_provider\LtiToolProviderEvent $event
-   *
-   * @throws \Exception
-   */
-  protected function processEvent(LtiToolProviderEvent $event) {
-    LtiToolProviderEvent::dispatchEvent($this->eventDispatcher, $event);
-
-    if ($event->isCancelled()) {
-      throw new Exception($event->getMessage());
-    }
   }
 
   /**
