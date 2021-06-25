@@ -117,7 +117,7 @@ class LTIToolProviderRegistrationRepository implements RegistrationRepositoryInt
     $public_key_value = $public_key->getKeyValue();
     $private_key_value = $private_key->getKeyValue();
     $platformKeyChain = NULL;
-    $toolKeyChain = new KeyChain($public_key->id(), $public_key->label(), new Key($public_key_value), new Key($private_key_value));
+    $toolKeyChain = new KeyChain($public_key->id(), $public_key->label(), new Key(str_replace('\n', "\n", $public_key_value)), new Key(str_replace('\n', "\n", $private_key_value)));
 
     return new Registration(
       $consumer->id(),
