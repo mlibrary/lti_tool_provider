@@ -37,5 +37,5 @@ function lti_tool_provider_provision_entity_predelete(EntityInterface $entity) {
  * @return string|string[]|null
  */
 function encode_key($key) {
-  return preg_replace('/\./', '__', preg_replace('/\:/', '___', $key));
+  return preg_replace('/\./', '__', preg_replace('/:/', '___', $key));
 }
