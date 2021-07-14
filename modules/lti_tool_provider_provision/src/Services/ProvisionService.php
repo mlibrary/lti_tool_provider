@@ -11,6 +11,9 @@ use Drupal\lti_tool_provider_provision\Entity\LtiToolProviderProvision;
 use Drupal\lti_tool_provider_provision\Event\LtiToolProviderProvisionCreateProvisionedEntityEvent;
 use Drupal\lti_tool_provider_provision\Event\LtiToolProviderProvisionCreateProvisionEvent;
 use Drupal\lti_tool_provider_provision\Event\LtiToolProviderProvisionEvents;
+use Exception;
+use OAT\Library\Lti1p3Core\Message\Payload\Claim\ContextClaim;
+use OAT\Library\Lti1p3Core\Message\Payload\Claim\ResourceLinkClaim;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
@@ -143,47 +146,58 @@ class ProvisionService {
    * @param \Drupal\lti_tool_provider\LTIToolProviderContextInterface $context
    *
    * @return \Drupal\Core\Entity\EntityInterface|null
-   *
-   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
-   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
   public function getProvisionFromContext(LTIToolProviderContextInterface $context): ?EntityInterface {
-    $lti_version = $context->getVersion();
+    try {
+      $lti_version = $context->getVersion();
 
-    $consumer_id = '';
-    $context_id = '';
-    $resource_link_id = '';
+      $consumer_id = '';
+      $context_id = '';
+      $resource_link_id = '';
 
-    if (($lti_version === LTIToolProviderContextInterface::V1P0)) {
-      $context_data = $context->getContext();
-      $consumer_id = $context_data['consumer_id'];
-      $context_id = $context_data['context_id'];
-      $resource_link_id = $context_data['resource_link_id'];
-    }
+      if (($lti_version === LTIToolProviderContextInterface::V1P0)) {
+        $context_data = $context->getContext();
+        $consumer_id = $context_data['consumer_id'];
+        $context_id = $context_data['context_id'];
+        $resource_link_id = $context_data['resource_link_id'];
+      }
 
-    if (($lti_version === LTIToolProviderContextInterface::V1P3)) {
-      $audience = $context->getPayload()->getClaim('aud');
-      $consumer_id = $audience[0];
-      $context_id = $context->getPayload()->getContext()->getIdentifier();
-      $resource_link_id = $context->getPayload()
-        ->getResourceLink()
-        ->getIdentifier();
-    }
+      if (($lti_version === LTIToolProviderContextInterface::V1P3)) {
+        $audience = $context->getPayload()->getClaim('aud');
+        $contextClaim = $context->getPayload()->getContext();
+        $resourceLinkClaim = $context->getPayload()->getResourceLink();
 
-    $provision = $this->entityTypeManager->getStorage('lti_tool_provider_provision')
-      ->loadByProperties(
-        [
-          'consumer_id' => $consumer_id,
-          'context_id' => $context_id,
-          'resource_link_id' => $resource_link_id,
-        ]
-      );
+        if (!is_array($audience) || !($contextClaim instanceof ContextClaim) || !($resourceLinkClaim instanceof ResourceLinkClaim)) {
+          throw new Exception('Missing LTI claims.');
+        }
 
-    if (count($provision)) {
+        $consumer_id = $audience[0];
+        $context_id = $contextClaim->getIdentifier();
+        $resource_link_id = $resourceLinkClaim->getIdentifier();
+      }
+
+      if (!is_string($consumer_id) || !is_string($consumer_id) || !is_string($resource_link_id)) {
+        throw new Exception('Missing LTI identifiers.');
+      }
+
+      $provision = $this->entityTypeManager->getStorage('lti_tool_provider_provision')
+        ->loadByProperties(
+          [
+            'consumer_id' => $consumer_id,
+            'context_id' => $context_id,
+            'resource_link_id' => $resource_link_id,
+          ]
+        );
+
+      if (!count($provision)) {
+        throw new Exception('No provision found.');
+      }
+
       return reset($provision);
     }
-
-    return NULL;
+    catch (Exception $e) {
+      return NULL;
+    }
   }
 
   /**
