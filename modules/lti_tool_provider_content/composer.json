@@ -1,0 +1,8 @@
+{
+  "name": "drupal/lti_tool_provider_content",
+  "type": "drupal-module",
+  "license": "GPL-2.0-or-later",
+  "require": {
+    "oat-sa/lib-lti1p3-deep-linking": "^4.0.0"
+  }
+}
