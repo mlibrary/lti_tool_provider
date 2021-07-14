@@ -103,10 +103,6 @@ class LTIToolProviderV1P3 extends LTIToolProviderBase {
     if ($is_id_token and $is_state) {
       return TRUE;
     }
-    // TODO: Check if this is correct and secure.
-    elseif ($request->getRequestUri() == '/lti/return') {
-      return TRUE;
-    }
 
     return FALSE;
   }

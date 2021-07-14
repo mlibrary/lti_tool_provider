@@ -12,10 +12,6 @@ lti_tool_provider.v1p0.return:
   path: /lti/return
   defaults:
     _controller: '\Drupal\lti_tool_provider\Controller\LTIToolProviderV1P0Return::route'
-  options:
-    _auth:
-      - lti_auth_v1p0
-    no-cache: 'TRUE'
   requirements:
     _access: 'TRUE'
 lti_tool_provider.v1p3.login:
