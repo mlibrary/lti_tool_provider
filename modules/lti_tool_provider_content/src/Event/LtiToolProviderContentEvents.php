@@ -12,6 +12,13 @@ final class LtiToolProviderContentEvents {
   const SELECT = 'lti_tool_provider_content.select';
 
   /**
+   * Occurs before creating resource link.
+   *
+   * @Event("Drupal\lti_tool_provider_content\Event\LtiToolProviderContentResourceEvent")
+   */
+  const RESOURCE = 'lti_tool_provider_content.resource';
+
+  /**
    * Occurs before return to platform.
    *
    * @Event("Drupal\lti_tool_provider_content\Event\LtiToolProviderContentReturnEvent")

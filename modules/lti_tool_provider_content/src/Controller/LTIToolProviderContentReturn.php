@@ -10,6 +10,7 @@ use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Url;
 use Drupal\lti_tool_provider_content\Event\LtiToolProviderContentEvents;
+use Drupal\lti_tool_provider_content\Event\LtiToolProviderContentResourceEvent;
 use Drupal\lti_tool_provider_content\Event\LtiToolProviderContentReturnEvent;
 use Exception;
 use OAT\Library\Lti1p3Core\Exception\LtiExceptionInterface;
@@ -119,12 +120,15 @@ class LTIToolProviderContentReturn extends ControllerBase {
         $properties['submission'] = $submission;
       }
 
-      $ltiResourceLink = new LtiResourceLink('ltiResourceLinkIdentifier', $properties);
+      $event = new LtiToolProviderContentResourceEvent($properties, $registration, $return);
+      $eventDispatcher->dispatch(LtiToolProviderContentEvents::RESOURCE, $event);
+
+      $ltiResourceLink = new LtiResourceLink("$entityType-$entityId", $event->getProperties());
       $resourceCollection = new ResourceCollection();
       $resourceCollection->add($ltiResourceLink);
 
       $builder = new DeepLinkingLaunchResponseBuilder();
-      $message = $builder->buildDeepLinkingLaunchResponse($resourceCollection, $registration, $return);
+      $message = $builder->buildDeepLinkingLaunchResponse($resourceCollection, $event->getRegistration(), $event->getReturn());
 
       $event = new LtiToolProviderContentReturnEvent($message);
       $eventDispatcher->dispatch(LtiToolProviderContentEvents::RETURN, $event);
