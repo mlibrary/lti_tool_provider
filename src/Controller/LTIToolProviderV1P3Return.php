@@ -11,6 +11,7 @@ use Drupal\lti_tool_provider\Event\LtiToolProviderReturnEvent;
 use Drupal\lti_tool_provider\LTIToolProviderContext;
 use Drupal\lti_tool_provider\LTIToolProviderContextInterface;
 use Exception;
+use OAT\Library\Lti1p3Core\Message\Payload\Claim\LaunchPresentationClaim;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 
@@ -38,7 +39,7 @@ class LTIToolProviderV1P3Return extends ControllerBase {
       }
 
       $launchPresentation = $context->getPayload()->getLaunchPresentation();
-      if ($launchPresentation) {
+      if (!($launchPresentation instanceof LaunchPresentationClaim)) {
         throw new Exception('No launch presentation data.');
       }
 
