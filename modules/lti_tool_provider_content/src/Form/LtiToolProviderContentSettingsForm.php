@@ -28,7 +28,6 @@ class LtiToolProviderContentSettingsForm extends ConfigFormBase {
     $entityBundles = $form_state->getValue('entity_bundles') ?? $settings->get('entity_bundles');
     $entityDefaults = $form_state->getValue('entity_defaults') ?? $settings->get('entity_defaults');
     $owner = $form_state->getValue('owner') ?? $settings->get('owner');
-    $redirect = $form_state->getValue('redirect') ?? $settings->get('redirect');
     $sync = $form_state->getValue('sync') ?? $settings->get('sync');
 
     $form['#attributes']['id'] = uniqid($this->getFormId());
@@ -152,12 +151,6 @@ class LtiToolProviderContentSettingsForm extends ConfigFormBase {
       '#default_value' => $owner,
     ];
 
-    $form['fieldset']['redirect'] = [
-      '#type' => 'checkbox',
-      '#title' => $this->t('Always redirect to entity upon launch.'),
-      '#default_value' => $redirect,
-    ];
-
     $form['fieldset']['sync'] = [
       '#type' => 'checkbox',
       '#title' => $this->t('Always sync entity fields from context during launch.'),
@@ -178,7 +171,6 @@ class LtiToolProviderContentSettingsForm extends ConfigFormBase {
     $entityBundles = $form_state->getValue('entity_bundles');
     $entityDefaults = $form_state->getValue('entity_defaults');
     $owner = $form_state->getValue('owner');
-    $redirect = $form_state->getValue('redirect');
     $sync = $form_state->getValue('sync');
 
     $settings->set('enabled', $enabled);
@@ -186,7 +178,6 @@ class LtiToolProviderContentSettingsForm extends ConfigFormBase {
     $settings->set('entity_bundles', $entityBundles);
     $settings->set('entity_defaults', $entityDefaults);
     $settings->set('owner', $owner);
-    $settings->set('redirect', $redirect);
     $settings->set('sync', $sync);
 
     $settings->save();

@@ -45,9 +45,6 @@ lti_tool_provider_content.settings:
     owner:
       type: boolean
       label: Filter by Owner
-    redirect:
-      type: boolean
-      label: Redirect to Entity
     sync:
       type: boolean
       label: Sync Entity Fields
