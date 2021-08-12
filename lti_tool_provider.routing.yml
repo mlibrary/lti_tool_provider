@@ -30,6 +30,12 @@ lti_tool_provider.v1p3.launch:
     no-cache: 'TRUE'
   requirements:
     _access: 'TRUE'
+lti_tool_provider.v1p3.return:
+  path: /lti/v1p3/return
+  defaults:
+    _controller: '\Drupal\lti_tool_provider\Controller\LTIToolProviderV1P3Return::route'
+  requirements:
+    _access: 'TRUE'
 lti_tool_provider.v1p3.jwks:
   path: /lti/v1p3/jwks
   defaults:

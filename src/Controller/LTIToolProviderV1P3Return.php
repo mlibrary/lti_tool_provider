@@ -14,19 +14,10 @@ use Exception;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 
-/**
- * Returns responses for lti_tool_provider module routes.
- */
-class LTIToolProviderV1P0Return extends ControllerBase {
+class LTIToolProviderV1P3Return extends ControllerBase {
 
   /**
-   * LTI return.
-   *
-   * Log the user out and returns the user to the LMS.
-   *
-   * @return TrustedRedirectResponse|RedirectResponse
-   *   Redirect user to appropriate return url.
-   *
+   * @return \Drupal\Core\Routing\TrustedRedirectResponse|\Symfony\Component\HttpFoundation\RedirectResponse
    * @throws \Exception
    */
   public function route() {
@@ -46,12 +37,12 @@ class LTIToolProviderV1P0Return extends ControllerBase {
         $killSwitch->trigger();
       }
 
-      $context_data = $context->getContext();
-      if (!is_array($context_data) || !isset($context_data['launch_presentation_return_url'])) {
-        throw new Exception('LTI context data missing.');
+      $launchPresentation = $context->getPayload()->getLaunchPresentation();
+      if ($launchPresentation) {
+        throw new Exception('No launch presentation data.');
       }
 
-      $destination = $context_data['launch_presentation_return_url'];
+      $destination = $launchPresentation->getReturnUrl();
       if (!is_string($destination) || empty($destination)) {
         throw new Exception('No return url provided.');
       }
