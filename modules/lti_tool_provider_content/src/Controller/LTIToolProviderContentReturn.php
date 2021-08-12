@@ -74,6 +74,16 @@ class LTIToolProviderContentReturn extends ControllerBase {
         ],
       ];
 
+      $title = $request->request->get('title') ?: $request->get('title');
+      if (!empty($title)) {
+        $properties['title'] = $title;
+      }
+
+      $text = $request->request->get('text') ?: $request->get('text');
+      if (!empty($text)) {
+        $properties['text'] = $text;
+      }
+
       $icon = $request->request->get('icon') ?: $request->get('icon');
       if (!empty($icon)) {
         $properties['icon'] = $icon;
