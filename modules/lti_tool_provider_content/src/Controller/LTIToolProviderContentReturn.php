@@ -37,17 +37,17 @@ class LTIToolProviderContentReturn extends ControllerBase {
       }
 
       $return = $request->request->get('return') ?: $request->get('return');
-      if (empty($return)) {
+      if (!is_string($return) || empty($return)) {
         throw new Exception('Return url missing.');
       }
 
       $entityType = $request->request->get('entityType') ?: $request->get('entityType');
-      if (empty($return)) {
+      if (!is_string($entityType) || empty($entityType)) {
         throw new Exception('Entity type missing.');
       }
 
       $entityId = $request->request->get('entityId') ?: $request->get('entityId');
-      if (empty($return)) {
+      if (!is_string($entityId) || empty($entityId)) {
         throw new Exception('Entity id missing.');
       }
 
