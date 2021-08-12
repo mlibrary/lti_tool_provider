@@ -129,6 +129,7 @@ class LtiToolProviderContentSettingsForm extends ConfigFormBase {
                 'name' => [
                   '#type' => 'item',
                   '#title' => $field->getLabel(),
+                  '#value' => $key,
                 ],
                 'lti_attribute' => [
                   '#type' => 'select',
