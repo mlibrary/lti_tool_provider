@@ -40,6 +40,7 @@ class LTIToolProviderNonceRepository implements NonceRepositoryInterface {
    */
   public function find(string $value): ?NonceInterface {
     $nonce = $this->entityTypeManager->getStorage('lti_tool_provider_nonce')
+      ->accessCheck(FALSE)
       ->getQuery()
       ->condition('nonce', $value, '=')
       ->execute();
