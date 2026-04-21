@@ -6,7 +6,7 @@ use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\user\Entity\Role;
 use Drupal\user\RoleInterface;
-`
+
 /**
  * Implementation V1p3LtiToolProviderRolesSettingsForm class.
  *
