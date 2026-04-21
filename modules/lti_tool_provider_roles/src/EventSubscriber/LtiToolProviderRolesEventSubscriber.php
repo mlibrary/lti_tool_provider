@@ -79,7 +79,7 @@ class LtiToolProviderRolesEventSubscriber implements EventSubscriberInterface {
 
     $user = $event->getUser();
     $user_roles = Role::loadMultiple();
-    unset($roles[RoleInterface::ANONYMOUS_ID]);
+    unset($user_roles[RoleInterface::ANONYMOUS_ID]);
 
     if ($user->getDisplayName() === 'ltiuser') {
       return;

@@ -39,7 +39,7 @@ class V1p0LtiToolProviderRolesSettingsForm extends ConfigFormBase {
     ];
 
     $user_roles = Role::loadMultiple();
-    unset($roles[RoleInterface::ANONYMOUS_ID]);
+    unset($user_roles[RoleInterface::ANONYMOUS_ID]);
     foreach ($user_roles as $key => $user_role) {
       $form['mapped_roles'][$key] = [
         'user_role' => [
