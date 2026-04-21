@@ -36,7 +36,9 @@ class V1p3LtiToolProviderRolesSettingsForm extends ConfigFormBase {
       '#header' => [t('User Role'), t('LTI Role')],
     ];
 
-    foreach (user_roles(TRUE) as $key => $user_role) {
+    $user_roles = Role::loadMultiple();
+    unset($roles[RoleInterface::ANONYMOUS_ID]);
+    foreach ($user_roles as $key => $user_role) {
       /* Exclude authenticated role because Anonymous or authenticated role
        * ID must not be assigned manually. */
       if ($key != 'authenticated') {
